@@ -16,6 +16,7 @@ This configuration makes heavy use of Emacs packages, so first, configure the pa
   ))
   (package-initialize)
 
+  (package-install 'use-package)
   (require 'use-package)
 #+END_SRC
 
