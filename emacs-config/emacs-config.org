@@ -5,7 +5,7 @@ This configuration integrates with my [[https://github.com/pgroce/emacs-config-f
 
 * Package configuration
 
-This configuration makes heavy use of Emacs packages, so first, configure the package system
+This configuration makes heavy use of Emacs packages, so first, configure the package system.
 
 #+BEGIN_SRC emacs-lisp
   (require 'package)
@@ -15,7 +15,10 @@ This configuration makes heavy use of Emacs packages, so first, configure the pa
           ("pgroce"      . "https://pgroce.github.io/emacs-pkgs/elpa")
   ))
   (package-initialize)
+
+  (require 'use-package)
 #+END_SRC
+
 
 
 * Foundation packages
