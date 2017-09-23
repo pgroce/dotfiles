@@ -1,0 +1,107 @@
+#+TITLE: Phil's Emacs Configuration
+
+This configuration integrates with my [[https://github.com/pgroce/emacs-config-framework][configuration framework]], although it could probably be used without it. It also uses some packages from [[https://philgroce.github.io/emacs-pkgs/elpa][my package repository]].
+
+
+* Package configuration
+
+This configuration makes heavy use of Emacs packages, so first, configure the package system
+
+#+BEGIN_SRC emacs-lisp
+  (require 'package)
+  (setq package-archives
+        '(("gnu"         . "http://elpa.gnu.org/packages/")
+          ("melpa"       . "http://melpa.org/packages/")
+          ("pgroce"      . "https://pgroce.github.io/emacs-pkgs/elpa")
+  ))
+  (package-initialize)
+#+END_SRC
+
+
+* Foundation packages
+
+I use these packages in lots of places in the configuration, so load them now.
+
+** Shell path manipulation
+
+#+BEGIN_SRC emacs-lisp
+  (use-package pg-shell-path :ensure t)
+#+END_SRC
+
+** Alerting
+
+#+BEGIN_SRC emacs-lisp
+  (use-package alert :ensure t)
+#+END_SRC
+
+
+* Terminal configurations
+
+Emacs extends the notion of the terminal (like xterm or VT-220 terminals) to include the GUI versions that run on GTK, Windows, OS X, etc.
+
+#+BEGIN_SRC emacs-lisp
+  (use-package pg-terminal-config :ensure t)
+  (pg-terminal-setup-hooks)
+#+END_SRC
+
+Configuration of each terminal is done in [[Customizing platforms]], below.
+
+* Customizing platforms
+
+** OS X
+
+*** General customizations
+
+**** =/usr/local=
+
+=/usr/local/[s?bin]= aren't included by default on the path, but they should be, especially in the age of [[https://brew.sh/][Homebrew]].
+
+#+BEGIN_SRC emacs-lisp :tangle darwin.el
+  (append-shell-path "PATH" (list "/usr/local/bin"
+                                  "/usr/local/sbin"))
+#+END_SRC
+
+**** Use =mdfind= as =locate=
+
+On many Unix systems, the =locate= command will run the system =locate= command to search a pre-compiled file database for a file. On OS X, the =mdfind= command (which searches Spotlight) has sufficiently similar syntax that it can be used instead.
+
+#+BEGIN_SRC emacs-lisp
+  (setq locate-command "mdfind")
+#+END_SRC
+
+**** GNU =ls=
+
+OS X =ls= is not GNU, so use =gls= (the version of =ls= from GNU Coreutils) on the Mac instead of =/bin/ls=, because the GNU version supports dired better. (Make sure it's installed via MacPorts, Homebrew, etc.)
+
+#+BEGIN_SRC emacs-lisp
+  (if (= 0 (shell-command "which gls"))
+      (setq insert-directory-program "gls")
+    (warn "Pro-tip: Install 'gls' ('brew install coreutils') for a better dired experience."))
+#+END_SRC
+
+
+*** =darwin= terminal configuration
+
+#+BEGIN_SRC emacs-lisp :tangle darwin.el
+
+#+END_SRC
+
+
+* Integrations with external tools
+
+** =pdf-tools=
+
+#+BEGIN_SRC emacs-lisp :tangle no
+  (if (= 0 (shell-command "which epdfinfo"))
+      (use-package pdf-tools :ensure t)
+    (warn "Pro-tip: Install pdf-tools (e.g., 'brew install pdf-tools') for better PDF experience."))
+#+END_SRC
+
+
+** LaTeX
+
+#+BEGIN_SRC emacs-lisp :tangle no
+  (if (file-exists-p "/Library/TeX/texbin")
+      (pg-shell-path-append "/Library/Tex/texbin")
+    (warn "Pro-tip: Install Tex (or MacTeX) for a better LaTeX experience"))
+#+END_SRC
