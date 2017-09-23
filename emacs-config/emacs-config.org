@@ -8,16 +8,22 @@ This configuration integrates with my [[https://github.com/pgroce/emacs-config-f
 This configuration makes heavy use of Emacs packages, so first, configure the package system.
 
 #+BEGIN_SRC emacs-lisp
-  (require 'package)
+
   (setq package-archives
         '(("gnu"         . "http://elpa.gnu.org/packages/")
           ("melpa"       . "http://melpa.org/packages/")
           ("pgroce"      . "https://pgroce.github.io/emacs-pkgs/elpa")
   ))
-  (package-initialize)
+
 
   (package-install 'use-package)
-  (require 'use-package)
+  (eval-when-compile
+    (require 'package)
+    (package-initialize)
+    (unless (package-installed-p 'use-package)
+      (package-refresh-contents)
+      (package-install 'use-package))
+    (require 'use-package))
 #+END_SRC
 
 
