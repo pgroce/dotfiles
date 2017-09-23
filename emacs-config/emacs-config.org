@@ -16,7 +16,6 @@ This configuration makes heavy use of Emacs packages, so first, configure the pa
   ))
 
 
-  (package-install 'use-package)
   (eval-when-compile
     (require 'package)
     (package-initialize)
