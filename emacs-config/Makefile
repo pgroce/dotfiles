@@ -21,7 +21,7 @@ tangle:
 	rm -rf build && \
 	mkdir -p build && \
 	$(EMACS) --batch \
-	--visit=init.org \
+	--visit=emacs-config.org \
 	--eval "(progn (require 'ob) (cd \"build\") (org-babel-tangle nil \"emacs-config.el\"))"
 
 install: tangle
