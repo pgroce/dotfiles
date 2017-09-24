@@ -56,18 +56,11 @@ Configuration of each terminal is done in [[Customizing platforms]], below.
 
 * Customizing platforms
 
+(This config pretty much assumes you run [[https://brew.sh/][Homebrew]].)
+
 ** OS X
 
 *** General customizations
-
-**** =/usr/local=
-
-=/usr/local/[s?bin]= aren't included by default on the path, but they should be, especially in the age of [[https://brew.sh/][Homebrew]].
-
-#+BEGIN_SRC emacs-lisp :tangle darwin.el
-  (pg-shell-path-append "PATH" (list "/usr/local/bin"
-                                     "/usr/local/sbin"))
-#+END_SRC
 
 **** Use =mdfind= as =locate=
 
