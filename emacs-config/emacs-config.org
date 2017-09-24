@@ -16,13 +16,12 @@ This configuration makes heavy use of Emacs packages, so first, configure the pa
   ))
 
 
-  (eval-when-compile
-    (require 'package)
-    (package-initialize)
-    (unless (package-installed-p 'use-package)
-      (package-refresh-contents)
-      (package-install 'use-package))
-    (require 'use-package))
+  (require 'package)
+  (package-initialize)
+  (unless (package-installed-p 'use-package)
+    (package-refresh-contents)
+    (package-install 'use-package))
+  (require 'use-package)
 #+END_SRC
 
 
