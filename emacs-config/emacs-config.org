@@ -84,7 +84,7 @@ OS X =ls= is not GNU, so use =gls= (the version of =ls= from GNU Coreutils) on t
 #+BEGIN_SRC emacs-lisp
   (if (= 0 (shell-command "which gls"))
       (setq insert-directory-program "gls")
-    (warn "Pro-tip: Install 'gls' ('brew install coreutils') for a better dired experience."))
+    (message "Pro-tip: Install 'gls' ('brew install coreutils') for a better dired experience."))
 #+END_SRC
 
 
@@ -99,17 +99,17 @@ OS X =ls= is not GNU, so use =gls= (the version of =ls= from GNU Coreutils) on t
 
 ** =pdf-tools=
 
-#+BEGIN_SRC emacs-lisp :tangle no
+#+BEGIN_SRC emacs-lisp :tangle darwin.el
   (if (= 0 (shell-command "which epdfinfo"))
       (use-package pdf-tools :ensure t)
-    (warn "Pro-tip: Install pdf-tools (e.g., 'brew install pdf-tools') for better PDF experience."))
+    (message "Pro-tip: Install pdf-tools (e.g., 'brew install pdf-tools') for better PDF experience."))
 #+END_SRC
 
 
 ** LaTeX
 
-#+BEGIN_SRC emacs-lisp :tangle no
+#+BEGIN_SRC emacs-lisp :tangle darwin.el
   (if (file-exists-p "/Library/TeX/texbin")
       (pg-shell-path-append "/Library/Tex/texbin")
-    (warn "Pro-tip: Install Tex (or MacTeX) for a better LaTeX experience"))
+    (message "Pro-tip: Install Tex (or MacTeX) for a better LaTeX experience"))
 #+END_SRC
