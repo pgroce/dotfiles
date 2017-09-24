@@ -12,7 +12,7 @@ This configuration makes heavy use of Emacs packages, so first, configure the pa
   (setq package-archives
         '(("gnu"         . "http://elpa.gnu.org/packages/")
           ("melpa"       . "http://melpa.org/packages/")
-          ("pgroce"      . "https://pgroce.github.io/emacs-pkgs/elpa")
+          ("pgroce"      . "https://pgroce.github.io/emacs-pkgs/elpa/")
   ))
 
 
