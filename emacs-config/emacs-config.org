@@ -65,8 +65,8 @@ Configuration of each terminal is done in [[Customizing platforms]], below.
 =/usr/local/[s?bin]= aren't included by default on the path, but they should be, especially in the age of [[https://brew.sh/][Homebrew]].
 
 #+BEGIN_SRC emacs-lisp :tangle darwin.el
-  (append-shell-path "PATH" (list "/usr/local/bin"
-                                  "/usr/local/sbin"))
+  (pg-shell-path-append "PATH" (list "/usr/local/bin"
+                                     "/usr/local/sbin"))
 #+END_SRC
 
 **** Use =mdfind= as =locate=
