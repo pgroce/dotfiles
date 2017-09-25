@@ -7,6 +7,9 @@ This configuration integrates with my [[https://github.com/pgroce/emacs-config-f
 
 This configuration makes heavy use of Emacs packages, so first, configure the package system.
 
+=use-package= comes with the almost-equally-useful =bind-key= macro, which is much more user-friendly than manipulating keymaps directly.
+
+
 #+BEGIN_SRC emacs-lisp
 
   (setq package-archives
@@ -36,16 +39,14 @@ I use these packages in lots of places in the configuration, so load them now.
   (use-package pg-shell-path :ensure t)
 #+END_SRC
 
-** Alerting
 
-#+BEGIN_SRC emacs-lisp
-  (use-package alert :ensure t)
-#+END_SRC
 
 
 * Terminal configurations
 
 Emacs extends the notion of the terminal (like xterm or VT-220 terminals) to include the GUI versions that run on GTK, Windows, OS X, etc.
+
+=pg-terminal-config= extends the
 
 #+BEGIN_SRC emacs-lisp
   (use-package pg-terminal-config :ensure t)
@@ -53,6 +54,49 @@ Emacs extends the notion of the terminal (like xterm or VT-220 terminals) to inc
 #+END_SRC
 
 Configuration of each terminal is done in [[Customizing platforms]], below.
+
+** GUI Customizations
+
+These functions get applied as appropriate to the various terminal hooks set up in =pg-terminal-setup-hooks=.
+
+*** Clean frames
+
+Customize the GUI frame look and feel the way I want it.
+
+#+begin_src emacs-lisp
+  (defun pg-clean-frames ()
+    (tool-bar-mode -1)
+    (scroll-bar-mode -1)
+    (transient-mark-mode -1)
+    (setq inhibit-splash-screen t)
+    (show-paren-mode 1)
+    (column-number-mode)
+
+    (alist-add-replace 'window-system-default-frame-alist
+                       '((nil (menu-bar-lines . 0)
+                              (tool-bar-lines . 0)))))
+#+end_src
+
+*** Navigation
+
+I always bind =super= to the right alt key, so these keybinds are pretty effective ways to quickly travel between windows and frames. Basically just hold down right-alt and move up and down to go between windows, and left and right to go between frames.
+
+#+begin_src emacs-lisp
+  (defun pg-prev-frame () (interactive) (other-frame 1))
+  (defun pg-next-frame () (interactive) (other-frame -1))
+
+  (defun pg-navigate-frames ()
+    (global-set-key (kbd "<s-right>") 'pg-next-frame)
+    (global-set-key (kbd "<s-left>") 'pg-prev-frame))
+
+  (defun pg-prev-window () (interactive) (other-window -1))
+  (defun pg-next-window () (interactive) (other-window 1))
+
+  (defun pg-navigate-windows ()
+    (global-set-key (kbd "<s-up>") 'pg-prev-window)
+    (global-set-key (kbd "<s-down>") 'pg-next-window))
+#+end_src
+
 
 * Customizing platforms
 
@@ -81,11 +125,105 @@ OS X =ls= is not GNU, so use =gls= (the version of =ls= from GNU Coreutils) on t
 #+END_SRC
 
 
-*** =darwin= terminal configuration
+*** =ns= terminal configuration
+
+**** Decontaminate =super= keybindings
+
+The =ns= Emacs port adds a number of keybindings to =super= in an attempt to make Emacs feel like a NeXTStep/Mac application.
+
+I'd rather use the Emacs style of interaction, because I've learned it already and because I can find better uses for =super=. (Most of these bindings are harmless, but a few, like =s-q= running =save-buffers-kill-emacs=, are infuriating.
+
+Therefore, kill it all with fire.
+
+#+BEGIN_SRC emacs-lisp :tangle darwin.el
+  (defun pg-ns-cleanse-super ()
+    "Remove Apple-like things ns puts in super"
+    (global-unset-key (kbd "M-s-h"))
+    (global-unset-key (kbd "s-,"))
+    (global-unset-key (kbd "s-'"))
+    (global-unset-key (kbd "s-`"))
+    (global-unset-key (kbd "s-~"))
+    (global-unset-key (kbd "s--"))
+    (global-unset-key (kbd "s-:"))
+    (global-unset-key (kbd "s-?"))
+    (global-unset-key (kbd "s-^"))
+    (global-unset-key (kbd "s-&"))
+    (global-unset-key (kbd "s-C"))
+    (global-unset-key (kbd "s-D"))
+    (global-unset-key (kbd "s-E"))
+    (global-unset-key (kbd "s-L"))
+    (global-unset-key (kbd "s-M"))
+    (global-unset-key (kbd "s-S"))
+    (global-unset-key (kbd "s-a"))
+    (global-unset-key (kbd "s-c"))
+    (global-unset-key (kbd "s-d"))
+    (global-unset-key (kbd "s-e"))
+    (global-unset-key (kbd "s-f"))
+    (global-unset-key (kbd "s-g"))
+    (global-unset-key (kbd "s-h"))
+    (global-unset-key (kbd "s-H"))
+    (global-unset-key (kbd "s-j"))
+    (global-unset-key (kbd "s-k"))
+    (global-unset-key (kbd "s-l"))
+    (global-unset-key (kbd "s-m"))
+    (global-unset-key (kbd "s-n"))
+    (global-unset-key (kbd "s-o"))
+    (global-unset-key (kbd "s-p"))
+    (global-unset-key (kbd "s-q"))
+    (global-unset-key (kbd "s-s"))
+    (global-unset-key (kbd "s-t"))
+    (global-unset-key (kbd "s-u"))
+    (global-unset-key (kbd "s-v"))
+    (global-unset-key (kbd "s-w"))
+    (global-unset-key (kbd "s-x"))
+    (global-unset-key (kbd "s-y"))
+    (global-unset-key (kbd "s-z"))
+    (global-unset-key (kbd "s-|"))
+    (global-unset-key (kbd "s-<kp-bar>"))
+    (global-unset-key (kbd "s-<right>"))
+    (global-unset-key (kbd "s-<left>")))
+#+END_SRC
+
+**** General GUI setup
+
+Use the navigation functions defined in the general configuration in OS X GUI Emacs.
+
+#+BEGIN_SRC emacs-lisp :tangle darwin.el
+  (add-hook 'pg-terminal-ns-setup-hook 'pg-minimal-frames)
+  (add-hook 'pg-terminal-ns-setup-hook 'pg-navigate-frames)
+  (add-hook 'pg-terminal-ns-setup-hook 'pg-navigate-windows)
+#+END_SRC
+
+
+**** Modifier keys
+
+Basically:
+
+Make left command =meta=, and make right alt and right command =super=. (I should experiment with right command being =hyper=, but haven't so far.)
 
 #+BEGIN_SRC emacs-lisp :tangle darwin.el
 
+  (defun pg-darwin-setup-modifiers ()
+    (setq ns-right-control-modifier 'super)
+    (setq ns-option-modifier  nil)
+    (setq ns-right-option-modifier  'super)
+    (setq ns-command-modifier 'meta))
 #+END_SRC
+
+The mouse wheel setup will get clobbered when using a daemon, due to the different order in which things start up. This restores it.
+
+#+begin_src emacs-lisp :tangle darwin.el
+  (defun pg/osx-restore-mouse-wheel ()
+    (when (daemonp)
+      (progn
+        (setq-default mouse-wheel-down-event 'wheel-up
+                      mouse-wheel-up-event 'wheel-down)
+        (global-set-key (kbd "<wheel-up>") 'mwheel-scroll)
+        (global-set-key (kbd "<wheel-down>") 'mwheel-scroll))))
+  (add-hook 'pg/ns-setup-hook 'pg/osx-restore-mouse-wheel)
+#+end_src
+
+
 
 
 * Integrations with external tools
