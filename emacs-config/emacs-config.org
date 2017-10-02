@@ -1,9 +1,10 @@
 #+TITLE: Phil's Emacs Configuration
 
-This configuration integrates with my [[https://github.com/pgroce/emacs-config-framework][configuration framework]], although it could probably be used without it. It also uses some packages from [[https://philgroce.github.io/emacs-pkgs/elpa][my package repository]].
+This configuration integrates with my [[https://github.com/pgroce/emacs-config-framework][configuration framework]], although it could probably be used without it. It also uses some packages from [[https://philgroce.github.io/emacs-pkgs/elpa][my own package repository]].
 
+* Basic environment
 
-* Package configuration
+** Package configuration
 
 This configuration makes heavy use of Emacs packages, so first, configure the package system.
 
@@ -27,26 +28,119 @@ This configuration makes heavy use of Emacs packages, so first, configure the pa
   (require 'use-package)
 #+END_SRC
 
-
-
-* Foundation packages
+** Foundation packages
 
 I use these packages in lots of places in the configuration, so load them now.
 
-** Shell path manipulation
+#+BEGIN_SRC emacs-lisp
+  (use-package pg-util :ensure t)
+  (use-package pg-shell-path :ensure t)
+  (use-package pg-ibuffer :ensure t)
+#+END_SRC
+
+** Accomodating Emacs customization
+
+Load the output of Emacs' [[http://www.gnu.org/software/emacs/manual/html_node/emacs/Easy-Customization.html][customization]] facility in a sidecar file. I prefer to manually maintain all my configuration, but for some packages it's easier to use =customize= and adapt its output into my config than it is to understand the docs. :/
 
 #+BEGIN_SRC emacs-lisp
-  (use-package pg-shell-path :ensure t)
+  (setq custom-file (expand-file-name "~/.emacs.d/emacs-customize.el"))
+  (if (file-exists-p custom-file) (load custom-file))
+#+END_SRC
+
+
+* General configuration
+
+** Unicode
+[[https://github.com/rolandwalker/unicode-fonts][unicode-fonts]] does a lot of magic to ensure that you can see as many Unicode glyphs as possible. You have to download several fonts for it to work; check the page for details.
+
+#+BEGIN_SRC emacs-lisp
+  (use-package unicode-fonts
+    :ensure t
+    :config (unicode-fonts-setup))
+#+END_SRC
+
+** Armoring URLs
+
+#+BEGIN_SRC emacs-lisp
+  (use-package pg-armor-url :ensure t)
+#+END_SRC
+
+** =dired=
+
+Lots of tweaks to =dired=:
+
+   * Also load =wdired= and =dired+=.
+   * Make =M-<= and =M->= do the right thing. (h/t [[http://whattheemacsd.com//setup-dired.el-02.html][What the emacs.d!?]])
+   * =z= gets the size of marked files via =du=. (h/t [[http://oremacs.com/2015/01/12/dired-file-size/][(or emacs irrelevant)]])
+   * =H= swaps between full and human-readable file sizes.
+
+#+BEGIN_SRC emacs-lisp
+  (use-package dired
+    :defer t
+    :init
+    (progn
+      ;; Load dired accessory packages
+      (use-package dired+ :ensure t :defer t)
+      (use-package wdired
+        :defer t
+        :init
+        (progn
+          (setq wdired-allow-to-change-permissions t
+                wdired-allow-to-redirect-links t
+                wdired-use-interactive-rename t
+                wdired-confirm-overwrite t))))
+
+    :config
+    (progn
+      (defun dired-back-to-top ()
+        (interactive)
+        (beginning-of-buffer)
+        (dired-next-line 4))
+      (define-key dired-mode-map
+        (vector 'remap 'beginning-of-buffer) 'dired-back-to-top)
+
+      (defun dired-jump-to-bottom ()
+        (interactive)
+        (end-of-buffer)
+        (dired-next-line -1))
+      (define-key dired-mode-map
+        (vector 'remap 'end-of-buffer) 'dired-jump-to-bottom)
+
+      (defun dired-get-size ()
+        (interactive)
+        (let ((files (dired-get-marked-files)))
+          (with-temp-buffer
+            (apply 'call-process "/usr/bin/du" nil t nil "-sch" files)
+            (message
+             "Size of all marked files: %s"
+             (progn
+               (re-search-backward "\\(^[0-9.,]+[A-Za-z]+\\).*total$")
+               (match-string 1))))))
+      (bind-key "Z" #'dired-get-size dired-mode-map)
+
+
+      (defun dired-toggle-show-human-sizes (&optional arg)
+        (interactive)
+        (when (not (local-variable-p 'dired-listing-switches))
+          (make-local-variable 'dired-listing-switches)
+          (setq-local dired-old-listing-switches dired-listing-switches))
+        (if (or arg
+                (equal dired-listing-switches dired-old-listing-switches))
+            (setq dired-listing-switches
+                  (concat dired-old-listing-switches "h"))
+          (setq dired-listing-switches dired-old-listing-switches))
+        (dired-sort-other dired-listing-switches))
+      (add-hook 'dired-mode-hook 'dired-toggle-show-human-sizes)
+      (bind-key "H" #'dired-toggle-show-human-sizes dired-mode-map)))
 #+END_SRC
 
 
 
-
-* Terminal configurations
+* General terminal configurations
 
 Emacs extends the notion of the terminal (like xterm or VT-220 terminals) to include the GUI versions that run on GTK, Windows, OS X, etc.
 
-=pg-terminal-config= extends the
+=pg-terminal-config= provides macros we use later to conditionally execute code for different terminals.
 
 #+BEGIN_SRC emacs-lisp
   (use-package pg-terminal-config :ensure t)
@@ -98,13 +192,32 @@ I always bind =super= to the right alt key, so these keybinds are pretty effecti
 #+end_src
 
 
-* Customizing platforms
 
-(This config pretty much assumes you run [[https://brew.sh/][Homebrew]].)
+
+
+** Plain ol' terminal
+
+These changes apply to every terminal-based Emacs I care about.
+
+#+BEGIN_SRC emacs-lisp
+  (pg-terminal-t
+   (pg-clean-frames)
+   (pg-navigate-frames)
+   (pg-navigate-windows))
+#+END_SRC
+
+
+* Customizing platforms
 
 ** OS X
 
+Everything in this section goes in =darwin.el= and gets executed only on OS X systems.
+
+This config pretty much assumes you run [[https://brew.sh/][Homebrew]].
+
 *** General customizations
+
+I don't wrap these in =pg-terminal-ns= because they're OS X-specific, not strictly ns-specific. (I dunno, maybe I'll run this on Gnustep someday.)
 
 **** Use =mdfind= as =locate=
 
@@ -125,102 +238,114 @@ OS X =ls= is not GNU, so use =gls= (the version of =ls= from GNU Coreutils) on t
 #+END_SRC
 
 
+**** Set =TMPDIR= to something short
+
+OS X has horrible long temporary directory paths that sometimes exceed the lengths some applications are expecting. Just use =/tmp=
+
+#+BEGIN_SRC emacs-lisp
+  (setenv "TMPDIR" "/tmp")
+#+END_SRC
+
+
 *** =ns= terminal configuration
+
 
 **** Decontaminate =super= keybindings
 
 The =ns= Emacs port adds a number of keybindings to =super= in an attempt to make Emacs feel like a NeXTStep/Mac application.
 
-I'd rather use the Emacs style of interaction, because I've learned it already and because I can find better uses for =super=. (Most of these bindings are harmless, but a few, like =s-q= running =save-buffers-kill-emacs=, are infuriating.
+I'd rather use the Emacs style of interaction, because I've learned it already and because I can find better uses for =super=. (Most of these bindings are harmless, but a few, like =s-q= running =save-buffers-kill-emacs=, are infuriating.)
+
+Furthermore, I like to put my own bindings on =super=.
 
 Therefore, kill it all with fire.
 
 #+BEGIN_SRC emacs-lisp :tangle darwin.el
-  (defun pg-ns-cleanse-super ()
-    "Remove Apple-like things ns puts in super"
-    (global-unset-key (kbd "M-s-h"))
-    (global-unset-key (kbd "s-,"))
-    (global-unset-key (kbd "s-'"))
-    (global-unset-key (kbd "s-`"))
-    (global-unset-key (kbd "s-~"))
-    (global-unset-key (kbd "s--"))
-    (global-unset-key (kbd "s-:"))
-    (global-unset-key (kbd "s-?"))
-    (global-unset-key (kbd "s-^"))
-    (global-unset-key (kbd "s-&"))
-    (global-unset-key (kbd "s-C"))
-    (global-unset-key (kbd "s-D"))
-    (global-unset-key (kbd "s-E"))
-    (global-unset-key (kbd "s-L"))
-    (global-unset-key (kbd "s-M"))
-    (global-unset-key (kbd "s-S"))
-    (global-unset-key (kbd "s-a"))
-    (global-unset-key (kbd "s-c"))
-    (global-unset-key (kbd "s-d"))
-    (global-unset-key (kbd "s-e"))
-    (global-unset-key (kbd "s-f"))
-    (global-unset-key (kbd "s-g"))
-    (global-unset-key (kbd "s-h"))
-    (global-unset-key (kbd "s-H"))
-    (global-unset-key (kbd "s-j"))
-    (global-unset-key (kbd "s-k"))
-    (global-unset-key (kbd "s-l"))
-    (global-unset-key (kbd "s-m"))
-    (global-unset-key (kbd "s-n"))
-    (global-unset-key (kbd "s-o"))
-    (global-unset-key (kbd "s-p"))
-    (global-unset-key (kbd "s-q"))
-    (global-unset-key (kbd "s-s"))
-    (global-unset-key (kbd "s-t"))
-    (global-unset-key (kbd "s-u"))
-    (global-unset-key (kbd "s-v"))
-    (global-unset-key (kbd "s-w"))
-    (global-unset-key (kbd "s-x"))
-    (global-unset-key (kbd "s-y"))
-    (global-unset-key (kbd "s-z"))
-    (global-unset-key (kbd "s-|"))
-    (global-unset-key (kbd "s-<kp-bar>"))
-    (global-unset-key (kbd "s-<right>"))
-    (global-unset-key (kbd "s-<left>")))
+  (pg-terminal-ns
+   (global-unset-key (kbd "M-s-h"))
+   (global-unset-key (kbd "s-,"))
+   (global-unset-key (kbd "s-'"))
+   (global-unset-key (kbd "s-`"))
+   (global-unset-key (kbd "s-~"))
+   (global-unset-key (kbd "s--"))
+   (global-unset-key (kbd "s-:"))
+   (global-unset-key (kbd "s-?"))
+   (global-unset-key (kbd "s-^"))
+   (global-unset-key (kbd "s-&"))
+   (global-unset-key (kbd "s-C"))
+   (global-unset-key (kbd "s-D"))
+   (global-unset-key (kbd "s-E"))
+   (global-unset-key (kbd "s-L"))
+   (global-unset-key (kbd "s-M"))
+   (global-unset-key (kbd "s-S"))
+   (global-unset-key (kbd "s-a"))
+   (global-unset-key (kbd "s-c"))
+   (global-unset-key (kbd "s-d"))
+   (global-unset-key (kbd "s-e"))
+   (global-unset-key (kbd "s-f"))
+   (global-unset-key (kbd "s-g"))
+   (global-unset-key (kbd "s-h"))
+   (global-unset-key (kbd "s-H"))
+   (global-unset-key (kbd "s-j"))
+   (global-unset-key (kbd "s-k"))
+   (global-unset-key (kbd "s-l"))
+   (global-unset-key (kbd "s-m"))
+   (global-unset-key (kbd "s-n"))
+   (global-unset-key (kbd "s-o"))
+   (global-unset-key (kbd "s-p"))
+   (global-unset-key (kbd "s-q"))
+   (global-unset-key (kbd "s-s"))
+   (global-unset-key (kbd "s-t"))
+   (global-unset-key (kbd "s-u"))
+   (global-unset-key (kbd "s-v"))
+   (global-unset-key (kbd "s-w"))
+   (global-unset-key (kbd "s-x"))
+   (global-unset-key (kbd "s-y"))
+   (global-unset-key (kbd "s-z"))
+   (global-unset-key (kbd "s-|"))
+   (global-unset-key (kbd "s-<kp-bar>"))
+   (global-unset-key (kbd "s-<right>"))
+   (global-unset-key (kbd "s-<left>")))
 #+END_SRC
 
-**** General GUI setup
+**** GUI setup
 
 Use the navigation functions defined in the general configuration in OS X GUI Emacs.
 
 #+BEGIN_SRC emacs-lisp :tangle darwin.el
-  (add-hook 'pg-terminal-ns-setup-hook 'pg-minimal-frames)
-  (add-hook 'pg-terminal-ns-setup-hook 'pg-navigate-frames)
-  (add-hook 'pg-terminal-ns-setup-hook 'pg-navigate-windows)
+  (pg-terminal-ns
+   (pg-clean-frames)
+   (pg-navigate-frames)
+   (pg-navigate-windows))
 #+END_SRC
 
+**** Keyboard/mouse setup
 
-**** Modifier keys
-
-Basically:
+***** Modifier keys
 
 Make left command =meta=, and make right alt and right command =super=. (I should experiment with right command being =hyper=, but haven't so far.)
 
 #+BEGIN_SRC emacs-lisp :tangle darwin.el
 
-  (defun pg-darwin-setup-modifiers ()
-    (setq ns-right-control-modifier 'super)
-    (setq ns-option-modifier  nil)
-    (setq ns-right-option-modifier  'super)
-    (setq ns-command-modifier 'meta))
+  (pg-terminal-ns
+   (setq ns-right-control-modifier 'super)
+   (setq ns-option-modifier  nil)
+   (setq ns-right-option-modifier  'super)
+   (setq ns-command-modifier 'meta))
 #+END_SRC
+
+***** Restore mouse wheel
 
 The mouse wheel setup will get clobbered when using a daemon, due to the different order in which things start up. This restores it.
 
 #+begin_src emacs-lisp :tangle darwin.el
-  (defun pg/osx-restore-mouse-wheel ()
-    (when (daemonp)
-      (progn
-        (setq-default mouse-wheel-down-event 'wheel-up
-                      mouse-wheel-up-event 'wheel-down)
-        (global-set-key (kbd "<wheel-up>") 'mwheel-scroll)
-        (global-set-key (kbd "<wheel-down>") 'mwheel-scroll))))
-  (add-hook 'pg/ns-setup-hook 'pg/osx-restore-mouse-wheel)
+  (pg-terminal-ns
+   (when (daemonp)
+     (progn
+       (setq-default mouse-wheel-down-event 'wheel-up
+                     mouse-wheel-up-event 'wheel-down)
+       (global-set-key (kbd "<wheel-up>") 'mwheel-scroll)
+       (global-set-key (kbd "<wheel-down>") 'mwheel-scroll))))
 #+end_src
 
 
