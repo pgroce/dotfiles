@@ -59,13 +59,96 @@ Load the output of Emacs' [[http://www.gnu.org/software/emacs/manual/html_node/e
     :config (unicode-fonts-setup))
 #+END_SRC
 
-** Armoring URLs
+** URLs
+
+See [[https://github.com/pgroce/emacs-pkgs/blob/master/pg-url-armor.org][the library documentation]] for more information on this package.
 
 #+BEGIN_SRC emacs-lisp
   (use-package pg-armor-url :ensure t)
 #+END_SRC
 
-** =dired=
+Just make it easier to call =browse-url-at-point=
+
+#+BEGIN_SRC emacs-lisp
+  (bind-key "s-b" #'browse-url-at-point)
+#+END_SRC
+
+** Buffers
+
+*** Unique buffer names
+
+=uniquify= ensures that buffer names are unique, but not ridiculously long. Handy if you're editing the same file in two different source trees, for instance.
+
+#+begin_src emacs-lisp
+  (require 'uniquify)
+  (setq uniquify-buffer-name-style 'forward)
+  (setq uniquify-separator "/")
+  (setq uniquify-after-kill-buffer-p t)
+  (setq uniquify-ignore-buffers-re "^\\*")
+#+end_src
+
+*** Burying buffers
+
+Bury buffers easily.
+
+#+begin_src emacs-lisp
+  (bind-key "s-q" #'bury-buffer)
+#+end_src
+
+Bury buffers and delete the window they're in. Default behavior from some transient-window-generating modes, but not others. And sometimes you're just done with a window split, darn it.
+
+#+BEGIN_SRC emacs-lisp
+  (defun pg/bury-buffer-delete-window ()
+    (interactive)
+    (bury-buffer)
+    (delete-window))
+
+  (bind-key "s-Q" #'pg/bury-buffer-delete-window)
+#+END_SRC
+
+***  =ibuffer=
+
+Tweaks to =ibuffer=:
+
+ * Add divisions to =ibuffer-saved-filter-groups= that won't be added elsewhere
+
+=ibuffer-saved-filter-groups= subdivides the =ibuffer= display nicely, but it presents some problems. Notably, it might be nice to conditionally add filtering groups to the display depending on what's loaded. The =pg/add-qualifier-to-ibuffer-filter-group= function allows us to do just that in the custom files. (=temp-shell= and =remote-term= are the names of buffers I create using the functions in [[Temorary Shell]] and [[Remote terminal]].)
+
+=ibuffer-ediff-marked-files= h/t [[http://curiousprogrammer.wordpress.com/2009/04/02/ibuffer/][A Curious Programmer]].
+
+
+#+BEGIN_SRC emacs-lisp
+  (use-package ibuffer
+    :bind ("C-X C-b" . ibuffer-other-window)
+    :init
+    (progn
+      (setq ibuffer-view-ibuffer t)
+      (setq ibuffer-saved-filter-groups
+            (quote (("default"
+                     ("text" (or
+                              (mode . text-mode)
+                              (mode . fundamental-mode)
+                              (mode . visual-line-mode)))
+                     ("Man Pages" (name . "^\\*Man ")))))))
+
+    :config
+    (progn
+      (defun ibuffer-ediff-marked-buffers ()
+        (interactive)
+        (let* ((marked-buffers (ibuffer-get-marked-buffers))
+               (len (length marked-buffers)))
+          (unless (= 2 len)
+            (error (format "%s buffer%s been marked (needs to be 2)"
+                           len (if (= len 1) " has" "s have"))))
+          (ediff-buffers (car marked-buffers) (cadr marked-buffers))))
+
+      (add-hook 'ibuffer-mode-hook
+                (lambda ()
+                  (ibuffer-switch-to-saved-filter-groups "default")))))
+#+END_SRC
+
+
+** Directories (=dired=)
 
 Lots of tweaks to =dired=:
 
@@ -73,6 +156,7 @@ Lots of tweaks to =dired=:
    * Make =M-<= and =M->= do the right thing. (h/t [[http://whattheemacsd.com//setup-dired.el-02.html][What the emacs.d!?]])
    * =z= gets the size of marked files via =du=. (h/t [[http://oremacs.com/2015/01/12/dired-file-size/][(or emacs irrelevant)]])
    * =H= swaps between full and human-readable file sizes.
+   * Add =dired= header to =ibuffer=.
 
 #+BEGIN_SRC emacs-lisp
   (use-package dired
@@ -131,8 +215,180 @@ Lots of tweaks to =dired=:
           (setq dired-listing-switches dired-old-listing-switches))
         (dired-sort-other dired-listing-switches))
       (add-hook 'dired-mode-hook 'dired-toggle-show-human-sizes)
-      (bind-key "H" #'dired-toggle-show-human-sizes dired-mode-map)))
+      (bind-key "H" #'dired-toggle-show-human-sizes dired-mode-map)
+
+      (pg-ibuffer '("default" ("dired" . (mode . dired-mode))))))
 #+END_SRC
+
+** Narrowing (=helm=)
+
+[[https://github.com/emacs-helm/helm][Helm]], like =ibuffer=, is a cross-cutting concern. This is the core setup; elsewhere in the config, other packages will customize Helm to their needs.
+
+#+BEGIN_SRC emacs-lisp
+  (use-package helm
+    :defer t
+    :ensure t
+    :diminish helm-mode
+    :init (use-package helm-swoop
+            :bind ("M-1" . helm-swoop))
+    :config
+    (progn
+      (require 'helm-config)
+      (bind-key "<tab" #'helm-execute-persistent-action helm-map)
+      (bind-key "C-i" #'helm-execute-persistent-action helm-map)
+      (bind-key "C-z" #'helm-select-action helm-map)
+      (bind-key "M-x" #'helm-M-x)
+      (bind-key "C-x C-f" #'helm-find-files)
+      (helm-mode 1)))
+#+END_SRC
+
+
+
+** Small things
+*** =expand-region=
+
+[[https://github.com/magnars/expand-region.el][expand-region]] expands the existing selection to the next largest semantic unit (character, word, sentence, paragraph; character, word, string, function; etc.) It is useful magic.
+
+I have it bound to =M-2= as part of an ergonomic trifecta of keys: =M-1= is bound to =helm-swoop= and =M-3= is bound to =mc/mark-all-dwim=, so I can select things quickly with =M-2= and quickly either search for them or operate on all instance of them in a file.
+
+#+BEGIN_SRC emacs-lisp
+  (use-package expand-region
+    :ensure t
+    :bind ("M-2" . er/expand-region))
+#+END_SRC
+
+*** =multiple-cursors=
+
+As I said above, bound to =M-3= because I'm just so clever.
+
+#+BEGIN_SRC emacs-lisp
+  (use-package multiple-cursors
+    :ensure t
+    :bind (("M-3" . mc/mark-all-dwim)))
+#+END_SRC
+
+*** Kaomoji
+The most important part of my configuration file. :) There's probably a way to do this with abbreviations or (gag) YASnippet, but this works and doesn't require much research.
+
+#+BEGIN_SRC emacs-lisp
+  (defmacro pg/make-insert-command (cmd-name to-insert)
+    `(defun ,cmd-name () (interactive) (insert ,to-insert)))
+#+END_SRC
+
+**** =shrug=/=welp=
+
+I guess the canonical name for this is =shrug=.
+
+#+BEGIN_SRC emacs-lisp
+  (defun welp ()
+    "Insert complicated but hugely important string into buffer."
+    (interactive)
+    (insert "¯\\_(ツ)_/¯"))
+  (defalias 'shrug 'welp)
+#+END_SRC
+
+**** =table-flip=
+
+#+BEGIN_SRC emacs-lisp
+  (defun table-flip ()
+      "Insert complicated but hugely important string into buffer."
+      (interactive)
+      (insert "(╯°□°）╯︵ ┻━┻"))
+#+END_SRC
+
+**** =eyes=
+
+#+BEGIN_SRC emacs-lisp
+  (defun eyes ()
+      "Insert complicated but hugely important string into buffer."
+      (interactive)
+      (insert "👀"))
+#+END_SRC
+
+
+*** One(ish)-liners
+
+Put all backups in one place.
+
+#+begin_src emacs-lisp
+  (setq backup-directory-alist '(("." . "~/.emacs.d/backup")))
+#+end_src
+
+Inhibit splash screen.
+
+#+BEGIN_SRC emacs-lisp
+  (setq inhibit-splash-screen t)
+#+END_SRC
+
+Never insert tabs.
+
+#+begin_src emacs-lisp
+  (setq-default indent-tabs-mode nil)
+#+end_src
+
+Delete trailing white space.
+
+#+begin_src emacs-lisp
+  (add-hook 'before-save-hook 'delete-trailing-whitespace)
+#+end_src
+
+Substitute "yes/no" prompts with "y/n" prompts.
+
+#+begin_src emacs-lisp
+  (fset 'yes-or-no-p 'y-or-n-p)
+#+end_src
+
+Yes, I know it's a large file. Open it anyway.
+
+#+begin_src emacs-lisp
+  (setq large-file-warning-threshold nil)
+#+end_src
+
+=narrow-to-region= is disabled by default, because the behavior is potentially scary to new users. I use it enough for that to be worth changing.
+
+#+begin_src emacs-lisp
+  (put 'narrow-to-region 'disabled nil)
+#+end_src
+
+When I run =man=, use the frame I'm in when I run it, so I can scroll and whatnot.
+
+#+BEGIN_SRC emacs-lisp
+  (setq Man-notify-method 'pushy)
+#+END_SRC
+
+Enable [[https://www.gnu.org/software/emacs/manual/html_node/emacs/Window-Convenience.html][winner-mode]].
+
+#+BEGIN_SRC emacs-lisp
+  (winner-mode 1)
+#+END_SRC
+
+Make =split-sensibly= split, er, more sensibly
+
+#+BEGIN_SRC emacs-lisp
+  ;;; Original value: 80
+  (setq split-height-threshold nil)
+#+END_SRC
+
+Disable version control on tramp, to speed it up
+
+#+BEGIN_SRC emacs-lisp
+  (setq vc-ignore-dir-regexp
+        (format "\\(%s\\)\\|\\(%s\\)"
+                vc-ignore-dir-regexp
+                tramp-file-name-regexp))
+#+END_SRC
+
+=session= provides persistence for things like command-line history across invocations of Emacs.
+
+#+begin_src emacs-lisp
+  (use-package session
+    :ensure t
+    :config (add-hook 'after-init-hook 'session-initialize))
+#+end_src
+
+
+
+
 
 
 
@@ -206,6 +462,112 @@ These changes apply to every terminal-based Emacs I care about.
    (pg-navigate-windows))
 #+END_SRC
 
+
+* Customizing workflows
+
+** Text processing
+
+*** Plain Text (=.txt=)
+
+#+BEGIN_SRC emacs-lisp
+  (add-to-list 'auto-mode-alist
+               '("\\.txt$" . (lambda ()
+                               (visual-line-mode)
+                               (flyspell-mode))))
+
+  (pg-ibuffer '("default" ("text" (or
+                                   (mode . text-mode)
+                                   (mode . fundamental-mode)
+                                   (mode . visual-line-mode)))))
+
+#+END_SRC
+
+
+
+*** TeX/LaTeX
+
+You will obviously need TeX/LaTeX installed on your machine for this to be valuable. (And =texbin= will need to be in =exec-path=. How that happens is platform-specific
+
+Enable previewing of LaTeX files.
+
+#+BEGIN_SRC emacs-lisp
+(use-package preview-latex)
+#+END_SRC
+
+Make =ibuffer= TeX-aware.
+
+#+BEGIN_SRC emacs-lisp
+  (pg-ibuffer '("default" ("TeX" (or
+                                  (mode . tex-mode)
+                                  (mode . latex-mode)))))
+#+END_SRC
+
+
+*** reStructuredText (=.rst=)
+
+#+BEGIN_SRC emacs-lisp
+  (add-to-list 'auto-mode-alist
+               '("\\.rst$" . (lambda ()
+                               (rst-mode)
+                               (visual-line-mode)
+                               (flyspell-mode))))
+
+  (pg-ibuffer '("default" ("ReST" (mode . rst-mode))))
+#+END_SRC
+
+*** XML and HTML
+
+[[http://www.thaiopensource.com/nxml-mode/][nXML mode]] is marvelous. I use it to edit XML. I used to use it for HTML, too, but now I prefer =sgml-mode=.
+
+#+BEGIN_SRC emacs-lisp
+  (use-package nxml-mode
+    :mode (("\\.xml$" . nxml-mode))
+    :config
+    (pg-ibuffer '("default" ("XML" (mode . nxml-mode)))))
+
+
+
+  (use-package sgml-mode
+    :mode (("\\.html$" . html-mode))
+    :config
+    (pg-ibuffer '("default" ("HTML" (mode . sgml-mode)))))
+#+END_SRC
+
+
+*** JSON
+
+#+BEGIN_SRC emacs-lisp
+  (use-package json-mode :ensure t)
+#+END_SRC
+
+*** Markdown
+
+#+BEGIN_SRC emacs-lisp
+  (use-package markdown-mode
+    :ensure t
+    :mode (("\\.md$" . markdown-mode))
+    :config
+    (progn
+      (add-hook 'markdown-mode-hook 'visual-line-mode)))
+#+END_SRC
+
+
+
+** Programming
+
+*** Compilation buffers
+
+If I click on an error in =*compilation*= and the file is already open in a frame, don't re-open it in a new frame.
+
+#+BEGIN_SRC emacs-lisp
+  (setq display-buffer-reuse-frames t)
+#+END_SRC
+
+Cycle through compilation buffer-naming strategies (currently the default–reuse =*compilation*= everywhere–and creating one compile buffer per buffer in which =compile= was invoked.
+
+#+BEGIN_SRC emacs-lisp
+  (use-package pg-compile-buffers :ensure t)
+#+END_SRC
 
 * Customizing platforms
 
