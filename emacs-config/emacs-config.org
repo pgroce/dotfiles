@@ -64,7 +64,7 @@ Load the output of Emacs' [[http://www.gnu.org/software/emacs/manual/html_node/e
 See [[https://github.com/pgroce/emacs-pkgs/blob/master/pg-url-armor.org][the library documentation]] for more information on this package.
 
 #+BEGIN_SRC emacs-lisp
-  (use-package pg-armor-url :ensure t)
+  (use-package pg-url-armor :ensure t)
 #+END_SRC
 
 Just make it easier to call =browse-url-at-point=
@@ -399,15 +399,13 @@ Emacs extends the notion of the terminal (like xterm or VT-220 terminals) to inc
 =pg-terminal-config= provides macros we use later to conditionally execute code for different terminals.
 
 #+BEGIN_SRC emacs-lisp
-  (use-package pg-terminal-config :ensure t)
-  (pg-terminal-setup-hooks)
+  (use-package pg-terminal :ensure t)
 #+END_SRC
 
 Configuration of each terminal is done in [[Customizing platforms]], below.
 
 ** GUI Customizations
 
-These functions get applied as appropriate to the various terminal hooks set up in =pg-terminal-setup-hooks=.
 
 *** Clean frames
 
