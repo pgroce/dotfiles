@@ -22,7 +22,7 @@ tangle:
 	mkdir -p build && \
 	$(EMACS) --batch \
 	--visit=emacs-config.org \
-	--eval "(progn (require 'ob) (cd \"build\") (org-babel-tangle nil \"init.el\"))"
+	--eval "(progn (require 'ob) (cd \"build\") (org-babel-tangle nil))"
 
 install: tangle
 	mkdir -p $(EMACS_HOME)/config
