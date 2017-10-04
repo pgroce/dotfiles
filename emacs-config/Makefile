@@ -25,4 +25,5 @@ tangle:
 	--eval "(progn (require 'ob) (cd \"build\") (org-babel-tangle nil \"emacs-config.el\"))"
 
 install: tangle
+	mkdir -p $(EMACS_HOME)/config
 	cp build/*.el $(EMACS_HOME)/config
