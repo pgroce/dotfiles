@@ -378,17 +378,12 @@ Disable version control on tramp, to speed it up
                 tramp-file-name-regexp))
 #+END_SRC
 
-=session= provides persistence for things like command-line history across invocations of Emacs.
+Save command history and some other variables.
 
-#+begin_src emacs-lisp
-  (use-package session
-    :ensure t
-    :config (add-hook 'after-init-hook 'session-initialize))
-#+end_src
-
-
-
-
+#+BEGIN_SRC emacs-lisp
+  (setq savehist-additional-variables '(kill-ring search-ring regexp-search-ring))
+  (savehist-mode 1)
+#+END_SRC
 
 
 
