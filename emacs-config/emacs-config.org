@@ -124,12 +124,7 @@ Tweaks to =ibuffer=:
     (progn
       (setq ibuffer-view-ibuffer t)
       (setq ibuffer-saved-filter-groups
-            (quote (("default"
-                     ("text" (or
-                              (mode . text-mode)
-                              (mode . fundamental-mode)
-                              (mode . visual-line-mode)))
-                     ("Man Pages" (name . "^\\*Man ")))))))
+            '(("default" ())))))
 
     :config
     (progn
