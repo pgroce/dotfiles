@@ -557,6 +557,20 @@ Cycle through compilation buffer-naming strategies (currently the default–reus
   (use-package pg-compile-buffers :ensure t)
 #+END_SRC
 
+
+*** Version control
+
+**** =magit=
+
+Configure magit, the best Git UI ever.
+
+#+BEGIN_SRC emacs-lisp
+  (use-package magit :ensure t
+    :config
+    (progn
+      (pg-ibuffer '("default" (("magit" (mode . magit-mode)))))))
+#+END_SRC
+
 * Customizing platforms
 
 ** OS X
