@@ -217,7 +217,7 @@ Lots of tweaks to =dired=:
       (add-hook 'dired-mode-hook 'dired-toggle-show-human-sizes)
       (bind-key "H" #'dired-toggle-show-human-sizes dired-mode-map)
 
-      (pg-ibuffer '("default" ("dired" . (mode . dired-mode))))))
+      (pg-ibuffer '("default" (("dired" . (mode . dired-mode)))))))
 #+END_SRC
 
 ** Narrowing (=helm=)
@@ -468,10 +468,10 @@ These changes apply to every terminal-based Emacs I care about.
                                (visual-line-mode)
                                (flyspell-mode))))
 
-  (pg-ibuffer '("default" ("text" (or
-                                   (mode . text-mode)
-                                   (mode . fundamental-mode)
-                                   (mode . visual-line-mode)))))
+  (pg-ibuffer '("default" (("text" . (or
+                                      (mode . text-mode)
+                                      (mode . fundamental-mode)
+                                      (mode . visual-line-mode))))))
 
 #+END_SRC
 
@@ -490,9 +490,9 @@ Enable previewing of LaTeX files.
 Make =ibuffer= TeX-aware.
 
 #+BEGIN_SRC emacs-lisp
-  (pg-ibuffer '("default" ("TeX" (or
-                                  (mode . tex-mode)
-                                  (mode . latex-mode)))))
+  (pg-ibuffer '("default" (("TeX" (or
+                                   (mode . tex-mode)
+                                   (mode . latex-mode))))))
 #+END_SRC
 
 
@@ -505,7 +505,7 @@ Make =ibuffer= TeX-aware.
                                (visual-line-mode)
                                (flyspell-mode))))
 
-  (pg-ibuffer '("default" ("ReST" (mode . rst-mode))))
+  (pg-ibuffer '("default" (("ReST" (mode . rst-mode)))))
 #+END_SRC
 
 *** XML and HTML
@@ -516,14 +516,14 @@ Make =ibuffer= TeX-aware.
   (use-package nxml-mode
     :mode (("\\.xml$" . nxml-mode))
     :config
-    (pg-ibuffer '("default" ("XML" (mode . nxml-mode)))))
+    (pg-ibuffer '("default" (("XML" (mode . nxml-mode))))))
 
 
 
   (use-package sgml-mode
     :mode (("\\.html$" . html-mode))
     :config
-    (pg-ibuffer '("default" ("HTML" (mode . sgml-mode)))))
+    (pg-ibuffer '("default" (("HTML" (mode . sgml-mode))))))
 #+END_SRC
 
 
