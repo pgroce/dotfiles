@@ -463,10 +463,10 @@ These changes apply to every terminal-based Emacs I care about.
                                (visual-line-mode)
                                (flyspell-mode))))
 
-  (pg-ibuffer '("default" (("text" . (or
-                                      (mode . text-mode)
-                                      (mode . fundamental-mode)
-                                      (mode . visual-line-mode))))))
+  (pg-ibuffer '("default" (("text" (or
+                                    (mode . text-mode)
+                                    (mode . fundamental-mode)
+                                    (mode . visual-line-mode))))))
 
 #+END_SRC
 
