@@ -467,6 +467,165 @@ These changes apply to every terminal-based Emacs I care about.
 
 * Customizing workflows
 
+** Org mode
+
+
+[[http://orgmode.org][Org mode]] isn't a specific workflow, but it supports organization, note taking, and literate programming, which I use in many other workflows.
+
+This section contains my core org-mode configuration. There may be additional configuration in subsequent sections (e.g., registering languages with [[http://orgmode.org/worg/org-contrib/babel/][Babel]]).
+
+#+BEGIN_SRC emacs-lisp
+  (use-package org
+    :bind (("s-l"   . org-store-link)
+           ("C-c l" . org-store-link))
+
+    :init
+    (setq
+     org-hide-leading-stars t
+     org-fast-tag-selection-single-key 'expert
+
+     org-default-notes-file "~/notes.org"
+
+     ;; Allow org-mode to refile deeper in the tree
+     org-refile-targets '((nil :maxlevel . 2))
+     org-refile-use-outline-path t
+     org-outline-path-complete-in-steps nil
+
+     ;; Log all my notes, clock time, etc. related to an item into a
+     ;; drawer named LOGBOOK, so it can be collapsed and doesn't clutter
+     ;; up the display.
+     org-log-into-drawer "LOGBOOK"
+
+
+     )
+
+    :mode ("\\.org\\'" . (lambda ()
+                           (org-mode)
+                           (visual-line-mode)))
+    :config
+    (progn
+      (pg-diminish-major org-mode "")
+      ;; TODO: Is this necessary?
+      (add-hook 'org-mode-hook 'turn-on-font-lock)))
+#+END_SRC
+
+*** Agenda
+
+A few of the variables configured here really live in =org.el=, but they're relevant to org-mode-as-personal-organizer, which is what =org-agenda= is about anyway.
+
+=org-agenda-custom-commands= controls additional default views I might want on the agenda. I'm cargo-culting much of this, mostly from [[http://newartisans.com/2007/08/using-org-mode-as-a-day-planner/][John Wiegley's seminal GTD configuration]] (where I got a lot of the rest of it, too).
+
+
+#+BEGIN_SRC emacs-lisp
+  (use-package org-agenda
+    :bind (("C-c a" . org-agenda)
+           :map org-agenda-mode-map
+           ("C-n" . next-line)
+           ("C-p" . previous-line))
+
+    :init
+    (setq org-agenda-files '("~/todo.org"
+                             "~/todo-personal.org")
+          org-agenda-ndays 7
+          org-deadline-warning-days 14
+          org-agenda-show-all-dates t
+          org-agenda-skip-deadline-if-done t
+          org-agenda-skip-scheduled-if-done t
+          org-agenda-start-on-weekday nil
+          org-reverse-note-order t
+
+          ;; Control how teh Agenda view sorts tasks
+          org-agenda-sorting-strategy
+          '((agenda
+             habit-down
+             priority-down
+             alpha-up
+             time-up
+             category-keep)
+            (todo
+             priority-down
+             category-keep)
+            (tags
+             priority-down
+             category-keep)
+            (search category-keep))
+
+
+          org-agenda-custom-commands
+          '(("b" "Backlog items" todo "BACKLOG")
+            ("a" "Agenda" agenda ""
+             ((org-agenda-skip-function
+               (lambda nil
+                 (org-agenda-skip-entry-if 'todo '("BACKLOG"))))
+              (org-agenda-ndays 7)))
+            ("A" "Agenda (with backlog)" agenda ""
+             ((org-agenda-skip-function
+               (lambda nil
+                 (org-agenda-skip-entry-if 'notregexp "\\=.*\\[#A\\]")))
+              (org-agenda-ndays 1)
+              (org-agenda-overriding-header "Today's Priority #A tasks: ")))
+            ("w" todo "WAITING" nil)
+            ("W" agenda ""
+             ((org-agenda-ndays 21)))
+
+            ("u" alltodo ""
+             ((org-agenda-skip-function
+               (lambda nil
+                 (org-agenda-skip-entry-if 'scheduled
+                                           'deadline
+                                           'regexp "\n]+>")))
+              (org-agenda-overriding-header "Unscheduled TODO entries: ")))))
+
+    :config
+    (progn
+      (pg-diminish-major org-agenda-mode "")))
+#+END_SRC
+
+*** Contacts
+
+#+BEGIN_SRC emacs-lisp
+  (use-package org-contacts
+    :bind (("C-c ?" . org-contacts)
+           ("s-/"   . org-contacts))
+
+    :init
+    (setq org-contacts-files "~/contacts.org"
+          org-contacts-icon-use-gravatar nil))
+#+END_SRC
+
+*** Capture
+
+Configuration for [[http://orgmode.org/manual/Capture.html][org-capture]] (formerly =org-remember=).
+
+#+BEGIN_SRC emacs-lisp
+  (use-package org-capture
+    :bind ("s-r" . org-capture)
+
+    :init
+    (setq org-capture-templates
+          `(("t" "TODO" entry (file+headline "~/todo.org" "Tasks")
+             "* TODO %?\n  %u" :prepend t)
+            ("T" "TODO (personal)" entry (file+headline
+                                          "~/todo-personal.org" "Tasks")
+             "* TODO %?\n  %u" :prepend t)
+            ("n" "Notes" entry (file+headline "~/notes.org" "Notes")
+             "* %u %?" :prepend t)
+            ("c" "Contacts" entry (file+headline "~/contacts.org" "New Contacts")
+             ,(concat "* %(org-contacts-template-name)\n"
+                      ":PROPERTIES:\n"
+                      ":EMAIL: %(org-contacts-template-email)\n"
+                      ":END:\n")))))
+#+END_SRC
+
+*** Indent
+
+#+BEGIN_SRC emacs-lisp
+  (use-package org-indent :diminish org-indent-mode)
+#+END_SRC
+
+
+
+
 ** Text processing
 
 *** Plain Text (=.txt=)
