@@ -726,6 +726,43 @@ Cycle through compilation buffer-naming strategies (currently the default–reus
 
 
 
+*** Managing projects (=projectile=)
+
+The killer feature that made me first use [[https://github.com/bbatsov/projectile][Projectile]] was finding files in Java projects, but now I think it's best feature is switching quickly between different contexts. It helps you find files, obviously; it keeps track of project buffers so you can quickly kill them all off or search through them; and it gives you an anchor from which you can start subprocesses (e.g., shells).
+
+#+BEGIN_SRC emacs-lisp
+  (use-package projectile
+    :ensure t
+    :diminish projectile-mode
+    :init
+    (progn
+      (setq projectile-enable-caching t)
+      ;; projectile native indexing is slower, but more reliable imo
+      (setq projectile-indexing-method 'native))
+    :config
+    (progn
+      (projectile-global-mode 1)
+
+      (use-package helm-projectile
+        :ensure t
+        :init (setq projectile-switch-project-action 'helm-projectile))
+      (helm-projectile-on)
+
+      (defun pg/projectile-temporary-shell-in-project ()
+        (interactive)
+        (let ((root (projectile-project-root)))
+          (pg/make-or-destroy-temporary-shell root root)))
+      (define-key projectile-command-map (kbd "1")
+        'pg/projectile-temporary-shell-in-project)
+
+      (defun pg/projectile-eshell-in-project ()
+        (interactive)
+        (helm-projectile-switch-to-eshell (projectile-project-root)))
+      (define-key projectile-command-map (kbd "`")
+        'pg/projectile-eshell-in-project)))
+#+END_SRC
+
+
 *** Languages
 
 **** Lisps
