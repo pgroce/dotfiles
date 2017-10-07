@@ -713,6 +713,65 @@ Cycle through compilation buffer-naming strategies (currently the default–reus
   (use-package pg-compile-buffers :ensure t)
 #+END_SRC
 
+*** Auto-completion
+
+[[http://company-mode.github.io/][Company mode]] is great. Mostly it's used by other things, so I don't have to configure or enable it, just make sure it's available. (I don't like seeing take up space in the modeline, though, so diminish it to nothing.)
+
+#+BEGIN_SRC emacs-lisp
+  (use-package company
+    :ensure t
+    :commands company-mode
+    :diminish "")
+#+END_SRC
+
+
+
+*** Languages
+
+**** Lisps
+
+Show matching parentheses.
+
+#+BEGIN_SRC emacs-lisp
+  (show-paren-mode 1)
+#+END_SRC
+
+***** =paredit=
+
+[[http://www.emacswiki.org/emacs/ParEdit][Semantic editing for lisp]].
+
+
+#+BEGIN_SRC emacs-lisp
+  (use-package paredit
+    :ensure t
+    :commands paredit-mode
+    :init
+    (progn
+      (global-set-key (kbd "M-[") 'backward-sexp)
+      (global-set-key (kbd "M-]") 'forward-sexp))
+    :config (diminish 'paredit-mode " ()"))
+#+END_SRC
+
+
+***** Emacs Lisp
+
+Turn on =auto-completion=, =eldoc= and =paredit=.
+
+#+BEGIN_SRC emacs-lisp
+  (use-package lisp-mode
+    :init
+    (progn
+      (add-hook
+       'emacs-lisp-mode-hook
+       '(lambda ()
+          (company-mode)
+          (eldoc-mode)
+          (paredit-mode)))
+      (pg/diminish-major emacs-lisp-mode "elisp")))
+#+END_SRC
+
+
+
 * Customizing platforms
 
 ** OS X
