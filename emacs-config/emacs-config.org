@@ -619,10 +619,10 @@ Configuration for [[http://orgmode.org/manual/Capture.html][org-capture]] (forme
                                (visual-line-mode)
                                (flyspell-mode))))
 
-  (pg-ibuffer '("default" (("text" . (or
-                                      (mode . text-mode)
-                                      (mode . fundamental-mode)
-                                      (mode . visual-line-mode))))))
+  (pg-ibuffer '("default" (("text" (or
+                                    (mode . text-mode)
+                                    (mode . fundamental-mode)
+                                    (mode . visual-line-mode))))))
 
 #+END_SRC
 
@@ -760,7 +760,15 @@ Tweak Emacs' compilation support to be more needs-suiting.
     :diminish "")
 #+END_SRC
 
+*** =magit=
 
+Configure magit, the best Git UI ever.
+
+#+BEGIN_SRC emacs-lisp
+  (use-package magit :ensure t
+    :config
+      (pg-ibuffer '("default" (("magit" (mode . magit-mode)))))))
+#+END_SRC
 
 *** Search
 
