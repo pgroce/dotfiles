@@ -491,7 +491,7 @@ This section contains my core org-mode configuration. There may be additional co
                            (visual-line-mode)))
     :config
     (progn
-      (pg-diminish-major org-mode "")
+      (pg-util-diminish-major org-mode "")
       ;; TODO: Is this necessary?
       (add-hook 'org-mode-hook 'turn-on-font-lock)))
 #+END_SRC
@@ -565,7 +565,7 @@ A few of the variables configured here really live in =org.el=, but they're rele
 
     :config
     (progn
-      (pg-diminish-major org-agenda-mode "")))
+      (pg-util-diminish-major org-agenda-mode "")))
 #+END_SRC
 
 *** Contacts
