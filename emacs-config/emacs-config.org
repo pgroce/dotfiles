@@ -724,7 +724,6 @@ Cycle through compilation buffer-naming strategies (currently the default–reus
     :diminish "")
 #+END_SRC
 
-**** =magit=
 *** =magit=
 
 Configure magit, the best Git UI ever.
