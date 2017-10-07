@@ -713,7 +713,7 @@ Cycle through compilation buffer-naming strategies (currently the default–reus
   (use-package pg-compile-buffers :ensure t)
 #+END_SRC
 
-*** Auto-completion
+*** Auto-completion (=company=)
 
 [[http://company-mode.github.io/][Company mode]] is great. Mostly it's used by other things, so I don't have to configure or enable it, just make sure it's available. (I don't like seeing take up space in the modeline, though, so diminish it to nothing.)
 
