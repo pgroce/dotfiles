@@ -724,7 +724,6 @@ That doesn't mean I want it in the mode line, though. :)
     :diminish eldoc-mode)
 #+END_SRC
 
-
 *** Compilation buffers
 
 Tweak Emacs' compilation support to be more needs-suiting.
