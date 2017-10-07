@@ -456,15 +456,14 @@ These changes apply to every terminal-based Emacs I care about.
 
 ** Org mode
 
-
 [[http://orgmode.org][Org mode]] isn't a specific workflow, but it supports organization, note taking, and literate programming, which I use in many other workflows.
 
 This section contains my core org-mode configuration. There may be additional configuration in subsequent sections (e.g., registering languages with [[http://orgmode.org/worg/org-contrib/babel/][Babel]]).
 
 #+BEGIN_SRC emacs-lisp
   (use-package org
-    :bind (("s-l"   . org-store-link)
-           ("C-c l" . org-store-link))
+    :bind (("s-o l"   . org-store-link)
+           ("s-o RET" . org-open-at-point))
 
     :init
     (setq
@@ -481,10 +480,7 @@ This section contains my core org-mode configuration. There may be additional co
      ;; Log all my notes, clock time, etc. related to an item into a
      ;; drawer named LOGBOOK, so it can be collapsed and doesn't clutter
      ;; up the display.
-     org-log-into-drawer "LOGBOOK"
-
-
-     )
+     org-log-into-drawer "LOGBOOK")
 
     :mode ("\\.org\\'" . (lambda ()
                            (org-mode)
