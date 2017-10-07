@@ -699,18 +699,55 @@ Make =ibuffer= TeX-aware.
 
 ** Programming
 
-*** Compilation buffers
+*** Documentation
 
-If I click on an error in =*compilation*= and the file is already open in a frame, don't re-open it in a new frame.
+**** Man (=man-file=)
+
+For whenever you want to view a =troff='ed file without installing it into the Man DB.
 
 #+BEGIN_SRC emacs-lisp
-  (setq display-buffer-reuse-frames t)
+  (defun pg-man-file (file)
+    "Directly view a man page file that isn't in the man hierarchy."
+    (interactive "fFile: ")
+    (man (expand-file-name file)))
+  (defalias 'man-file 'pg-man-file)
 #+END_SRC
 
-Cycle through compilation buffer-naming strategies (currently the default–reuse =*compilation*= everywhere–and creating one compile buffer per buffer in which =compile= was invoked.
+**** Documentation at point (=eldoc=)
+
+Specific languages have their own documentation facilities, but =eldoc= provides documentation for many languages.
+
+That doesn't mean I want it in the mode line, though. :)
 
 #+BEGIN_SRC emacs-lisp
-  (use-package pg-compile-buffers :ensure t)
+  (use-package eldoc
+    :diminish eldoc-mode)
+#+END_SRC
+
+
+*** Compilation buffers
+
+Tweak Emacs' compilation support to be more needs-suiting.
+
+#+BEGIN_SRC emacs-lisp
+  ;;; Let compilation buffers show colors where possible
+  (use-package compile
+    :init
+    (progn
+      ;; If I click on an error in =*compilation*= and the file is
+      ;; already open in a frame, don't re-open it in a new frame.
+      (setq display-buffer-reuse-frames t)
+      ;; Cycle through compilation buffer-naming strategies (currently
+      ;; the default–reuse =*compilation*= everywhere–and creating one
+      ;; compile buffer per buffer in which =compile= was invoked.
+      (use-package pg-compile-buffers :ensure t)
+      ;; Let compilation buffers show colors where possible
+      (add-hook 'compilation-filter-hook
+                (lambda ()
+                  (require 'ansi-color)
+                  (toggle-read-only)
+                  (ansi-color-apply-on-region compilation-filter-start (point))
+                  (toggle-read-only)))))
 #+END_SRC
 
 *** Auto-completion (=company=)
@@ -723,6 +760,37 @@ Cycle through compilation buffer-naming strategies (currently the default–reus
     :commands company-mode
     :diminish "")
 #+END_SRC
+
+
+
+*** Search
+
+**** =ag=
+
+[[https://github.com/ggreer/the_silver_searcher][The Silver Searcher]] (command name: =ag=) is a text search tool optimized for source code and software projects.
+
+You'll also need to have The Silver Searcher installed for this to run.
+
+#+BEGIN_SRC emacs-lisp
+  (if (= 0 (shell-command "which ag"))
+      (use-package ag
+        :ensure t
+        :config (use-package helm-ag :defer t :ensure t))
+    (message "Pro-tip: Install the Silver Searcher (https://github.com/ggreer/the_silver_searcher> for a better code search experience."))
+#+END_SRC
+
+**** =re-builder=
+
+[[http://www.masteringemacs.org/articles/2011/04/12/re-builder-interactive-regexp-builder/][re-builder]] is a visual way to verify that you're writing the right regex. I use it whenever I'm building a complicated regular expression.
+
+I set the default output syntax for re-builder to =string= instead of =read= so I don't have to backslash-escape every damn thing.
+
+#+begin_src emacs-lisp
+  (use-package re-builder
+    :ensure t
+    :config (setq reb-re-syntax 'string))
+#+end_src
+
 
 
 
