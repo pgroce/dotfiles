@@ -43,8 +43,9 @@ I use these packages in lots of places in the configuration, so load them now.
 Load the output of Emacs' [[http://www.gnu.org/software/emacs/manual/html_node/emacs/Easy-Customization.html][customization]] facility in a sidecar file. I prefer to manually maintain all my configuration, but for some packages it's easier to use =customize= and adapt its output into my config than it is to understand the docs. :/
 
 #+BEGIN_SRC emacs-lisp
-  (setq custom-file (expand-file-name "~/.emacs.d/emacs-customize.el"))
-  (if (file-exists-p custom-file) (load custom-file))
+  (setq custom-file (expand-file-name "emacs-customize.el") ecfw-config-dir)
+  (when (file-exists-p custom-file)
+    (load custom-file))
 #+END_SRC
 
 
