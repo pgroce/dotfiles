@@ -701,21 +701,57 @@ Make =ibuffer= TeX-aware.
 
 ** Programming
 
+*** Documentation
+
+**** Man (=man-file=)
+
+For whenever you want to view a =troff='ed file without installing it into the Man DB.
+
+#+BEGIN_SRC emacs-lisp
+  (defun pg-man-file (file)
+    "Directly view a man page file that isn't in the man hierarchy."
+    (interactive "fFile: ")
+    (man (expand-file-name file)))
+  (defalias 'man-file 'pg-man-file)
+#+END_SRC
+
+**** Documentation at point (=eldoc=)
+
+Specific languages have their own documentation facilities, but =eldoc= provides documentation for many languages.
+
+That doesn't mean I want it in the mode line, though. :)
+
+#+BEGIN_SRC emacs-lisp
+  (use-package eldoc
+    :diminish eldoc-mode)
+#+END_SRC
+
 *** Compilation buffers
 
-If I click on an error in =*compilation*= and the file is already open in a frame, don't re-open it in a new frame.
+Tweak Emacs' compilation support to be more needs-suiting.
 
 #+BEGIN_SRC emacs-lisp
-  (setq display-buffer-reuse-frames t)
+  ;;; Let compilation buffers show colors where possible
+  (use-package compile
+    :init
+    (progn
+      ;; If I click on an error in =*compilation*= and the file is
+      ;; already open in a frame, don't re-open it in a new frame.
+      (setq display-buffer-reuse-frames t)
+      ;; Cycle through compilation buffer-naming strategies (currently
+      ;; the default–reuse =*compilation*= everywhere–and creating one
+      ;; compile buffer per buffer in which =compile= was invoked.
+      (use-package pg-compile-buffers :ensure t)
+      ;; Let compilation buffers show colors where possible
+      (add-hook 'compilation-filter-hook
+                (lambda ()
+                  (require 'ansi-color)
+                  (toggle-read-only)
+                  (ansi-color-apply-on-region compilation-filter-start (point))
+                  (toggle-read-only)))))
 #+END_SRC
 
-Cycle through compilation buffer-naming strategies (currently the default–reuse =*compilation*= everywhere–and creating one compile buffer per buffer in which =compile= was invoked.
-
-#+BEGIN_SRC emacs-lisp
-  (use-package pg-compile-buffers :ensure t)
-#+END_SRC
-
-*** Auto-completion
+*** Auto-completion (=company=)
 
 [[http://company-mode.github.io/][Company mode]] is great. Mostly it's used by other things, so I don't have to configure or enable it, just make sure it's available. (I don't like seeing take up space in the modeline, though, so diminish it to nothing.)
 
@@ -735,6 +771,74 @@ Configure magit, the best Git UI ever.
     :config
       (pg-ibuffer '("default" (("magit" (mode . magit-mode))))))
 #+END_SRC
+
+*** Search
+
+**** =ag=
+
+[[https://github.com/ggreer/the_silver_searcher][The Silver Searcher]] (command name: =ag=) is a text search tool optimized for source code and software projects.
+
+You'll also need to have The Silver Searcher installed for this to run.
+
+#+BEGIN_SRC emacs-lisp
+  (if (= 0 (shell-command "which ag"))
+      (use-package ag
+        :ensure t
+        :config (use-package helm-ag :defer t :ensure t))
+    (message "Pro-tip: Install the Silver Searcher (https://github.com/ggreer/the_silver_searcher> for a better code search experience."))
+#+END_SRC
+
+**** =re-builder=
+
+[[http://www.masteringemacs.org/articles/2011/04/12/re-builder-interactive-regexp-builder/][re-builder]] is a visual way to verify that you're writing the right regex. I use it whenever I'm building a complicated regular expression.
+
+I set the default output syntax for re-builder to =string= instead of =read= so I don't have to backslash-escape every damn thing.
+
+#+begin_src emacs-lisp
+  (use-package re-builder
+    :ensure t
+    :config (setq reb-re-syntax 'string))
+#+end_src
+
+
+
+
+*** Managing projects (=projectile=)
+
+The killer feature that made me first use [[https://github.com/bbatsov/projectile][Projectile]] was finding files in Java projects, but now I think it's best feature is switching quickly between different contexts. It helps you find files, obviously; it keeps track of project buffers so you can quickly kill them all off or search through them; and it gives you an anchor from which you can start subprocesses (e.g., shells).
+
+#+BEGIN_SRC emacs-lisp
+  (use-package projectile
+    :ensure t
+    :diminish projectile-mode
+    :init
+    (progn
+      (setq projectile-enable-caching t)
+      ;; projectile native indexing is slower, but more reliable imo
+      (setq projectile-indexing-method 'native))
+    :config
+    (progn
+      (projectile-global-mode 1)
+
+      (use-package helm-projectile
+        :ensure t
+        :init (setq projectile-switch-project-action 'helm-projectile))
+      (helm-projectile-on)
+
+      (defun pg/projectile-temporary-shell-in-project ()
+        (interactive)
+        (let ((root (projectile-project-root)))
+          (pg/make-or-destroy-temporary-shell root root)))
+      (define-key projectile-command-map (kbd "1")
+        'pg/projectile-temporary-shell-in-project)
+
+      (defun pg/projectile-eshell-in-project ()
+        (interactive)
+        (helm-projectile-switch-to-eshell (projectile-project-root)))
+      (define-key projectile-command-map (kbd "`")
+        'pg/projectile-eshell-in-project)))
+#+END_SRC
+
 
 *** Languages
 
