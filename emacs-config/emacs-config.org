@@ -104,7 +104,7 @@ Bury buffers and delete the window they're in. Default behavior from some transi
     (bury-buffer)
     (delete-window))
 
-  (bind-key "s-Q" #'pg/bury-buffer-delete-window)
+  (bind-key "s-Q" #'pg-bury-buffer-delete-window)
 #+END_SRC
 
 ***  =ibuffer=
@@ -951,7 +951,7 @@ To get the full benefit of this configuration, you'll want to install the follow
       ;;; Treat PSP files as regular HTML, not Python
       (add-to-list 'auto-mode-alist '("\\.psp$" . html-mode))
 
-      (pg/diminish-major python-mode "py")
+      (pg-diminish-major python-mode "py")
       (setq python-fill-docstring-style 'symmetric)))
 #+END_SRC
 
@@ -1030,7 +1030,7 @@ I learned my =next-error= and =previous-error= keybinds from Elpy, so use those.
     :interpreter "node"
     :bind (("C-c n" . next-error)
            ("C-c p" . previous-error))
-    :config (pg/diminish-major js2-mode "js2"))
+    :config (pg-diminish-major js2-mode "js2"))
 #+END_SRC
 
 
