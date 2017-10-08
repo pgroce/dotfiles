@@ -943,8 +943,8 @@ To get the full benefit of this configuration, you'll want to install the follow
     :init
     (progn
       ;;; Ignore byte-compiled files when doing filename completion
-      (add-unique 'completion-ignored-extensions
-                  '(".pyc" ".pyo"))
+      (pg-util-list-add-unique-var 'completion-ignored-extensions
+                                   '(".pyc" ".pyo"))
 
       ;;; Treat PSP files as regular HTML, not Python
       (add-to-list 'auto-mode-alist '("\\.psp$" . html-mode))
