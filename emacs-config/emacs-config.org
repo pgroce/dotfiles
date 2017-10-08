@@ -1017,6 +1017,22 @@ I'd love to wrap this in a =use-package= stanza, but so far that's defeated me.
          interpreter-mode-alist))
 #+end_src
 
+**** Javascript
+
+Use [[https://github.com/mooz/js2-mode][js2-mode]] rather than the built-in =js-mode= for JavaScript.
+
+I learned my =next-error= and =previous-error= keybinds from Elpy, so use those.
+
+#+BEGIN_SRC emacs-lisp
+  (use-package js2-mode
+    :ensure t
+    :mode "\\.js$"
+    :interpreter "node"
+    :bind (("C-c n" . next-error)
+           ("C-c p" . previous-error))
+    :config (pg/diminish-major js2-mode "js2"))
+#+END_SRC
+
 
 * Customizing platforms
 
