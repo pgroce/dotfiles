@@ -935,8 +935,8 @@ To get the full benefit of this configuration, you'll want to install the follow
 (There will be additional requirement associated with Elpy, below.
 
 #+BEGIN_SRC emacs-lisp
-  (use-package python-pylint :ensure t)
   (use-package py-autopep8 :ensure t)
+  (use-package pylint :ensure t)
   (use-package pyvenv :ensure t)
 
   (use-package python
