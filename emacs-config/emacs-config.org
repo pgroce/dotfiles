@@ -99,7 +99,7 @@ Bury buffers easily.
 Bury buffers and delete the window they're in. Default behavior from some transient-window-generating modes, but not others. And sometimes you're just done with a window split, darn it.
 
 #+BEGIN_SRC emacs-lisp
-  (defun pg/bury-buffer-delete-window ()
+  (defun pg-bury-buffer-delete-window ()
     (interactive)
     (bury-buffer)
     (delete-window))
