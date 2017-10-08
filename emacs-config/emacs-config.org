@@ -777,7 +777,7 @@ Turn on =auto-completion=, =eldoc= and =paredit=.
           (company-mode)
           (eldoc-mode)
           (paredit-mode)))
-      (pg/diminish-major emacs-lisp-mode "elisp")))
+      (pg-diminish-major emacs-lisp-mode "elisp")))
 #+END_SRC
 
 
