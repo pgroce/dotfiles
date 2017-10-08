@@ -113,8 +113,6 @@ Tweaks to =ibuffer=:
 
  * Add divisions to =ibuffer-saved-filter-groups= that won't be added elsewhere
 
-=ibuffer-saved-filter-groups= subdivides the =ibuffer= display nicely, but it presents some problems. Notably, it might be nice to conditionally add filtering groups to the display depending on what's loaded. The =pg/add-qualifier-to-ibuffer-filter-group= function allows us to do just that in the custom files. (=temp-shell= and =remote-term= are the names of buffers I create using the functions in [[Temorary Shell]] and [[Remote terminal]].)
-
 =ibuffer-ediff-marked-files= h/t [[http://curiousprogrammer.wordpress.com/2009/04/02/ibuffer/][A Curious Programmer]].
 
 
