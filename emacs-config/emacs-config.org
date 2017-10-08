@@ -761,6 +761,18 @@ Tweak Emacs' compilation support to be more needs-suiting.
                   (toggle-read-only)))))
 #+END_SRC
 
+*** Debugging
+
+Some tweaks for the debugger.
+
+#+begin_src emacs-lisp
+  (use-package gud
+    :ensure t
+    :config
+    (setq gdb-many-windows t
+          gud-gdb-command-name "gdb --annotate=1"))
+#+end_src
+
 *** Auto-completion (=company=)
 
 [[http://company-mode.github.io/][Company mode]] is great. Mostly it's used by other things, so I don't have to configure or enable it, just make sure it's available. (I don't like seeing take up space in the modeline, though, so diminish it to nothing.)
