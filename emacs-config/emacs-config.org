@@ -462,8 +462,8 @@ This section contains my core org-mode configuration. There may be additional co
 
 #+BEGIN_SRC emacs-lisp
   (use-package org
-    :bind (("s-o l"   . org-store-link)
-           ("s-o RET" . org-open-at-point))
+    :bind (("C-c l"   . org-store-link)
+           ("C-c RET" . org-open-at-point))
 
     :init
     (progn
