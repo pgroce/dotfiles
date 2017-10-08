@@ -949,7 +949,7 @@ To get the full benefit of this configuration, you'll want to install the follow
       ;;; Treat PSP files as regular HTML, not Python
       (add-to-list 'auto-mode-alist '("\\.psp$" . html-mode))
 
-      (pg-diminish-major python-mode "py")
+      (pg-util-diminish-major python-mode "py")
       (setq python-fill-docstring-style 'symmetric)))
 #+END_SRC
 
