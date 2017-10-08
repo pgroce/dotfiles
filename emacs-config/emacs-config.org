@@ -924,8 +924,98 @@ Turn on =auto-completion=, =eldoc= and +=paredit=+ =smartparens=.
       (pg-util-diminish-major emacs-lisp-mode "elisp")))
 #+END_SRC
 
+**** Python
+Python configuration is a little tricky; full functionality  depends on a lot of external tools, many of which are written in Python, so can (should) be installed in a virtual environment rather than in one canonical place in the system.
+
+To get the full benefit of this configuration, you'll want to install the following in your virtualenv:
+
+#+BEGIN_SRC sh :tangle no
+  pip install jedi
+  pip install flake8
+#+END_SRC
+
+(There will be additional requirement associated with Elpy, below.
+
+#+BEGIN_SRC emacs-lisp
+  (use-package python-pep8 :ensure t)
+  (use-package python-pylint :ensure t)
+  (use-package pyvenv :ensure t)
+
+  (use-package python
+    :init
+    (progn
+      ;;; Ignore byte-compiled files when doing filename completion
+      (add-unique 'completion-ignored-extensions
+                  '(".pyc" ".pyo"))
+
+      ;;; Treat PSP files as regular HTML, not Python
+      (add-to-list 'auto-mode-alist '("\\.psp$" . html-mode))
+
+      (pg/diminish-major python-mode "py")
+      (setq python-fill-docstring-style 'symmetric)))
+#+END_SRC
+
+***** Elpy
+
+[[https://github.com/jorgenschaefer/elpy][Elpy]] provides IDE feature with the help of a subprocess running Python. For full benefit, install the following modules into your environment (in addition to those in [[Python]] above.
+
+#+BEGIN_SRC sh :tangle no
+  pip install importmagic
+  pip install autopep8
+  pip install yapf
+#+END_SRC
+
+Remove =yasnippet= from elpy-modules because screw =yasnippet=.
+
+#+BEGIN_SRC emacs-lisp
+  (use-package elpy
+    :ensure t
+    :commands elpy-enable
+    :init
+    (setq elpy-rpc-backend "jedi")
+    :config
+    (progn
+      (remove-hook 'elpy-modules 'elpy-module-yasnippet)))
+
+#+END_SRC
+
+Elpy is complicated and has, in the past, been kind of janky. If it's undesirable to use Elpy, set =pg-enable-elpy= to =nil= and Emacs will just use the normal =python-mode=.
+
+I'd love to wrap this in a =use-package= stanza, but so far that's defeated me.
+
+#+BEGIN_SRC emacs-lisp
+  (setq pg--elpy-enabled nil)
+
+  (defcustom pg-enable-elpy t
+    "Flag set when elpy should be used in this configuration.")
+
+  (defun pg-python-mode ()
+    "If it's desired and hasn't been already, call `elpy-enable'
+  before running python-mode."
 
 
+    (when (and pg-enable-elpy
+               (not pg--elpy-enabled))
+      (elpy-enable))
+    (python-mode))
+
+  ;;; python-mode is in the core image, so root out baked-in references
+  ;;; to python-mode. This is probably unnecessary, but better safe than
+  ;;; sorry.
+  (setq auto-mode-alist
+        (--filter (not (equal "\\.py\\'" (car it))) auto-mode-alist))
+  (setq interpreter-mode-alist
+        (--filter (not (equal "python[0-9.]*" (car it))) interpreter-mode-alist))
+
+  (setq auto-mode-alist
+        (pg-util-update-auto-mode-alist "\\.py$" 'pg-python-mode))
+
+  (setq interpreter-mode-alist
+        (pg-util-update-auto-mode-alist
+         "\\.py$"
+         'pg-python-mode
+         interpreter-mode-alist))
+#+end_src
 
 
 * Customizing platforms
