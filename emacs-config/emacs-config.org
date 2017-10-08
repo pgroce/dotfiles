@@ -411,9 +411,9 @@ Customize the GUI frame look and feel the way I want it.
     (show-paren-mode 1)
     (column-number-mode)
 
-    (pg-util-alist-update 'window-system-default-frame-alist
-                          '((nil (menu-bar-lines . 0)
-                                 (tool-bar-lines . 0)))))
+    (pg-util-alist-update-var 'window-system-default-frame-alist
+                              '((nil (menu-bar-lines . 0)
+                                     (tool-bar-lines . 0)))))
 #+end_src
 
 *** Navigation
@@ -777,7 +777,7 @@ Turn on =auto-completion=, =eldoc= and =paredit=.
           (company-mode)
           (eldoc-mode)
           (paredit-mode)))
-      (pg-diminish-major emacs-lisp-mode "elisp")))
+      (pg-util-diminish-major emacs-lisp-mode "elisp")))
 #+END_SRC
 
 
