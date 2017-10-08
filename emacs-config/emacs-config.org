@@ -803,7 +803,7 @@ Configure magit, the best Git UI ever.
 You'll also need to have The Silver Searcher installed for this to run.
 
 #+BEGIN_SRC emacs-lisp
-  (if (= 0 (shell-command "which ag"))
+  (if (= 0 (call-process "which" nil nil nil "ag"))
       (use-package ag
         :ensure t
         :config (use-package helm-ag :defer t :ensure t))
@@ -967,7 +967,7 @@ On many Unix systems, the =locate= command will run the system =locate= command 
 OS X =ls= is not GNU, so use =gls= (the version of =ls= from GNU Coreutils) on the Mac instead of =/bin/ls=, because the GNU version supports dired better. (Make sure it's installed via MacPorts, Homebrew, etc.)
 
 #+BEGIN_SRC emacs-lisp
-  (if (= 0 (shell-command "which gls"))
+  (if (= 0 (call-process "which" nil nil nil "gls"))
       (setq insert-directory-program "gls")
     (message "Pro-tip: Install 'gls' ('brew install coreutils') for a better dired experience."))
 #+END_SRC
@@ -1091,7 +1091,7 @@ The mouse wheel setup will get clobbered when using a daemon, due to the differe
 ** =pdf-tools=
 
 #+BEGIN_SRC emacs-lisp :tangle darwin.el
-  (if (= 0 (shell-command "which epdfinfo"))
+  (if (= 0 (call-process "which" nil nil nil "epdfinfo"))
       (use-package pdf-tools :ensure t)
     (message "Pro-tip: Install pdf-tools (e.g., 'brew install pdf-tools') for better PDF experience."))
 #+END_SRC
