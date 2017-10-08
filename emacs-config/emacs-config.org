@@ -709,7 +709,7 @@ Make =ibuffer= TeX-aware.
 
 
 
-** Programming
+** Programming and Software Development
 
 *** Documentation
 
@@ -772,7 +772,7 @@ Tweak Emacs' compilation support to be more needs-suiting.
     :diminish "")
 #+END_SRC
 
-*** =magit=
+*** Version control (=magit=)
 
 Configure magit, the best Git UI ever.
 
@@ -898,7 +898,7 @@ Turn on =auto-completion=, =eldoc= and =paredit=.
 
 * Customizing platforms
 
-** OS X
+** OS X (=darwin=)
 
 Everything in this section goes in =darwin.el= and gets executed only on OS X systems.
 
