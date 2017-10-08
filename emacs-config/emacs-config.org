@@ -225,17 +225,27 @@ Lots of tweaks to =dired=:
     :defer t
     :ensure t
     :diminish helm-mode
-    :init (use-package helm-swoop
-            :bind ("M-1" . helm-swoop))
-    :config
+    :bind (("M-x" . helm-M-x)
+           ("C-x C-f" . helm-find-files)
+           ("C-x b" . helm-buffers-list)
+           ("M-y" . helm-show-kill-ring)
+           ("C-h a" . helm-apropos)
+           :map helm-map
+           ("<tab>" . helm-execute-persistent-action)
+           ("C-i"   . helm-execute-persistent-action)
+           ("C-z"   . helm-select-action)
+           )
+    :init
     (progn
-      (require 'helm-config)
-      (bind-key "<tab" #'helm-execute-persistent-action helm-map)
-      (bind-key "C-i" #'helm-execute-persistent-action helm-map)
-      (bind-key "C-z" #'helm-select-action helm-map)
-      (bind-key "M-x" #'helm-M-x)
-      (bind-key "C-x C-f" #'helm-find-files)
-      (helm-mode 1)))
+      (helm-mode 1)
+
+      (use-package helm-swoop
+        :ensure t
+        :bind ("M-1" . helm-swoop))
+
+      (use-package helm-descbinds
+        :ensure t
+        :bind ("C-h b" . helm-descbinds))))
 #+END_SRC
 
 
