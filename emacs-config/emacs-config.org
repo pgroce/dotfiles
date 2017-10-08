@@ -907,22 +907,6 @@ Show matching parentheses.
   (show-paren-mode 1)
 #+END_SRC
 
-***** =paredit=
-
-[[http://www.emacswiki.org/emacs/ParEdit][Semantic editing for lisp]]. Disabling it as I play with [[https://github.com/Fuco1/smartparens][smartparens]].
-
-#+BEGIN_SRC emacs-lisp
-  (use-package paredit
-    :ensure t
-    :disabled
-    :commands paredit-mode
-    :init
-    (progn
-      (global-set-key (kbd "M-[") 'backward-sexp)
-      (global-set-key (kbd "M-]") 'forward-sexp))
-    :config (diminish 'paredit-mode " ()"))
-#+END_SRC
-
 ***** Emacs Lisp
 
 Turn on =auto-completion=, =eldoc= and +=paredit=+ =smartparens=.
