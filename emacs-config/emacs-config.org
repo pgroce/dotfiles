@@ -823,6 +823,17 @@ I set the default output syntax for re-builder to =string= instead of =read= so 
 #+end_src
 
 
+*** Semantic editing (=smartparens=)
+
+[[https://github.com/Fuco1/smartparens][Semantic editing]] for lisp and other text formats structured with matching delimiters. (They actually use the Github wiki for documentation.)
+
+#+BEGIN_SRC emacs-lisp
+  (use-package smartparens
+    :ensure t
+    :config (smartparens-global-strict-mode 1))
+#+END_SRC
+
+
 
 
 *** Managing projects (=projectile=)
@@ -874,12 +885,12 @@ Show matching parentheses.
 
 ***** =paredit=
 
-[[http://www.emacswiki.org/emacs/ParEdit][Semantic editing for lisp]].
-
+[[http://www.emacswiki.org/emacs/ParEdit][Semantic editing for lisp]]. Disabling it as I play with [[https://github.com/Fuco1/smartparens][smartparens]].
 
 #+BEGIN_SRC emacs-lisp
   (use-package paredit
     :ensure t
+    :disabled
     :commands paredit-mode
     :init
     (progn
@@ -888,10 +899,9 @@ Show matching parentheses.
     :config (diminish 'paredit-mode " ()"))
 #+END_SRC
 
-
 ***** Emacs Lisp
 
-Turn on =auto-completion=, =eldoc= and =paredit=.
+Turn on =auto-completion=, =eldoc= and +=paredit=+ =smartparens=.
 
 #+BEGIN_SRC emacs-lisp
   (use-package lisp-mode
@@ -902,9 +912,11 @@ Turn on =auto-completion=, =eldoc= and =paredit=.
        '(lambda ()
           (company-mode)
           (eldoc-mode)
-          (paredit-mode)))
+          (smartparens-mode)))
       (pg-util-diminish-major emacs-lisp-mode "elisp")))
 #+END_SRC
+
+
 
 
 
