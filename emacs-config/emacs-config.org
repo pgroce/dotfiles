@@ -731,7 +731,7 @@ Configure magit, the best Git UI ever.
 #+BEGIN_SRC emacs-lisp
   (use-package magit :ensure t
     :config
-      (pg-ibuffer '("default" (("magit" (mode . magit-mode)))))))
+      (pg-ibuffer '("default" (("magit" (mode . magit-mode))))))
 #+END_SRC
 
 *** Languages
