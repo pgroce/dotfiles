@@ -466,25 +466,27 @@ This section contains my core org-mode configuration. There may be additional co
            ("s-o RET" . org-open-at-point))
 
     :init
-    (setq
-     org-hide-leading-stars t
-     org-fast-tag-selection-single-key 'expert
+    (progn
+      (setq
+       org-hide-leading-stars t
+       org-fast-tag-selection-single-key 'expert
 
-     org-default-notes-file "~/notes.org"
+       org-default-notes-file "~/notes.org"
 
-     ;; Allow org-mode to refile deeper in the tree
-     org-refile-targets '((nil :maxlevel . 2))
-     org-refile-use-outline-path t
-     org-outline-path-complete-in-steps nil
+       ;; Allow org-mode to refile deeper in the tree
+       org-refile-targets '((nil :maxlevel . 2))
+       org-refile-use-outline-path t
+       org-outline-path-complete-in-steps nil
 
-     ;; Log all my notes, clock time, etc. related to an item into a
-     ;; drawer named LOGBOOK, so it can be collapsed and doesn't clutter
-     ;; up the display.
-     org-log-into-drawer "LOGBOOK")
+       ;; Log all my notes, clock time, etc. related to an item into a
+       ;; drawer named LOGBOOK, so it can be collapsed and doesn't clutter
+       ;; up the display.
+       org-log-into-drawer "LOGBOOK")
 
-    :mode ("\\.org\\'" . (lambda ()
-                           (org-mode)
-                           (visual-line-mode)))
+      (add-to-list 'auto-mode-alist
+                   '("\\.org\\'" . (lambda ()
+                                     (org-mode)
+                                     (visual-line-mode)))))
     :config
     (progn
       (pg-util-diminish-major org-mode "")
