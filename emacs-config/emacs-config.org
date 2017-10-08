@@ -873,8 +873,30 @@ The killer feature that made me first use [[https://github.com/bbatsov/projectil
 #+END_SRC
 
 
-*** Languages
+*** Virtualization
+**** Vagrant
 
+[[https://www.vagrantup.com/][Vagrant]] is cool. =vagrant-tramp= provides a TRAMP method for editing files in a Vagrant machine and lets you log in to Vagrant machines from Emacs.
+
+#+BEGIN_SRC emacs-lisp
+  (use-package vagrant-tramp
+    :ensure t)
+#+END_SRC
+
+**** Docker
+[[https://www.docker.com/][Docker]] is cool. [[https://github.com/spotify/dockerfile-mode][dockerfile-mode]] provides syntax highlighting for Docker files. [[https://github.com/Silex/docker.el][docker.el]] lets you manage Docker containers from Emacs.
+
+#+BEGIN_SRC emacs-lisp
+  (use-package dockerfile-mode
+    :ensure t
+    :mode "Dockerfile\\'")
+  (use-package docker
+    :ensure t
+    :bind-keymap ("C-c d" . docker-command-map))
+#+END_SRC
+
+
+*** Languages
 **** Lisps
 
 Show matching parentheses.
