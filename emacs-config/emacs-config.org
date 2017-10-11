@@ -734,6 +734,17 @@ That doesn't mean I want it in the mode line, though. :)
     :diminish eldoc-mode)
 #+END_SRC
 
+*** Shells
+
+Use [[https://github.com/pgroce/emacs-pkgs/blob/master/pg-sh.org][pg-sh]] to make using shells a little more pleasant.
+
+#+BEGIN_SRC emacs-lisp
+  (use-package pg-sh
+    :ensure t
+    :bind (("s-s" . pg-sh)
+           ("s-t" . pg-sh-ssh)))
+#+END_SRC
+
 *** Compilation buffers
 
 Tweak Emacs' compilation support to be more needs-suiting.
