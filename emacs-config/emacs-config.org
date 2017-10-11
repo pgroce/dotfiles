@@ -214,6 +214,23 @@ Lots of tweaks to =dired=:
       (pg-ibuffer '("default" (("dired" . (mode . dired-mode)))))))
 #+END_SRC
 
+** Remote editing (=tramp=)
+
+This bit of voodoo allows me to edit files on remote machines as =root=.
+
+#+BEGIN_SRC emacs-lisp
+  (use-package tramp
+    :init
+    (progn
+      (setq tramp-default-method "ssh")
+      ;; Allow sudo to root on remote machines
+      (setq tramp-default-proxies-alist '())
+      (add-to-list 'tramp-default-proxies-alist
+                   '(nil "\\`root\\'" "/ssh:%h:"))
+      (add-to-list 'tramp-default-proxies-alist
+                   '((regexp-quote (system-name)) nil nil))))
+#+END_SRC
+
 ** Narrowing (=helm=)
 
 [[https://github.com/emacs-helm/helm][Helm]], like =ibuffer=, is a cross-cutting concern. This is the core setup; elsewhere in the config, other packages will customize Helm to their needs.
@@ -247,6 +264,15 @@ Lots of tweaks to =dired=:
 #+END_SRC
 
 
+** Printing
+
+Some very basic printing defaults.
+
+#+begin_src emacs-lisp
+(setq ps-print-color-p 'black-white)
+(setq-default ps-default-fg "black")
+(setq-default ps-default-bg "white")
+#+end_src
 
 ** Small things
 *** =expand-region=
@@ -1206,4 +1232,29 @@ The mouse wheel setup will get clobbered when using a daemon, due to the differe
   (if (file-exists-p "/Library/TeX/texbin")
       (pg-shell-path-append "/Library/Tex/texbin")
     (message "Pro-tip: Install Tex (or MacTeX) for a better LaTeX experience"))
+#+END_SRC
+
+* Wrapup
+
+The configuration has yet to run =scratch.el=, so this isn't /final/ final, but in general this section is the last word.
+
+I normally start the Emacs server. (But don't complain if it's already running.)
+
+#+BEGIN_SRC emacs-lisp
+  (require 'warnings)
+  (add-to-list 'warning-suppress-types '(server))
+  (server-start)
+#+END_SRC
+
+Open =scratch.el=, because I always seem to be fiddling with it. Nuke the default scratch buffer, it's silly. (I ran into a problem where it was already dead by this time. I haven't looked into it yet, so in the meantime, just ignore =kill-buffer= if it complains for some reason.)
+
+#+BEGIN_SRC emacs-lisp
+  (find-file (pg/config-file "scratch.el"))
+  (condition-case nil (kill-buffer "*scratch*") nil)
+#+END_SRC
+
+Finally, open =todo.org= and start the day!
+
+#+BEGIN_SRC emacs-lisp
+  (find-file (expand-file-name "~/todo.org"))
 #+END_SRC
