@@ -851,6 +851,8 @@ I set the default output syntax for re-builder to =string= instead of =read= so 
 
 The killer feature that made me first use [[https://github.com/bbatsov/projectile][Projectile]] was finding files in Java projects, but now I think it's best feature is switching quickly between different contexts. It helps you find files, obviously; it keeps track of project buffers so you can quickly kill them all off or search through them; and it gives you an anchor from which you can start subprocesses (e.g., shells).
 
+Note the use of =pg-sh= to create a shell at the top level of the project directory.
+
 #+BEGIN_SRC emacs-lisp
   (use-package projectile
     :ensure t
@@ -869,18 +871,18 @@ The killer feature that made me first use [[https://github.com/bbatsov/projectil
         :init (setq projectile-switch-project-action 'helm-projectile))
       (helm-projectile-on)
 
-      (defun pg/projectile-temporary-shell-in-project ()
+      (defun pg-projectile-shell-in-project ()
         (interactive)
-        (let ((root (projectile-project-root)))
-          (pg/make-or-destroy-temporary-shell root root)))
-      (define-key projectile-command-map (kbd "1")
-        'pg/projectile-temporary-shell-in-project)
+        (pg-sh (projectile-project-name) (projectile-project-root)))
 
-      (defun pg/projectile-eshell-in-project ()
+      (bind-key "1" #'pg-projectile-shell-in-project projectile-command-map)
+
+
+      (defun pg-projectile-eshell-in-project ()
         (interactive)
         (helm-projectile-switch-to-eshell (projectile-project-root)))
-      (define-key projectile-command-map (kbd "`")
-        'pg/projectile-eshell-in-project)))
+
+      (bind-key "`" #'pg-projectile-eshell-in-project projectile-command-map)))
 #+END_SRC
 
 
