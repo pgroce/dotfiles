@@ -48,7 +48,7 @@ Load the output of Emacs' [[http://www.gnu.org/software/emacs/manual/html_node/e
     (load custom-file))
 #+END_SRC
 
-** =pg-if-which=
+** =pg-if-available=
 
 I do several configurations contingent on the presence of certain commands; if the command exists, I tweak something, and if it doesn't, I usually want to mention it to the user.
 
@@ -429,6 +429,12 @@ Save command history and some other variables.
   (savehist-mode 1)
 #+END_SRC
 
+Make my spelling directory =aspell= if I can
+#+BEGIN_SRC emacs-lisp
+  (pg-if-available "aspell"
+    "Install aspell for spellchecking"
+    (setq-default ispell-program-name "/usr/local/bin/aspell"))
+#+END_SRC
 
 
 * General terminal configurations
