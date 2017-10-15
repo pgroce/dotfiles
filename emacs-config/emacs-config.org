@@ -1108,7 +1108,7 @@ I don't wrap these in =pg-terminal-ns= because they're OS X-specific, not strict
 
 On many Unix systems, the =locate= command will run the system =locate= command to search a pre-compiled file database for a file. On OS X, the =mdfind= command (which searches Spotlight) has sufficiently similar syntax that it can be used instead.
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle darwin.el
   (setq locate-command "mdfind")
 #+END_SRC
 
@@ -1116,7 +1116,7 @@ On many Unix systems, the =locate= command will run the system =locate= command 
 
 OS X =ls= is not GNU, so use =gls= (the version of =ls= from GNU Coreutils) on the Mac instead of =/bin/ls=, because the GNU version supports dired better. (Make sure it's installed via MacPorts, Homebrew, etc.)
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle darwin.el
   (pg-if-available "gls"
     "Install 'gls' ('brew install coreutils') for a better dired experience."
     (setq insert-directory-program "gls"))
@@ -1128,7 +1128,7 @@ OS X =ls= is not GNU, so use =gls= (the version of =ls= from GNU Coreutils) on t
 
 OS X has horrible long temporary directory paths that sometimes exceed the lengths some applications are expecting. Just use =/tmp=
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle darwin.el
   (setenv "TMPDIR" "/tmp")
 #+END_SRC
 
@@ -1237,9 +1237,9 @@ The mouse wheel setup will get clobbered when using a daemon, due to the differe
 
 
 
-* Integrations with external tools
+*** Integrations with external tools
 
-** =pdf-tools=
+**** =pdf-tools=
 
 #+BEGIN_SRC emacs-lisp :tangle darwin.el
   (pg-if-available "epdfinfo"
@@ -1248,7 +1248,7 @@ The mouse wheel setup will get clobbered when using a daemon, due to the differe
 #+END_SRC
 
 
-** LaTeX
+**** LaTeX
 
 #+BEGIN_SRC emacs-lisp :tangle darwin.el
   (if (file-exists-p "/Library/TeX/texbin")
