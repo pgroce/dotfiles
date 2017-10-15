@@ -1230,7 +1230,7 @@ The mouse wheel setup will get clobbered when using a daemon, due to the differe
 
 #+BEGIN_SRC emacs-lisp :tangle darwin.el
   (if (file-exists-p "/Library/TeX/texbin")
-      (pg-shell-path-append "/Library/Tex/texbin")
+      (pg-shell-path-append "PATH" '("/Library/Tex/texbin"))
     (message "Pro-tip: Install Tex (or MacTeX) for a better LaTeX experience"))
 #+END_SRC
 
