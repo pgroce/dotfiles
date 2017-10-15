@@ -48,6 +48,20 @@ Load the output of Emacs' [[http://www.gnu.org/software/emacs/manual/html_node/e
     (load custom-file))
 #+END_SRC
 
+** =pg-if-available=
+
+I do several configurations contingent on the presence of certain commands; if the command exists, I tweak something, and if it doesn't, I usually want to mention it to the user.
+
+This macro makes that a little clearer in the several places where I do it.
+
+#+BEGIN_SRC emacs-lisp
+  (defmacro pg-if-available (cmd absent-msg &rest exists-forms)
+    (declare (indent 1))
+    `(if (= 0 (call-process "which" nil nil nil ,cmd))
+         (progn
+           ,@exists-forms)
+       (message "Pro-tip: %s" ,absent-msg)))
+#+END_SRC
 
 * General configuration
 
@@ -415,6 +429,12 @@ Save command history and some other variables.
   (savehist-mode 1)
 #+END_SRC
 
+Make my spelling directory =aspell= if I can
+#+BEGIN_SRC emacs-lisp
+  (pg-if-available "aspell"
+    "Install aspell for spellchecking"
+    (setq-default ispell-program-name "/usr/local/bin/aspell"))
+#+END_SRC
 
 
 * General terminal configurations
@@ -838,11 +858,11 @@ Configure magit, the best Git UI ever.
 You'll also need to have The Silver Searcher installed for this to run.
 
 #+BEGIN_SRC emacs-lisp
-  (if (= 0 (call-process "which" nil nil nil "ag"))
-      (use-package ag
-        :ensure t
-        :config (use-package helm-ag :defer t :ensure t))
-    (message "Pro-tip: Install the Silver Searcher <https://github.com/ggreer/the_silver_searcher> for a better code search experience."))
+  (pg-if-available "ag"
+    "Install the Silver Searcher <https://github.com/ggreer/the_silver_searcher> for a better code search experience."
+    (use-package agq
+      :ensure t
+      :config (use-package helm-ag :defer t :ensure t)))
 #+END_SRC
 
 **** =re-builder=
@@ -1096,9 +1116,10 @@ On many Unix systems, the =locate= command will run the system =locate= command 
 OS X =ls= is not GNU, so use =gls= (the version of =ls= from GNU Coreutils) on the Mac instead of =/bin/ls=, because the GNU version supports dired better. (Make sure it's installed via MacPorts, Homebrew, etc.)
 
 #+BEGIN_SRC emacs-lisp
-  (if (= 0 (call-process "which" nil nil nil "gls"))
-      (setq insert-directory-program "gls")
-    (message "Pro-tip: Install 'gls' ('brew install coreutils') for a better dired experience."))
+  (pg-if-available "gls"
+    "Install 'gls' ('brew install coreutils') for a better dired experience."
+    (setq insert-directory-program "gls"))
+
 #+END_SRC
 
 
@@ -1220,9 +1241,9 @@ The mouse wheel setup will get clobbered when using a daemon, due to the differe
 ** =pdf-tools=
 
 #+BEGIN_SRC emacs-lisp :tangle darwin.el
-  (if (= 0 (call-process "which" nil nil nil "epdfinfo"))
-      (use-package pdf-tools :ensure t)
-    (message "Pro-tip: Install pdf-tools (e.g., 'brew install pdf-tools') for better PDF experience."))
+  (pg-if-available "epdfinfo"
+    "Install pdf-tools (e.g., 'brew install pdf-tools') for better PDF experience."
+    (use-package pdf-tools :ensure t))
 #+END_SRC
 
 
