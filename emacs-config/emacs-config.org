@@ -5,6 +5,15 @@ This configuration integrates with my [[https://github.com/pgroce/emacs-config-f
 
 * Basic environment
 
+** Proxy configuration
+
+Ensure the proxy is configured correctly before we start downloading packages. (The actual proxy file is site-specific, and should be supplied outside the config.)
+
+#+BEGIN_SRC emacs-lisp
+  (setq ecfw-proxy-file (expand-file-name "proxies.el" ecfw-config-dir))
+  (ecfw-proxy-autoconf)
+#+END_SRC
+
 ** Package configuration
 
 This configuration makes heavy use of Emacs packages, so first, configure the package system.
