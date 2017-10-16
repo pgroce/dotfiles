@@ -534,7 +534,7 @@ This section contains my core org-mode configuration. There may be additional co
        org-hide-leading-stars t
        org-fast-tag-selection-single-key 'expert
 
-       org-default-notes-file "~/notes.org"
+       org-default-notes-file "~/org-files/notes.org"
 
        ;; Allow org-mode to refile deeper in the tree
        org-refile-targets '((nil :maxlevel . 2))
@@ -572,8 +572,8 @@ A few of the variables configured here really live in =org.el=, but they're rele
            ("C-p" . previous-line))
 
     :init
-    (setq org-agenda-files '("~/todo.org"
-                             "~/todo-personal.org")
+    (setq org-agenda-files '("~/org-files/todo.org"
+                             "~/org-files/todo-personal.org")
           org-agenda-ndays 7
           org-deadline-warning-days 14
           org-agenda-show-all-dates t
@@ -637,7 +637,7 @@ A few of the variables configured here really live in =org.el=, but they're rele
            ("s-/"   . org-contacts))
 
     :init
-    (setq org-contacts-files "~/contacts.org"
+    (setq org-contacts-files "~/org-files/contacts.org"
           org-contacts-icon-use-gravatar nil))
 #+END_SRC
 
@@ -651,14 +651,14 @@ Configuration for [[http://orgmode.org/manual/Capture.html][org-capture]] (forme
 
     :init
     (setq org-capture-templates
-          `(("t" "TODO" entry (file+headline "~/todo.org" "Tasks")
+          `(("t" "TODO" entry (file+headline "~/org-files/todo.org" "Tasks")
              "* TODO %?\n  %u" :prepend t)
             ("T" "TODO (personal)" entry (file+headline
-                                          "~/todo-personal.org" "Tasks")
+                                          "~/org-files/todo-personal.org" "Tasks")
              "* TODO %?\n  %u" :prepend t)
-            ("n" "Notes" entry (file+headline "~/notes.org" "Notes")
+            ("n" "Notes" entry (file+headline "~/org-files/notes.org" "Notes")
              "* %u %?" :prepend t)
-            ("c" "Contacts" entry (file+headline "~/contacts.org" "New Contacts")
+            ("c" "Contacts" entry (file+headline "~/org-files/contacts.org" "New Contacts")
              ,(concat "* %(org-contacts-template-name)\n"
                       ":PROPERTIES:\n"
                       ":EMAIL: %(org-contacts-template-email)\n"
@@ -1308,5 +1308,5 @@ Open =scratch.el=, because I always seem to be fiddling with it. Nuke the defaul
 Finally, open =todo.org= and start the day!
 
 #+BEGIN_SRC emacs-lisp
-  (find-file (expand-file-name "~/todo.org"))
+  (find-file (expand-file-name "~/org-files/todo.org"))
 #+END_SRC
