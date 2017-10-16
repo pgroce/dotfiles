@@ -1247,6 +1247,7 @@ Make left command =meta=, and make right alt and right command =super=. (I shoul
    (setq ns-right-control-modifier 'super)
    (setq ns-option-modifier  nil)
    (setq ns-right-option-modifier  'super)
+   (setq ns-right-command-modifier 'super)
    (setq ns-command-modifier 'meta))
 #+END_SRC
 
