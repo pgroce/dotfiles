@@ -445,13 +445,6 @@ Save command history and some other variables.
   (savehist-mode 1)
 #+END_SRC
 
-Make my spelling directory =aspell= if I can
-#+BEGIN_SRC emacs-lisp
-  (pg-if-available "aspell"
-    "Install aspell for spellchecking"
-    (setq-default ispell-program-name "/usr/local/bin/aspell"))
-#+END_SRC
-
 
 * General terminal configurations
 
@@ -1147,8 +1140,18 @@ OS X =ls= is not GNU, so use =gls= (the version of =ls= from GNU Coreutils) on t
   (pg-if-available "gls"
     "Install 'gls' ('brew install coreutils') for a better dired experience."
     (setq insert-directory-program "gls"))
-
 #+END_SRC
+
+
+**** Spellcheck
+
+Make my spelling directory =aspell= if I can
+#+BEGIN_SRC emacs-lisp :tangle darwin.el
+  (pg-if-available "aspell"
+    "Install aspell for spellchecking"
+    (setq-default ispell-program-name "/usr/local/bin/aspell"))
+#+END_SRC
+
 
 
 **** Set =TMPDIR= to something short
