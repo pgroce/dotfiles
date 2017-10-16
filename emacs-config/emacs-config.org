@@ -711,7 +711,6 @@ Make =ibuffer= TeX-aware.
                                    (mode . latex-mode))))))
 #+END_SRC
 
-
 *** reStructuredText (=.rst=)
 
 #+BEGIN_SRC emacs-lisp
