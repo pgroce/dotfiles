@@ -1122,6 +1122,15 @@ This config pretty much assumes you run [[https://brew.sh/][Homebrew]].
 
 I don't wrap these in =pg-terminal-ns= because they're OS X-specific, not strictly ns-specific. (I dunno, maybe I'll run this on Gnustep someday.)
 
+**** Add =/usr/local/[s]bin= to path
+
+Since you're running [[https://brew.sh/][Homebrew]] (right??) you'll want =/usr/local/bin= and =/usr/local/sbin= in your path.
+
+#+BEGIN_SRC emacs-lisp :tangle darwin.el
+  (pg-shell-path-with ("PATH" :into t)
+    (pg-util-list-add-unique '("/usr/local/bin" "/usr/local/sbin") it))
+#+END_SRC
+
 **** Use =mdfind= as =locate=
 
 On many Unix systems, the =locate= command will run the system =locate= command to search a pre-compiled file database for a file. On OS X, the =mdfind= command (which searches Spotlight) has sufficiently similar syntax that it can be used instead.
