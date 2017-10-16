@@ -888,7 +888,9 @@ I set the default output syntax for re-builder to =string= instead of =read= so 
     :config (progn
               (require 'smartparens-config)
               (sp-use-paredit-bindings)
-              (smartparens-global-strict-mode 1)))
+              (smartparens-global-strict-mode 1)
+              (bind-key "M-]" 'sp-forward-sexp smartparens-mode-map)
+              (bind-key "M-[" 'sp-backward-sexp smartparens-mode-map)))
 #+END_SRC
 
 
