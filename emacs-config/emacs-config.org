@@ -867,11 +867,13 @@ Configure magit, the best Git UI ever.
 You'll also need to have The Silver Searcher installed for this to run.
 
 #+BEGIN_SRC emacs-lisp
-  (pg-if-available "ag"
-    "Install the Silver Searcher <https://github.com/ggreer/the_silver_searcher> for a better code search experience."
-    (use-package agq
-      :ensure t
-      :config (use-package helm-ag :defer t :ensure t)))
+  (ecfw-defer
+   (message "Running 'use-package ag' deferred")
+   (pg-if-available "ag"
+     "Install the Silver Searcher <https://github.com/ggreer/the_silver_searcher> for a better code search experience."
+     (use-package ag
+       :ensure t
+       :config (use-package helm-ag :defer t :ensure t))))
 #+END_SRC
 
 **** =re-builder=
