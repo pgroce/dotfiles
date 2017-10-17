@@ -1,8 +1,18 @@
+#+STARTUP: indent
 #+TITLE: Phil's Emacs Configuration
 
 This configuration integrates with my [[https://github.com/pgroce/emacs-config-framework][configuration framework]], although it could probably be used without it. It also uses some packages from [[https://philgroce.github.io/emacs-pkgs/elpa][my own package repository]].
 
 * Basic environment
+
+** Proxy configuration
+
+Ensure the proxy is configured correctly before we start downloading packages. (The actual proxy file is site-specific, and should be supplied outside the config.)
+
+#+BEGIN_SRC emacs-lisp
+  (setq ecfw-proxy-file (expand-file-name "proxies.el" ecfw-config-dir))
+  (ecfw-proxy-autoconf)
+#+END_SRC
 
 ** Package configuration
 
@@ -12,7 +22,6 @@ This configuration makes heavy use of Emacs packages, so first, configure the pa
 
 
 #+BEGIN_SRC emacs-lisp
-
   (setq package-archives
         '(("gnu"         . "http://elpa.gnu.org/packages/")
           ("melpa"       . "http://melpa.org/packages/")
@@ -65,6 +74,12 @@ This macro makes that a little clearer in the several places where I do it.
 
 * General configuration
 
+** A quick note on Super bindings
+
+Some platforms (\*cough\*OS X\*cough\*) put a bunch of nonsense in Super when terminals are configured.That can overwrite any Super keybinds previously defined. (I also blow away literally everything in Super in my OS X config to get rid of those customizations; that will overwrite those bindings too.)
+
+Because of this, defer all Super bindings so they run after the Super-pocalyps.
+
 ** Unicode
 [[https://github.com/rolandwalker/unicode-fonts][unicode-fonts]] does a lot of magic to ensure that you can see as many Unicode glyphs as possible. You have to download several fonts for it to work; check the page for details.
 
@@ -85,7 +100,7 @@ See [[https://github.com/pgroce/emacs-pkgs/blob/master/pg-url-armor.org][the lib
 Just make it easier to call =browse-url-at-point=
 
 #+BEGIN_SRC emacs-lisp
-  (bind-key "s-b" #'browse-url-at-point)
+  (ecfw-defer (bind-key "s-b" #'browse-url-at-point))
 #+END_SRC
 
 ** Buffers
@@ -107,7 +122,7 @@ Just make it easier to call =browse-url-at-point=
 Bury buffers easily.
 
 #+begin_src emacs-lisp
-  (bind-key "s-q" #'bury-buffer)
+  (ecfw-defer (bind-key "s-q" #'bury-buffer))
 #+end_src
 
 Bury buffers and delete the window they're in. Default behavior from some transient-window-generating modes, but not others. And sometimes you're just done with a window split, darn it.
@@ -118,7 +133,8 @@ Bury buffers and delete the window they're in. Default behavior from some transi
     (bury-buffer)
     (delete-window))
 
-  (bind-key "s-Q" #'pg-bury-buffer-delete-window)
+  (ecfw-defer
+   (bind-key "s-Q" #'pg-bury-buffer-delete-window))
 #+END_SRC
 
 ***  =ibuffer=
@@ -429,13 +445,6 @@ Save command history and some other variables.
   (savehist-mode 1)
 #+END_SRC
 
-Make my spelling directory =aspell= if I can
-#+BEGIN_SRC emacs-lisp
-  (pg-if-available "aspell"
-    "Install aspell for spellchecking"
-    (setq-default ispell-program-name "/usr/local/bin/aspell"))
-#+END_SRC
-
 
 * General terminal configurations
 
@@ -525,7 +534,7 @@ This section contains my core org-mode configuration. There may be additional co
        org-hide-leading-stars t
        org-fast-tag-selection-single-key 'expert
 
-       org-default-notes-file "~/notes.org"
+       org-default-notes-file "~/org-files/notes.org"
 
        ;; Allow org-mode to refile deeper in the tree
        org-refile-targets '((nil :maxlevel . 2))
@@ -563,8 +572,8 @@ A few of the variables configured here really live in =org.el=, but they're rele
            ("C-p" . previous-line))
 
     :init
-    (setq org-agenda-files '("~/todo.org"
-                             "~/todo-personal.org")
+    (setq org-agenda-files '("~/org-files/todo.org"
+                             "~/org-files/todo-personal.org")
           org-agenda-ndays 7
           org-deadline-warning-days 14
           org-agenda-show-all-dates t
@@ -628,7 +637,7 @@ A few of the variables configured here really live in =org.el=, but they're rele
            ("s-/"   . org-contacts))
 
     :init
-    (setq org-contacts-files "~/contacts.org"
+    (setq org-contacts-files "~/org-files/contacts.org"
           org-contacts-icon-use-gravatar nil))
 #+END_SRC
 
@@ -642,14 +651,14 @@ Configuration for [[http://orgmode.org/manual/Capture.html][org-capture]] (forme
 
     :init
     (setq org-capture-templates
-          `(("t" "TODO" entry (file+headline "~/todo.org" "Tasks")
+          `(("t" "TODO" entry (file+headline "~/org-files/todo.org" "Tasks")
              "* TODO %?\n  %u" :prepend t)
             ("T" "TODO (personal)" entry (file+headline
-                                          "~/todo-personal.org" "Tasks")
+                                          "~/org-files/todo-personal.org" "Tasks")
              "* TODO %?\n  %u" :prepend t)
-            ("n" "Notes" entry (file+headline "~/notes.org" "Notes")
+            ("n" "Notes" entry (file+headline "~/org-files/notes.org" "Notes")
              "* %u %?" :prepend t)
-            ("c" "Contacts" entry (file+headline "~/contacts.org" "New Contacts")
+            ("c" "Contacts" entry (file+headline "~/org-files/contacts.org" "New Contacts")
              ,(concat "* %(org-contacts-template-name)\n"
                       ":PROPERTIES:\n"
                       ":EMAIL: %(org-contacts-template-email)\n"
@@ -701,7 +710,6 @@ Make =ibuffer= TeX-aware.
                                    (mode . tex-mode)
                                    (mode . latex-mode))))))
 #+END_SRC
-
 
 *** reStructuredText (=.rst=)
 
@@ -858,11 +866,13 @@ Configure magit, the best Git UI ever.
 You'll also need to have The Silver Searcher installed for this to run.
 
 #+BEGIN_SRC emacs-lisp
-  (pg-if-available "ag"
-    "Install the Silver Searcher <https://github.com/ggreer/the_silver_searcher> for a better code search experience."
-    (use-package agq
-      :ensure t
-      :config (use-package helm-ag :defer t :ensure t)))
+  (ecfw-defer
+   (message "Running 'use-package ag' deferred")
+   (pg-if-available "ag"
+     "Install the Silver Searcher <https://github.com/ggreer/the_silver_searcher> for a better code search experience."
+     (use-package ag
+       :ensure t
+       :config (use-package helm-ag :defer t :ensure t))))
 #+END_SRC
 
 **** =re-builder=
@@ -886,8 +896,11 @@ I set the default output syntax for re-builder to =string= instead of =read= so 
   (use-package smartparens
     :ensure t
     :config (progn
-              (sp-use-smartparens-bindings)
-              (smartparens-global-strict-mode 1)))
+              (require 'smartparens-config)
+              (sp-use-paredit-bindings)
+              (smartparens-global-strict-mode 1)
+              (bind-key "M-]" 'sp-forward-sexp smartparens-mode-map)
+              (bind-key "M-[" 'sp-backward-sexp smartparens-mode-map)))
 #+END_SRC
 
 
@@ -1103,11 +1116,20 @@ This config pretty much assumes you run [[https://brew.sh/][Homebrew]].
 
 I don't wrap these in =pg-terminal-ns= because they're OS X-specific, not strictly ns-specific. (I dunno, maybe I'll run this on Gnustep someday.)
 
+**** Add =/usr/local/[s]bin= to path
+
+Since you're running [[https://brew.sh/][Homebrew]] (right??) you'll want =/usr/local/bin= and =/usr/local/sbin= in your path.
+
+#+BEGIN_SRC emacs-lisp :tangle darwin.el
+  (pg-shell-path-with ("PATH" :into t)
+    (pg-util-list-add-unique '("/usr/local/bin" "/usr/local/sbin") it))
+#+END_SRC
+
 **** Use =mdfind= as =locate=
 
 On many Unix systems, the =locate= command will run the system =locate= command to search a pre-compiled file database for a file. On OS X, the =mdfind= command (which searches Spotlight) has sufficiently similar syntax that it can be used instead.
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle darwin.el
   (setq locate-command "mdfind")
 #+END_SRC
 
@@ -1115,19 +1137,29 @@ On many Unix systems, the =locate= command will run the system =locate= command 
 
 OS X =ls= is not GNU, so use =gls= (the version of =ls= from GNU Coreutils) on the Mac instead of =/bin/ls=, because the GNU version supports dired better. (Make sure it's installed via MacPorts, Homebrew, etc.)
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle darwin.el
   (pg-if-available "gls"
     "Install 'gls' ('brew install coreutils') for a better dired experience."
     (setq insert-directory-program "gls"))
-
 #+END_SRC
+
+
+**** Spellcheck
+
+Make my spelling directory =aspell= if I can
+#+BEGIN_SRC emacs-lisp :tangle darwin.el
+  (pg-if-available "aspell"
+    "Install aspell for spellchecking"
+    (setq-default ispell-program-name "/usr/local/bin/aspell"))
+#+END_SRC
+
 
 
 **** Set =TMPDIR= to something short
 
 OS X has horrible long temporary directory paths that sometimes exceed the lengths some applications are expecting. Just use =/tmp=
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle darwin.el
   (setenv "TMPDIR" "/tmp")
 #+END_SRC
 
@@ -1216,6 +1248,7 @@ Make left command =meta=, and make right alt and right command =super=. (I shoul
    (setq ns-right-control-modifier 'super)
    (setq ns-option-modifier  nil)
    (setq ns-right-option-modifier  'super)
+   (setq ns-right-command-modifier 'super)
    (setq ns-command-modifier 'meta))
 #+END_SRC
 
@@ -1236,9 +1269,9 @@ The mouse wheel setup will get clobbered when using a daemon, due to the differe
 
 
 
-* Integrations with external tools
+*** Integrations with external tools
 
-** =pdf-tools=
+**** =pdf-tools=
 
 #+BEGIN_SRC emacs-lisp :tangle darwin.el
   (pg-if-available "epdfinfo"
@@ -1247,11 +1280,11 @@ The mouse wheel setup will get clobbered when using a daemon, due to the differe
 #+END_SRC
 
 
-** LaTeX
+**** LaTeX
 
 #+BEGIN_SRC emacs-lisp :tangle darwin.el
   (if (file-exists-p "/Library/TeX/texbin")
-      (pg-shell-path-append "/Library/Tex/texbin")
+      (pg-shell-path-append "PATH" '("/Library/Tex/texbin"))
     (message "Pro-tip: Install Tex (or MacTeX) for a better LaTeX experience"))
 #+END_SRC
 
@@ -1277,5 +1310,5 @@ Open =scratch.el=, because I always seem to be fiddling with it. Nuke the defaul
 Finally, open =todo.org= and start the day!
 
 #+BEGIN_SRC emacs-lisp
-  (find-file (expand-file-name "~/todo.org"))
+  (find-file (expand-file-name "~/org-files/todo.org"))
 #+END_SRC
