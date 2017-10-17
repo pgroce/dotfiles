@@ -1,0 +1,4 @@
+export BASHRC_READ="YES"
+if [ "$PROFILE_READ" != "YES" ]; then
+    . ~/.profile
+fi

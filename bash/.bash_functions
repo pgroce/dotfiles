@@ -1,0 +1,171 @@
+# -*- mode: sh -*-
+
+export PROXY_HOST=proxy.example.com
+export PROXY_PORT=1234
+export PROXY=http://$PROXY_HOST:$PROXY_PORT
+export NO_PROXY=".example.com"
+export JAVA_NO_PROXY="*.example.com|localhost"
+
+# Include the above variables in a file called proxies.sh in your home
+# directory to customize
+
+if [ -e ~/proxies.sh ]; then
+    source ~/.proxies.sh
+fi
+
+fucntion set_proxy()
+{
+    export PROXY_HOST=$1
+    export PROXY_PORT=$2
+    export PROXY=http://$1:$2
+}
+
+function proxy()
+{
+    export HTTP_PROXY=$PROXY
+    export http_proxy=$PROXY
+    export HTTPS_PROXY=$PROXY
+    export https_proxy=$PROXY
+    export FTP_PROXY=$PROXY
+    export ftp_proxy=$PROXY
+    export NO_PROXY=$NO_PROXY
+    export no_proxy=$NO_PROXY
+
+    # Expose proxy info to GRADLE. An ugly hack when the only options
+    # are ugly hacks. (If you want to do extra Gradle mangling, put
+    # them in EXTRA_GRADLE_OPTS, not GRADLE_OPTS.)
+    local new_gradle_opts="-Dhttp.host=${PROXY_HOST} -Dhttp.port=${PROXY_PORT} -Dhttp.nonProxyHosts=${no_proxy} -Dhttps.host=${PROXY_HOST} -Dhttps.port=${PROXY_PORT} -Dhttps.nonProxyHosts=${no_proxy} -Dftp.host=${PROXY_HOST} -Dftp.port=${PROXY_PORT} -Dftp.nonProxyHosts=${no_proxy}"
+    if [ "$EXTRA_GRADLE_OPTS" ]; then
+        export GRADLE_OPTS="${EXTRA_GRADLE_OPTS},${new_gradle_opts}"
+    else
+        export GRADLE_OPTS=$new_gradle_opts
+    fi
+
+    # And java (todo: Probably the same thing as GRADLE_OPTS)
+    export JAVA_OPTS="-Dhttp.proxyHost=${PROXY_HOST} -Dhttp.proxyPort=${PROXY_PORT} -Dhttp.nonProxyHosts=\"${JAVA_NO_PROXY}\" -Dhttps.proxyHost=${PROXY_HOST} -Dhttps.proxyPort=${PROXY_PORT} -Dhttps.nonProxyHosts=\"${JAVA_NO_PROXY}\""
+}
+
+function no_proxy()
+{
+    unset http_proxy
+    unset HTTP_PROXY
+    unset HTTPS_PROXY
+    unset https_proxy
+    unset FTP_PROXY
+    unset ftp_proxy
+    unset no_proxy
+    unset NO_PROXY
+    export GRADLE_OPTS=$EXTRA_GRADLE_OPTS
+    unset JAVA_OPTS
+}
+
+function path()
+{
+    local pathvar="PATH"
+    local allow_files="no"
+    if [ "$1" == "-h" -o "$1" == "--help" ]; then
+        cat <<EOF
+Usage:
+    path [{-p | --path} ENVVAR] - print out current path in
+human-readable form
+    path [{-p | --path} ENVVAR] ENTRIES - modify path
+ENTRIES :=
+    -b | --back - following dirs to add will be added to the back of
+the path
+    -f | --front - following dirs to add will be added to the front of
+the path
+    -r | --remove - following dirs will be removed from the path
+    -a | --add - following dirs will be added to the path
+    DIR - dir to add/remove in the path
+Note that if -p is given, files may be added to the path.  Otherwise,
+only DIRs that exist and are directories will be added.
+If you include a DIR that is already in the path, it is removed from
+its current position and added at the specified position.
+
+Examples:
+
+    path -p PYTHONPATH
+
+Print your pythonpath
+
+    path -p CLASSPATH foo bar baz
+
+add files foo bar and baz to your class path
+
+    path -f x y z -b q r s -r m
+
+move x, y, z to front of path, q, r, s to back of path, and remove m
+from the path
+EOF
+        return 0
+    fi
+    if [ "$1" == "-p" -o "$1" == "--path"  \
+            -o "$1" == "-P" -o $1 == "--upath" ]; then
+        pathvar=$2
+        if [ "$1" == "-P" -o "$1" == "--upath" ]; then
+            pathvar=`echo $2 | tr "[:lower:]" "[:upper:]"`
+        fi
+        allow_files="yes"
+        shift 2
+    fi
+    if [ "$*" == "" ]; then
+        echo "$pathvar contains:"
+        echo -n "    "
+        eval echo "\$$pathvar" | sed 's/:/\
+    /g'
+        return 0
+    fi
+    local back="no"
+    local remove="no"
+    local modpath
+    eval modpath=":\$$pathvar:"
+    if [ "$modpath" == "::" ]; then
+        modpath=:
+    fi
+    for dir in $*; do
+        case $dir in
+          (--back|-b)
+            back="yes";;
+          (--front|-f)
+            back="no";;
+          (--remove|-r)
+            remove="yes";;
+          (--add|-a)
+            remove="no";;
+          (*)
+            if [ \( "$remove" == "yes" \) -o \
+                 \( "$allow_files" == "no" -a ! -d $dir \) ]; then
+                # Remove when removing, or when the specified
+                # directory does not actually exist as a directory!
+                if [ "${modpath##*:$dir:*}" == "" ]; then
+                    modpath="${modpath%:$dir:*}:${modpath#*:$dir:}"
+                fi
+            else
+                # Let's try to do something smart--if the directory is
+                # already in the path, delete it, so we can re-add it
+                # at the front or end.
+                if [ "${modpath##*:$dir:*}" == "" ]; then
+                    modpath="${modpath%:$dir:*}:${modpath#*:$dir:}"
+                fi
+                if [ "$back" == "no" ]; then
+                    modpath=:$dir${modpath}
+                else
+                    modpath=${modpath}$dir:
+                fi
+            fi
+        esac
+    done
+    if [ "${modpath##*:.:*}" = "" ]; then
+        if [ ! -z "$PS1" ]; then
+            echo -e "\007[ WARNING: Removed '.' from path. ]"
+        fi
+        modpath="${modpath%:.:*}:${modpath#*:.:}"
+    fi
+    modpath=${modpath%:}
+    modpath=${modpath#:}
+    if [ -z "$modpath" ]; then
+        eval unset $pathvar
+    else
+        eval export $pathvar=$modpath
+    fi
+}
