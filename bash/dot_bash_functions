@@ -10,7 +10,7 @@ export JAVA_NO_PROXY="*.example.com|localhost"
 # directory to customize
 
 if [ -e ~/proxies.sh ]; then
-    source ~/.proxies.sh
+    source ~/proxies.sh
 fi
 
 function set_proxy()
