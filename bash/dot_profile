@@ -24,4 +24,6 @@ path -p PYTHONPATH ~/lib/python
 # path -p CLASSPATH -f $HOME/lib/java/jars/\*
 # path -p CLASSPATH $HOME/lib/java/lib
 
-. .profile_custom
+if [ -e .profile_custom ]; then
+    . .profile_custom
+fi
