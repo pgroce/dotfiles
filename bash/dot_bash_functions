@@ -13,7 +13,7 @@ if [ -e ~/proxies.sh ]; then
     source ~/.proxies.sh
 fi
 
-fucntion set_proxy()
+function set_proxy()
 {
     export PROXY_HOST=$1
     export PROXY_PORT=$2
