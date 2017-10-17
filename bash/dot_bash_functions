@@ -7,21 +7,17 @@ export NO_PROXY=".example.com"
 export JAVA_NO_PROXY="*.example.com|localhost"
 
 # Include the above variables in a file called proxies.sh in your home
-# directory to customize
+# directory to customize. (PROXY is computed, so no need to set it.)
 
 if [ -e ~/proxies.sh ]; then
     source ~/proxies.sh
+    export PROXY=http://$PROXY_HOST:$PROXY_PORT
 fi
 
-function set_proxy()
-{
-    export PROXY_HOST=$1
-    export PROXY_PORT=$2
-    export PROXY=http://$1:$2
-}
 
 function proxy()
 {
+    export PROXY=http://$PROXY_HOST:$PROXY_PORT
     export HTTP_PROXY=$PROXY
     export http_proxy=$PROXY
     export HTTPS_PROXY=$PROXY
