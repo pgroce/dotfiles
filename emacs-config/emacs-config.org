@@ -1184,6 +1184,14 @@ OS X has horrible long temporary directory paths that sometimes exceed the lengt
   (setenv "TMPDIR" "/tmp")
 #+END_SRC
 
+**** Remap =kmacro-start/end-macro=
+
+macOS now uses =<f4>= to do something with the touch bar, so remap where =kmacro-start-macro= and =kmacro-end-macro= live. (No, =C-c (= and =C-c )= are not adequate replacements.)
+
+#+BEGIN_SRC emacs-lisp :tangle darwin.el
+  (bind-key "<f5>" 'kmacro-start-macro)
+  (bind-key "<f6>" 'kmacro-end-or-call-macro)
+#+END_SRC
 
 *** =ns= terminal configuration
 
