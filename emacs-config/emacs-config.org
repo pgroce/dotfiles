@@ -809,7 +809,7 @@ That doesn't mean I want it in the mode line, though. :)
 
 *** Shells
 
-Use [[https://github.com/pgroce/emacs-pkgs/blob/master/pg-sh.org][pg-sh]] to make using shells a little more pleasant.
+Use [[https://github.com/pgroce/emacs-pkgs/blob/master/pg-sh.org][pg-sh]] to make using shells a little more pleasant. Defer it so the keybindings make it through the [[Decontaminate =super= keybindings][superpocalypse]].
 
 #+BEGIN_SRC emacs-lisp
   (ecfw-defer
@@ -1189,6 +1189,7 @@ OS X has horrible long temporary directory paths that sometimes exceed the lengt
 
 **** Decontaminate =super= keybindings
 
+
 The =ns= Emacs port adds a number of keybindings to =super= in an attempt to make Emacs feel like a NeXTStep/Mac application.
 
 I'd rather use the Emacs style of interaction, because I've learned it already and because I can find better uses for =super=. (Most of these bindings are harmless, but a few, like =s-q= running =save-buffers-kill-emacs=, are infuriating.)
@@ -1329,6 +1330,7 @@ Open =scratch.el=, because I always seem to be fiddling with it. Nuke the defaul
   (find-file (expand-file-name "scratch.el" ecfw-config-dir))
   (condition-case nil (kill-buffer "*scratch*") nil)
 #+END_SRC
+
 
 Finally, open =todo.org= and start the day!
 
