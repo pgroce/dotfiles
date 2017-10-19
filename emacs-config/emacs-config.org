@@ -93,7 +93,7 @@ Use the [[https://github.com/bbatsov/solarized-emacs][Solarized theme]] for shin
 
 Some platforms (\*cough\*OS X\*cough\*) put a bunch of nonsense in Super when terminals are configured.That can overwrite any Super keybinds previously defined. (I also blow away literally everything in Super in my OS X config to get rid of those customizations; that will overwrite those bindings too.)
 
-Because of this, defer all Super bindings so they run after the [[#superpocalypse][superpocalypse]]
+Because of this, defer all Super bindings so they run after the [[#superpocalypse][superpocalypse]].
 
 ** Unicode
 [[https://github.com/rolandwalker/unicode-fonts][unicode-fonts]] does a lot of magic to ensure that you can see as many Unicode glyphs as possible. You have to download several fonts for it to work; check the page for details.
