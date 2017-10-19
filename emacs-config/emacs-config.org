@@ -115,7 +115,8 @@ See [[https://github.com/pgroce/emacs-pkgs/blob/master/pg-url-armor.org][the lib
 Just make it easier to call =browse-url-at-point=
 
 #+BEGIN_SRC emacs-lisp
-  (ecfw-defer (bind-key "s-b" #'browse-url-at-point))
+  (ecfw-defer
+   (bind-key "s-b" #'browse-url-at-point))
 #+END_SRC
 
 ** Buffers
@@ -137,7 +138,8 @@ Just make it easier to call =browse-url-at-point=
 Bury buffers easily.
 
 #+begin_src emacs-lisp
-  (ecfw-defer (bind-key "s-q" #'bury-buffer))
+  (ecfw-defer
+   (bind-key "s-q" #'bury-buffer))
 #+end_src
 
 Bury buffers and delete the window they're in. Default behavior from some transient-window-generating modes, but not others. And sometimes you're just done with a window split, darn it.
@@ -498,20 +500,22 @@ Customize the GUI frame look and feel the way I want it.
 
 I always bind =super= to the right alt key, so these keybinds are pretty effective ways to quickly travel between windows and frames. Basically just hold down right-alt and move up and down to go between windows, and left and right to go between frames.
 
+(Note that I don't have to protect these bindings from the [[Decontaminate =super= keybindings][superpocalypse]] because they're called by the terminal config itself, which can sequence things appropriately.)
+
 #+begin_src emacs-lisp
   (defun pg-prev-frame () (interactive) (other-frame 1))
   (defun pg-next-frame () (interactive) (other-frame -1))
 
   (defun pg-navigate-frames ()
-    (global-set-key (kbd "<s-right>") 'pg-next-frame)
-    (global-set-key (kbd "<s-left>") 'pg-prev-frame))
+    (bind-key "<s-right>" 'pg-next-frame)
+    (bind-key "<s-left>" 'pg-prev-frame))
 
   (defun pg-prev-window () (interactive) (other-window -1))
   (defun pg-next-window () (interactive) (other-window 1))
 
   (defun pg-navigate-windows ()
-    (global-set-key (kbd "<s-up>") 'pg-prev-window)
-    (global-set-key (kbd "<s-down>") 'pg-next-window))
+    (bind-key "<s-up>" 'pg-prev-window)
+    (bind-key "<s-down>" 'pg-next-window))
 #+end_src
 
 
@@ -808,10 +812,11 @@ That doesn't mean I want it in the mode line, though. :)
 Use [[https://github.com/pgroce/emacs-pkgs/blob/master/pg-sh.org][pg-sh]] to make using shells a little more pleasant.
 
 #+BEGIN_SRC emacs-lisp
-  (use-package pg-sh
-    :ensure t
-    :bind (("s-s" . pg-sh)
-           ("s-t" . pg-sh-ssh)))
+  (ecfw-defer
+   (use-package pg-sh
+     :ensure t
+     :bind (("s-s" . pg-sh)
+            ("s-t" . pg-sh-ssh))))
 #+END_SRC
 
 *** Compilation buffers
@@ -1192,52 +1197,55 @@ Furthermore, I like to put my own bindings on =super=.
 
 Therefore, kill it all with fire.
 
+(Because of this, any =super= bindings need to be deferred until after terminal has set up, using =ecfw-defer= or something.)
+
 #+BEGIN_SRC emacs-lisp :tangle darwin.el
   (pg-terminal-ns
-   (global-unset-key (kbd "M-s-h"))
-   (global-unset-key (kbd "s-,"))
-   (global-unset-key (kbd "s-'"))
-   (global-unset-key (kbd "s-`"))
-   (global-unset-key (kbd "s-~"))
-   (global-unset-key (kbd "s--"))
-   (global-unset-key (kbd "s-:"))
-   (global-unset-key (kbd "s-?"))
-   (global-unset-key (kbd "s-^"))
-   (global-unset-key (kbd "s-&"))
-   (global-unset-key (kbd "s-C"))
-   (global-unset-key (kbd "s-D"))
-   (global-unset-key (kbd "s-E"))
-   (global-unset-key (kbd "s-L"))
-   (global-unset-key (kbd "s-M"))
-   (global-unset-key (kbd "s-S"))
-   (global-unset-key (kbd "s-a"))
-   (global-unset-key (kbd "s-c"))
-   (global-unset-key (kbd "s-d"))
-   (global-unset-key (kbd "s-e"))
-   (global-unset-key (kbd "s-f"))
-   (global-unset-key (kbd "s-g"))
-   (global-unset-key (kbd "s-h"))
-   (global-unset-key (kbd "s-H"))
-   (global-unset-key (kbd "s-j"))
-   (global-unset-key (kbd "s-k"))
-   (global-unset-key (kbd "s-l"))
-   (global-unset-key (kbd "s-m"))
-   (global-unset-key (kbd "s-n"))
-   (global-unset-key (kbd "s-o"))
-   (global-unset-key (kbd "s-p"))
-   (global-unset-key (kbd "s-q"))
-   (global-unset-key (kbd "s-s"))
-   (global-unset-key (kbd "s-t"))
-   (global-unset-key (kbd "s-u"))
-   (global-unset-key (kbd "s-v"))
-   (global-unset-key (kbd "s-w"))
-   (global-unset-key (kbd "s-x"))
-   (global-unset-key (kbd "s-y"))
-   (global-unset-key (kbd "s-z"))
-   (global-unset-key (kbd "s-|"))
-   (global-unset-key (kbd "s-<kp-bar>"))
-   (global-unset-key (kbd "s-<right>"))
-   (global-unset-key (kbd "s-<left>")))
+   (unbind-key "M-s-h")
+   (unbind-key "s-,")
+   (unbind-key "s-'")
+   (unbind-key "s-`")
+   (unbind-key "s-~")
+   (unbind-key "s--")
+   (unbind-key "s-:")
+   (unbind-key "s-?")
+   (unbind-key "s-^")
+   (unbind-key "s-&")
+   (unbind-key "s-C")
+   (unbind-key "s-D")
+   (unbind-key "s-E")
+   (unbind-key "s-L")
+   (unbind-key "s-M")
+   (unbind-key "s-S")
+   (unbind-key "s-a")
+   (unbind-key "s-c")
+   (unbind-key "s-d")
+   (unbind-key "s-e")
+   (unbind-key "s-f")
+   (unbind-key "s-g")
+   (unbind-key "s-h")
+   (unbind-key "s-H")
+   (unbind-key "s-j")
+   (unbind-key "s-k")
+   (unbind-key "s-l")
+   (unbind-key "s-m")
+   (unbind-key "s-n")
+   (unbind-key "s-o")
+   (unbind-key "s-p")
+   (message "UNBINDING: s-q")
+   (unbind-key "s-q")
+   (unbind-key "s-s")
+   (unbind-key "s-t")
+   (unbind-key "s-u")
+   (unbind-key "s-v")
+   (unbind-key "s-w")
+   (unbind-key "s-x")
+   (unbind-key "s-y")
+   (unbind-key "s-z")
+   (unbind-key "s-|")
+   (unbind-key "s-<kp-bar>")
+   (unbind-key "s-<right>")
+   (unbind-key "s-<left>"))
 #+END_SRC
 
 **** GUI setup
@@ -1277,8 +1285,8 @@ The mouse wheel setup will get clobbered when using a daemon, due to the differe
      (progn
        (setq-default mouse-wheel-down-event 'wheel-up
                      mouse-wheel-up-event 'wheel-down)
-       (global-set-key (kbd "<wheel-up>") 'mwheel-scroll)
-       (global-set-key (kbd "<wheel-down>") 'mwheel-scroll))))
+       (bind-key "<wheel-up>" 'mwheel-scroll)
+       (bind-key "<wheel-down>" 'mwheel-scroll))))
 #+end_src
 
 
