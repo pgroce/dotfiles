@@ -74,6 +74,21 @@ This macro makes that a little clearer in the several places where I do it.
 
 * General configuration
 
+** Look and feel
+
+Use the [[https://github.com/bbatsov/solarized-emacs][Solarized theme]] for shiny.
+
+#+BEGIN_SRC emacs-lisp
+  (use-package solarized-theme
+    :ensure t
+    :init (setq solarized-scale-org-headlines nil
+                solarized-use-variable-pitch nil
+                solarized-use-more-italic t
+                solarized-high-contrast-mode-line nil)
+    :config (load-theme 'solarized-dark t))
+#+END_SRC
+
+
 ** A quick note on Super bindings
 
 Some platforms (\*cough\*OS X\*cough\*) put a bunch of nonsense in Super when terminals are configured.That can overwrite any Super keybinds previously defined. (I also blow away literally everything in Super in my OS X config to get rid of those customizations; that will overwrite those bindings too.)
