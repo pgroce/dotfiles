@@ -1142,8 +1142,11 @@ I don't wrap these in =pg-terminal-ns= because they're OS X-specific, not strict
 Since you're running [[https://brew.sh/][Homebrew]] (right??) you'll want =/usr/local/bin= and =/usr/local/sbin= in your path.
 
 #+BEGIN_SRC emacs-lisp :tangle darwin.el
-  (pg-shell-path-with ("PATH" :into t)
-    (pg-util-list-add-unique '("/usr/local/bin" "/usr/local/sbin") it))
+  (let ((paths '("/usr/local/bin" "/usr/local/sbin")))
+    (pg-shell-path-with ("PATH" :into t :as -path)
+      (pg-util-list-add-unique paths -path))
+    (pg-util-list-add-unique-var 'exec-path paths))
+
 #+END_SRC
 
 **** Use =mdfind= as =locate=
