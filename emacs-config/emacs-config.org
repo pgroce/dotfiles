@@ -1288,6 +1288,14 @@ Make left command =meta=, and make right alt and right command =super=. (I shoul
    (setq ns-command-modifier 'meta))
 #+END_SRC
 
+***** Drag and drop
+
+Open a file when it's dragged onto Emacs. (Default is to copy the file path.)
+
+#+BEGIN_SRC emacs-lisp :tangle darwin.el
+  (bind-key "<ns-drag-file>" 'ns-find-file)
+#+END_SRC
+
 ***** Restore mouse wheel
 
 The mouse wheel setup will get clobbered when using a daemon, due to the different order in which things start up. This restores it.
