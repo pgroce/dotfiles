@@ -921,7 +921,7 @@ I set the default output syntax for re-builder to =string= instead of =read= so 
               (smartparens-global-strict-mode 1)
               (bind-key "M-]" 'sp-forward-sexp smartparens-mode-map)
               (bind-key "M-[" 'sp-backward-sexp smartparens-mode-map)
-              (bind-key "M-q" 'sp-indent-defun)))
+              (bind-key "M-q" 'sp-indent-defun smartparens-mode-map)))
 #+END_SRC
 
 
