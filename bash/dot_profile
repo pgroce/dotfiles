@@ -29,3 +29,8 @@ path -p PYTHONPATH ~/lib/python
 if [ -e .profile_custom ]; then
     . .profile_custom
 fi
+
+
+if [ -e ~/localvars.sh ]; then
+    . ~/localvars.sh
+fi
