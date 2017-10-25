@@ -819,6 +819,24 @@ Use [[https://github.com/pgroce/emacs-pkgs/blob/master/pg-sh.org][pg-sh]] to mak
             ("s-t" . pg-sh-ssh))))
 #+END_SRC
 
+**** eshell
+
+Some special handling for [[https://www.gnu.org/software/emacs/manual/html_mono/eshell.html][eshell]]:
+
+#+BEGIN_SRC emacs-lisp
+  (use-package eshell
+    :commands eshell
+    :config
+    (progn
+      (require 'em-smart)
+      (setq eshell-where-to-jump 'begin)
+      (setq eshell-review-quick-commands nil)
+      (setq eshell-smart-space-goes-to-end t)
+      (add-to-list 'eshell-visual-commands "ssh")
+      (add-to-list 'eshell-visual-commands "tail")
+      (add-to-list 'eshell-modules-list 'eshell-tramp)))
+#+END_SRC
+
 *** Compilation buffers
 
 Tweak Emacs' compilation support to be more needs-suiting.
