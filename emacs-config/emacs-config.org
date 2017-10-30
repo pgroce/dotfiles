@@ -1282,6 +1282,16 @@ Therefore, kill it all with fire.
    (unbind-key "s-<left>"))
 #+END_SRC
 
+***** Disable =C-z=
+
+Same thing, trying to make things Apple-like backfiring. It's way too easy to hit =C-z= and accidentally send the frame to the dock. Unset it.
+
+#+BEGIN_SRC emacs-lisp
+  (pg-terminal-ns
+   (unbind-key "C-z"))
+#+END_SRC
+
+
 **** GUI setup
 
 Use the navigation functions defined in the general configuration in OS X GUI Emacs.
@@ -1332,69 +1342,6 @@ The mouse wheel setup will get clobbered when using a daemon, due to the differe
 #+end_src
 
 
-
-***** Disable =C-z=
-It's way too easy to hit =C-z= and accidentally send the frame to the dock. Unset it.
-
-It might be nice to make it do something informational in the echo area instead. Hmm.
-
-#+BEGIN_SRC emacs-lisp
-  (pg-terminal-ns
-
-   ;; TODO: Move to somewhere more appropriate.
-   (defun pg-string--halves (len)
-     "Divide LEN in two. Allocate the remainer on odd strings to
-     the right half. Return a list '(left-len right-len)"
-     (let ((half (/ 2 len)))
-       (if (evenp len)
-           (list half half)
-         (list half (+ 1 half)))))
-
-   (defun pg-string-truncate-middle (str len &optional fill-str)
-     (let* ((fill-str (if fill-str fill-str "..."))
-            (fill-len (string-width fill-str)))
-       (cond
-        ;; If the string is shorter than the max length, just return it
-        ((<= (string-width str) len) str)
-        ;; If the length is 0, return empty string
-        ((= len 0) "")
-        ;; Return first character if length is 1
-        ((= len 1) (s-left 1 str))
-        ;; Return first and last character if length is 2
-        ((= len 2) (concat (s-left 1 str) (s-right 1 str)))
-        ;; If the desired length is less than the fill-string length
-        ;; plus two characters, (1) wtf, and (2) take characters off the
-        ;; front and back of the fill until it is
-        ((< len (+ 2 fill-len))
-         (let ((target-len (- 2 len)))
-           (cl-destructuring-bind (fl fr) (pg-string--halves target-len)
-             (setq fill-str (s-left (- fill-len fr) fill-str))
-             (setq fill-str (s-right (- fill-len fl) fill-str))
-             (concat (s-left 1 str) fill-str (s-right 1 str)))))
-        ;; Base case
-        (t
-         (cl-destructuring-bind (l r) (pg-string--halves len)
-           (concat
-            (s-left l str) fill-str (s-right r str))))))
-
-
-     (if (<= (string-width str) len)
-         str
-       (progn
-         (let ((fill-len (string-width fill-str))
-               ;; If the fill string is larger than the length-2,
-               ;; truncate it on either side until it is length-2.
-               (len (if (> fill-len (- len 2))))
-               (left-len ))))))
-
-   (defun pg-status ()
-     "Send informational status message to echo area."
-     (interactive)
-     (let (())))
-   (unbind-key "C-z"))
-
-
-#+END_SRC
 
 *** Integrations with external tools
 
