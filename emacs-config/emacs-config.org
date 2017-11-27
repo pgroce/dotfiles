@@ -652,6 +652,7 @@ A few of the variables configured here really live in =org.el=, but they're rele
 
 #+BEGIN_SRC emacs-lisp
   (use-package org-contacts
+    :ensure t
     :bind (("C-c ?" . org-contacts)
            ("s-/"   . org-contacts))
 
