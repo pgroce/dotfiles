@@ -937,7 +937,14 @@ I set the default output syntax for re-builder to =string= instead of =read= so 
     :config (progn
               (require 'smartparens-config)
               (sp-use-paredit-bindings)
+              ;; Use smartparens globally
               (smartparens-global-strict-mode 1)
+              ;; But disable it when it gets in the way
+              ;; (usually masking useful mode commands)
+              (pg-util-list-add-unique-var
+               'sp-ignore-modes-list
+               '(message-mode
+                 org-mode))
               (bind-key "M-]" 'sp-forward-sexp smartparens-mode-map)
               (bind-key "M-[" 'sp-backward-sexp smartparens-mode-map)
               (bind-key "M-q" 'sp-indent-defun smartparens-mode-map)))
