@@ -657,7 +657,7 @@ A few of the variables configured here really live in =org.el=, but they're rele
            ("s-/"   . org-contacts))
 
     :init
-    (setq org-contacts-files "~/org-files/contacts.org"
+    (setq org-contacts-files '("~/org-files/contacts.org")
           org-contacts-icon-use-gravatar nil))
 #+END_SRC
 
