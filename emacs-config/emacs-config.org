@@ -960,6 +960,7 @@ Note the use of =pg-sh= to create a shell at the top level of the project direct
       (setq projectile-enable-caching t)
       ;; projectile native indexing is slower, but more reliable imo
       (setq projectile-indexing-method 'native))
+
     :config
     (progn
       (projectile-global-mode 1)
@@ -968,6 +969,8 @@ Note the use of =pg-sh= to create a shell at the top level of the project direct
         :ensure t
         :init (setq projectile-switch-project-action 'helm-projectile))
       (helm-projectile-on)
+
+      (bind-key "C-c C-p" #'projectile-command-map projectile-mode-map)
 
       (defun pg-projectile-shell-in-project ()
         (interactive)
