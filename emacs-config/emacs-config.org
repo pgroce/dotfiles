@@ -967,7 +967,8 @@ Note the use of =pg-sh= to create a shell at the top level of the project direct
     (progn
       (setq projectile-enable-caching t)
       ;; projectile native indexing is slower, but more reliable imo
-      (setq projectile-indexing-method 'native))
+      (setq projectile-indexing-method 'native)
+      (setq projectile-keymap-prefix (kbd "C-c C-p")))
 
     :config
     (progn
