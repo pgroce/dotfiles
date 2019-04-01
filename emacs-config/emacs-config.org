@@ -963,12 +963,12 @@ Note the use of =pg-sh= to create a shell at the top level of the project direct
   (use-package projectile
     :ensure t
     :diminish projectile-mode
+    :bind-keymap* ("C-c p" . projectile-command-map)
     :init
     (progn
       (setq projectile-enable-caching t)
       ;; projectile native indexing is slower, but more reliable imo
-      (setq projectile-indexing-method 'native)
-      (setq projectile-keymap-prefix (kbd "C-c C-p")))
+      (setq projectile-indexing-method 'native))
 
     :config
     (progn
@@ -978,8 +978,6 @@ Note the use of =pg-sh= to create a shell at the top level of the project direct
         :ensure t
         :init (setq projectile-switch-project-action 'helm-projectile))
       (helm-projectile-on)
-
-      (bind-key "C-c C-p" #'projectile-command-map projectile-mode-map)
 
       (defun pg-projectile-shell-in-project ()
         (interactive)
