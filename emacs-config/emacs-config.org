@@ -547,7 +547,9 @@ This section contains my core org-mode configuration. There may be additional co
     :bind (("C-c l"   . org-store-link)
            ("C-c RET" . org-open-at-point)
            ("M-N" . org-forward-heading-same-level)
-           ("M-P" . org-backward-heading-same-level))
+           ("M-P" . org-backward-heading-same-level)
+           ("M-F" . org-next-visible-heading)
+           ("M-B" . org-previous-visible-heading))
 
     :init
     (progn
