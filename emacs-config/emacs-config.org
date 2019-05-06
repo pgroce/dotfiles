@@ -545,7 +545,9 @@ This section contains my core org-mode configuration. There may be additional co
 #+BEGIN_SRC emacs-lisp
   (use-package org
     :bind (("C-c l"   . org-store-link)
-           ("C-c RET" . org-open-at-point))
+           ("C-c RET" . org-open-at-point)
+           ("M-N" . org-forward-heading-same-level)
+           ("M-P" . org-backward-heading-same-level))
 
     :init
     (progn
