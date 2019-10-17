@@ -948,7 +948,13 @@ I set the default output syntax for re-builder to =string= instead of =read= so 
               (pg-util-list-add-unique-var
                'sp-ignore-modes-list
                '(message-mode
-                 org-mode))
+                 org-mode
+                 tex-mode
+                 latex-mode
+                 slitex-mode
+                 plain-tex-mode
+                 doctex-mode
+                 tex-shell))
               (bind-key "M-]" 'sp-forward-sexp smartparens-mode-map)
               (bind-key "M-[" 'sp-backward-sexp smartparens-mode-map)
               (bind-key "M-q" 'sp-indent-defun smartparens-mode-map)))
