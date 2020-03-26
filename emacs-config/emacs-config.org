@@ -686,7 +686,10 @@ Configuration for [[http://orgmode.org/manual/Capture.html][org-capture]] (forme
              ,(concat "* %(org-contacts-template-name)\n"
                       ":PROPERTIES:\n"
                       ":EMAIL: %(org-contacts-template-email)\n"
-                      ":END:\n")))))
+                      ":END:\n"))
+            ("a" "Accomplishments" entry (file+olp+datetree
+                                          "~/org-files/accomplishments.org" "Accomplishments")
+             "* %u %^{CUSTOMER}p %^{PROJECT}p %?" :prepend t :tree-type week))))
 #+END_SRC
 
 *** Indent
