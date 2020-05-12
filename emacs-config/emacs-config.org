@@ -542,6 +542,80 @@ These changes apply to every terminal-based Emacs I care about.
 
 This section contains my core org-mode configuration. There may be additional configuration in subsequent sections (e.g., registering languages with [[http://orgmode.org/worg/org-contrib/babel/][Babel]]).
 
+*** Preamble
+
+I have a directory in my home directory where I store a number of generally-useful org files:
+
+- =todo.org= :: My action items
+- =notes.org= :: Notes I take (usually with =org-capture=)
+- =accomplishments.org= :: Capture progress I make for reporting
+
+(I also have archive versions of those files for getting stale items out of the way.)
+
+#+BEGIN_SRC emacs-lisp
+  (defcustom pg-org-files-path (expand-file-name "~/org-files")
+    "Location of standard org-mode files (agenda, notes, etc.)")
+
+  (defcustom pg-org-accomplishments
+    "accomplishments.org" "Name of accomplishments file")
+  (defcustom pg-org-agenda "agenda.org" "Name of agenda file")
+  (defcustom pg-org-notes "notes.org" "Name of notes file")
+  (defcustom pg-org-todo "todo.org" "Name of todo file")
+
+  (defun pg-org-file (fname)
+    "Get the path to the standard org file FNAME"
+    (concat (file-name-as-directory pg-org-files-path) fname))
+#+END_SRC
+
+**** Accomplishments
+
+For accomplishment tracking, I keep track of the current projects I'm working on, and the customers the projects support.
+
+The code block below lets me query this list of customers and projects when I'm capturing accomplishments.
+
+#+BEGIN_SRC emacs-lisp
+  (defun pg--get-customer-id-at-point ()
+    (org-entry-get (point) "CUSTOMER_ID"))
+
+  (defun pg--get-projects-for-subtree ()
+    (org-map-entries
+     (lambda ()
+       (org-entry-get (point) "PROJECT_ID")) "+PROJECT_ID={^.+$}" 'tree))
+
+  (defun pg--get-customer-ids ()
+    (org-map-entries 'pg--get-customer-id-at-point "+CUSTOMER_ID={^.+$}"))
+
+  (defun pg--get-project-ids-for-customer (cust-id)
+    (nth 0 (org-map-entries 'pg--get-projects-for-subtree
+                            (format "+CUSTOMER_ID=\"%s\"" cust-id))))
+
+  ;; Overkill? Don't mind if I do!
+  (defmacro pg-with-file (filename &rest body)
+    "Execute BODY in the context of a buffer open to FILENAME."
+    (declare (indent 1))
+    `(save-excursion
+       (with-current-buffer (find-file-noselect ,filename)
+         (progn ,@body))))
+
+
+  (defun pg-accomplishments-customers ()
+    (pg-with-file (pg-org-file "accomplishments.org")
+      (pg--get-customer-ids)))
+
+  (defun pg-accomplishments-projects (cust-id)
+    (pg-with-file (pg-org-file "accomplishments.org")
+      (pg--get-project-ids-for-customer cust-id)))
+
+  (defun pg-accomplishments-read-customer ()
+    (completing-read "Customer: " (pg-accomplishments-customers)))
+
+  (defun pg-accomplishments-read-project (cust-id)
+    (completing-read "Project: " (pg-accomplishments-projects cust-id)))
+#+END_SRC
+
+
+*** Core org
+
 #+BEGIN_SRC emacs-lisp
   (use-package org
     :bind (("C-c l"   . org-store-link)
@@ -674,6 +748,13 @@ Configuration for [[http://orgmode.org/manual/Capture.html][org-capture]] (forme
     :bind ("s-r" . org-capture)
 
     :init
+
+    (defun pg-accomplishments-template ()
+      (let* ((customer (pg-accomplishments-read-customer))
+             (project (pg-accomplishments-read-project customer)))
+        (concat "* %u " customer " " project " %?")))
+
+
     (setq org-capture-templates
           `(("t" "TODO" entry (file+headline "~/org-files/todo.org" "Tasks")
              "* TODO %?\n  %u" :prepend t)
@@ -689,7 +770,7 @@ Configuration for [[http://orgmode.org/manual/Capture.html][org-capture]] (forme
                       ":END:\n"))
             ("a" "Accomplishments" entry (file+olp+datetree
                                           "~/org-files/accomplishments.org" "Accomplishments")
-             "* %u %^{CUSTOMER}p %^{PROJECT}p %?" :prepend t :tree-type week))))
+             (function pg-accomplishments-template) :prepend t :tree-type week))))
 #+END_SRC
 
 *** Indent
