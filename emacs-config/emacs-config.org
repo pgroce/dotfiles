@@ -752,7 +752,8 @@ Configuration for [[http://orgmode.org/manual/Capture.html][org-capture]] (forme
     (defun pg-accomplishments-template ()
       (let* ((customer (pg-accomplishments-read-customer))
              (project (pg-accomplishments-read-project customer)))
-        (concat "* %u " customer " " project " %?")))
+        (concat "* %u %? \n:PROPERTIES:\n:CUSTOMER: "
+                customer "\n:PROJECT:  " project "\n:END:")))
 
 
     (setq org-capture-templates
