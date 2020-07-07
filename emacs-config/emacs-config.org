@@ -1,7 +1,7 @@
 #+STARTUP: indent
 #+TITLE: Phil's Emacs Configuration
 
-This configuration integrates with my [[https://github.com/pgroce/emacs-config-framework][configuration framework]], although it could probably be used without it. It also uses some packages from [[https://philgroce.github.io/emacs-pkgs/elpa][my own package repository]].
+This configuration integrates with my [[https://github.com/pgroce/emacs-config-framework][configuration framework]], although it could probably be used without it. It also uses some packages from [[https://github.com/pgroce/emacs-pkgs][my own package repository]]. (For the ELPA repo URL, see [[Package configuration]] below.)
 
 * Basic environment
 
