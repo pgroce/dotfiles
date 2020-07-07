@@ -582,8 +582,11 @@ The code block below lets me query this list of customers and projects when I'm 
      (lambda ()
        (org-entry-get (point) "PROJECT_ID")) "+PROJECT_ID={^.+$}" 'tree))
 
-  (defun pg--get-customer-ids ()
-    (org-map-entries 'pg--get-customer-id-at-point "+CUSTOMER_ID={^.+$}"))
+  (defun pg--get-customer-ids (&optional status)
+    (if status
+        (org-map-entries 'pg--get-customer-id-at-point
+                         (format "+CUSTOMER_ID={^.+$}+STATUS=\"%s\"" status))
+      (org-map-entries 'pg--get-customer-id-at-point "+CUSTOMER_ID={^.+$}")))
 
   (defun pg--get-project-ids-for-customer (cust-id)
     (nth 0 (org-map-entries 'pg--get-projects-for-subtree
@@ -600,7 +603,7 @@ The code block below lets me query this list of customers and projects when I'm 
 
   (defun pg-accomplishments-customers ()
     (pg-with-file (pg-org-file "accomplishments.org")
-      (pg--get-customer-ids)))
+      (pg--get-customer-ids "active")))
 
   (defun pg-accomplishments-projects (cust-id)
     (pg-with-file (pg-org-file "accomplishments.org")
