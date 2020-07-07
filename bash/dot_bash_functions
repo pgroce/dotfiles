@@ -196,7 +196,6 @@ function pygo ()
 
 function pylist ()
 {
-    find $VENV_HOME -depth 1 -a -type d -exec bash -c "if [ -e {}/bin/activate ]; then echo \"{}/\"; fi" \;
-    find . -depth 1 -a -type d -exec bash -c "if [ -e {}/bin/activate ]; then echo \"{}/\"; fi" \;
-
+    find $VENV_HOME -depth 1 -a -type d -exec bash -c "if [ -e \"{}/bin/activate\" ]; then echo \"{}/\"; fi" \; 2>/dev/null
+    find . -depth 1 -a -type d -exec bash -c "if [ -e \"{}/bin/activate\" ]; then echo \"{}/\"; fi" \; 2>/dev/null
 }
