@@ -1,0 +1,23 @@
+# -*- mode: sh -*-
+. ~/.zsh_functions
+
+export HISTCONTROL=ignorespace
+
+
+
+#######
+# Paths
+#######
+
+# PATH
+path=(~/bin /usr/local/bin /usr/local/sbin /sbin /bin)
+
+# PYTHONPATH
+typeset -T PYTHONPATH pythonpath
+pythonpath=(~/lib/python $pythonpath)
+
+# Java CLASSPATH (thank God it takes wildcards now)
+typeset -T CLASSPATH classpath
+classpath=(~/lib/java/lib ~/lib/java/jars\* $classpath)
+
+eval "$(starship init zsh)"
