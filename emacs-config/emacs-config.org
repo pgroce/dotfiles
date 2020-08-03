@@ -1043,7 +1043,6 @@ I set the default output syntax for re-builder to =string= instead of =read= so 
                  plain-tex-mode
                  doctex-mode
                  tex-shell))
-
               (bind-key "M-]" 'sp-forward-sexp smartparens-mode-map)
               (bind-key "M-[" 'sp-backward-sexp smartparens-mode-map)
               (bind-key "M-q" 'sp-indent-defun smartparens-mode-map)))
