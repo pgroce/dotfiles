@@ -54,16 +54,16 @@ export VENV_HOME=$HOME/venv
 # Set the python virtualenv
 function pygo ()
 {
-    local venv_name=$1
-    if [ "$venv_name" == "" ]; then
+    local venv_name="$1"
+    if [[ "$venv_name" == "" ]]; then
         echo "usage: pygo <venv-name>"
         return 1
     fi
 
-    if [ -d "$venv_name" ]; then
+    if [[ -d "$venv_name" ]]; then
         source $venv_name/bin/activate
     else
-        if [ -d "$VENV_HOME/$venv_name" ]; then
+        if [[ -d "$VENV_HOME/$venv_name" ]]; then
             source  $VENV_HOME/$venv_name/bin/activate
         else
             echo "No venv '$venv_name' in cwd or '$VENV_HOME'"
@@ -78,4 +78,27 @@ function pylist ()
 {
     find $VENV_HOME -depth 1 -a -type d -exec bash -c "if [ -e \"{}/bin/activate\" ]; then echo \"{}/\"; fi" \; 2>/dev/null
     find . -depth 1 -a -type d -exec bash -c "if [ -e \"{}/bin/activate\" ]; then echo \"{}/\"; fi" \; 2>/dev/null
+}
+
+# Create a new python venv. 'pygo foo' creates in VENV_HOME. 'pygo
+# ./foo' creates in local dir
+function pynew ()
+{
+    local venv_name=$1
+    if ! [[ $venv_name =~ ^\\./* ]]; then
+        # foo -> $VENV_HOME/foo
+        venv_name="$VENV_HOME/$venv_name"
+    else
+        # ./foo -> foo
+        venv_name=${venv_name/\.\//}
+    fi
+
+
+    # Does foo already exist?
+    if [[ -d $venv_name ]]; then
+        echo "venv '$venv_name' already exists, doing nothing"
+    else
+        python3 -m venv $venv_name
+    fi
+
 }
