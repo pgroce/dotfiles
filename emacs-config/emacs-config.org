@@ -193,7 +193,7 @@ Tweaks to =ibuffer=:
 
 Lots of tweaks to =dired=:
 
-   * Also load =wdired= and =dired+=.
+   * Also load =wdired=.
    * Make =M-<= and =M->= do the right thing. (h/t [[http://whattheemacsd.com//setup-dired.el-02.html][What the emacs.d!?]])
    * =z= gets the size of marked files via =du=. (h/t [[http://oremacs.com/2015/01/12/dired-file-size/][(or emacs irrelevant)]])
    * =H= swaps between full and human-readable file sizes.
@@ -205,7 +205,6 @@ Lots of tweaks to =dired=:
     :init
     (progn
       ;; Load dired accessory packages
-      (use-package dired+ :ensure t :defer t)
       (use-package wdired
         :defer t
         :init
@@ -729,19 +728,6 @@ A few of the variables configured here really live in =org.el=, but they're rele
       (pg-util-diminish-major org-agenda-mode "")))
 #+END_SRC
 
-*** Contacts
-
-#+BEGIN_SRC emacs-lisp
-  (use-package org-contacts
-    :ensure t
-    :bind (("C-c ?" . org-contacts)
-           ("s-/"   . org-contacts))
-
-    :init
-    (setq org-contacts-files '("~/org-files/contacts.org")
-          org-contacts-icon-use-gravatar nil))
-#+END_SRC
-
 *** Capture
 
 Configuration for [[http://orgmode.org/manual/Capture.html][org-capture]] (formerly =org-remember=).
@@ -807,15 +793,8 @@ Configuration for [[http://orgmode.org/manual/Capture.html][org-capture]] (forme
 
 *** TeX/LaTeX
 
-You will obviously need TeX/LaTeX installed on your machine for this to be valuable. (And =texbin= will need to be in =exec-path=. How that happens is platform-specific
+You will obviously need TeX/LaTeX installed on your machine for this to be valuable. (And =texbin= will need to be in =exec-path=. How that happens is platform-specific.)
 
-Enable previewing of LaTeX files.
-
-#+BEGIN_SRC emacs-lisp
-(use-package preview-latex)
-#+END_SRC
-
-Make =ibuffer= TeX-aware.
 
 #+BEGIN_SRC emacs-lisp
   (pg-ibuffer '("default" (("TeX" (or
@@ -924,10 +903,17 @@ Some special handling for [[https://www.gnu.org/software/emacs/manual/html_mono/
       (require 'em-smart)
       (setq eshell-where-to-jump 'begin)
       (setq eshell-review-quick-commands nil)
-      (setq eshell-smart-space-goes-to-end t)
+      (setq eshell-smart-space-goes-to-end t)))
+
+  (use-package eshell-modules-list
+    :config
+    (add-to-list 'eshell-modules-list 'eshell-tramp))
+
+  (use-package em-term
+    :config
+    (progn
       (add-to-list 'eshell-visual-commands "ssh")
-      (add-to-list 'eshell-visual-commands "tail")
-      (add-to-list 'eshell-modules-list 'eshell-tramp)))
+      (add-to-list 'eshell-visual-commands "tail")))
 #+END_SRC
 
 *** Compilation buffers
@@ -1420,7 +1406,7 @@ Make left command =meta=, and make right alt and right command =super=. (I shoul
 #+BEGIN_SRC emacs-lisp :tangle darwin.el
 
   (pg-terminal-ns
-   (setq ns-right-control-modifier 'super)
+   ;(setq ns-right-control-modifier 'super)
    (setq ns-option-modifier  nil)
    (setq ns-right-option-modifier  'super)
    (setq ns-right-command-modifier 'super)
