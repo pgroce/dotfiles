@@ -74,6 +74,15 @@ This macro makes that a little clearer in the several places where I do it.
 
 * General configuration
 
+** Verbose?
+
+#+BEGIN_SRC emacs-lisp
+(require 'use-package)
+(setq use-package-verbose t)
+
+#+END_SRC
+
+
 ** Look and feel
 
 Use the [[https://github.com/bbatsov/solarized-emacs][Solarized theme]] for shiny.
@@ -266,6 +275,8 @@ This bit of voodoo allows me to edit files on remote machines as =root=.
 
 #+BEGIN_SRC emacs-lisp
   (use-package tramp
+    :defer t
+
     :init
     (progn
       (setq tramp-default-method "ssh")
@@ -766,7 +777,9 @@ Configuration for [[http://orgmode.org/manual/Capture.html][org-capture]] (forme
 *** Indent
 
 #+BEGIN_SRC emacs-lisp
-  (use-package org-indent :diminish org-indent-mode)
+  (use-package org-indent
+    :after (org-mode)
+    :diminish org-indent-mode)
 #+END_SRC
 
 
@@ -836,7 +849,9 @@ You will obviously need TeX/LaTeX installed on your machine for this to be valua
 *** JSON
 
 #+BEGIN_SRC emacs-lisp
-  (use-package json-mode :ensure t)
+  (use-package json-mode
+    :ensure t
+    :mode "\\.json\\'")
 #+END_SRC
 
 *** Markdown
@@ -905,11 +920,13 @@ Some special handling for [[https://www.gnu.org/software/emacs/manual/html_mono/
       (setq eshell-review-quick-commands nil)
       (setq eshell-smart-space-goes-to-end t)))
 
-  (use-package eshell-modules-list
+  (use-package esh-module
+    :after (eshell)
     :config
     (add-to-list 'eshell-modules-list 'eshell-tramp))
 
   (use-package em-term
+    :after (eshell)
     :config
     (progn
       (add-to-list 'eshell-visual-commands "ssh")
@@ -970,6 +987,7 @@ Configure magit, the best Git UI ever.
 
 #+BEGIN_SRC emacs-lisp
   (use-package magit :ensure t
+    :commands (magit magit-init)
     :config
       (pg-ibuffer '("default" (("magit" (mode . magit-mode))))))
 #+END_SRC
