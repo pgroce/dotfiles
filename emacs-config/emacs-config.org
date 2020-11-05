@@ -1015,8 +1015,8 @@ I set the default output syntax for re-builder to =string= instead of =read= so 
     :config (progn
               (require 'smartparens-config)
               (sp-use-paredit-bindings)
-              ;; Use smartparens globally
-              (smartparens-global-strict-mode 1)
+              ;; (Edit: DON'T) use smartparens globally
+              (smartparens-global-strict-mode nil)
               ;; But disable it when it gets in the way
               ;; (usually masking useful mode commands)
               (pg-util-list-add-unique-var
