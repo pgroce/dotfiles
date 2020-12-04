@@ -54,6 +54,7 @@ If we're profiling, additionally compute timing statistics. (TODO: Maybe move th
 I use these packages in lots of places in the configuration, so load them now.
 
 #+BEGIN_SRC emacs-lisp
+  (use-package seq)
   (use-package pg-util :ensure t)
   (use-package pg-shell-path :ensure t)
   (use-package pg-ibuffer :ensure t)
