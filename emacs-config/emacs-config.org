@@ -322,15 +322,17 @@ This bit of voodoo allows me to edit files on remote machines as =root=.
            )
     :init
     (progn
-      (helm-mode 1)
+      (helm-mode 1)))
 
-      (use-package helm-swoop
-        :ensure t
-        :bind ("M-1" . helm-swoop))
+  (use-package helm-swoop
+    :ensure t
+    :after (helm)
+    :bind ("M-1" . helm-swoop))
 
-      (use-package helm-descbinds
-        :ensure t
-        :bind ("C-h b" . helm-descbinds))))
+  (use-package helm-descbinds
+    :ensure t
+    :after (helm)
+    :bind ("C-h b" . helm-descbinds))
 #+END_SRC
 
 
