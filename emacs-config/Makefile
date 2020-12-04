@@ -27,3 +27,12 @@ tangle:
 install: tangle
 	mkdir -p $(EMACS_HOME)/config
 	cp build/*.el $(EMACS_HOME)/config
+
+
+test: tangle
+	mkdir -p $(EMACS_HOME)/config-test
+	cp build/*.el $(EMACS_HOME)/config-test
+
+test-run: test
+	EMACS_CONFIG_DIR=$(EMACS_HOME)/config-test EMACS_CONFIG_PROFILE=1 $(EMACS)
+	touch $(EMACS_HOME)/config-test/scratch.el
