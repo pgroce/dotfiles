@@ -37,6 +37,18 @@ This configuration makes heavy use of Emacs packages, so first, configure the pa
   (require 'use-package)
 #+END_SRC
 
+If we're profiling, additionally compute timing statistics. (TODO: Maybe move this up to the config framework?)
+
+#+BEGIN_SRC emacs-lisp
+  (when (getenv "EMACS_CONFIG_PROFILE")
+    (setq use-package-compute-statistics t)
+    (use-package benchmark-init
+      :ensure t
+      :config
+      (add-hook 'after-init-hook 'benchmark-init/deactivate)))
+
+#+END_SRC
+
 ** Foundation packages
 
 I use these packages in lots of places in the configuration, so load them now.
