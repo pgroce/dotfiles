@@ -34,5 +34,5 @@ test: tangle
 	cp build/*.el $(EMACS_HOME)/config-test
 
 test-run: test
-	EMACS_CONFIG_DIR=$(EMACS_HOME)/config-test EMACS_CONFIG_PROFILE=1 $(EMACS)
+	EMACS_CONFIG_DIR=$(EMACS_HOME)/config-test EMACS_CONFIG_PROFILE=1 $(EMACS) --debug-init
 	touch $(EMACS_HOME)/config-test/scratch.el
