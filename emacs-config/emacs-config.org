@@ -1401,11 +1401,11 @@ Citations and references have become a much bigger part of my workflow in the la
 The [[https://github.com/jkitchin/org-ref][org-ref]] project is an extremely powerful method for organizing references, especially academic papers and/or sources associated (or that can be associated) with PDFs.
 
 #+begin_src emacs-lisp
-(use-package org-ref :ensure t :after org
-  :config
-  (progn
-    (require 'org-ref-pdf)
-    (require 'org-ref-url-utils)))
+  (use-package org-ref :ensure t :after org
+    :custom (org-ref-default-citation-link "citep"))
+
+  (use-package org-ref-pdf :after (org-ref))
+  (use-package org-ref-url-utils :after (org-ref))
 #+end_src
 
 *** Quick access to important files
