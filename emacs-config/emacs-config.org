@@ -150,7 +150,7 @@ Furthermore, I like to put my own bindings on =super=.
 
 Therefore, kill it all with fire.
 
-(Because of this, any =super= bindings need to be deferred until after terminal has set up, using =ecfw-defer= or something.)
+Since I'm wrapping this in =pg-terminal-ns=, it will run in =emacs-startup-hook=, so any subsequent rebindings of =super= should do the same. =pg-terminal-any= is a good way to do this generically.
 
 #+BEGIN_SRC emacs-lisp :tangle darwin.el
   (pg-terminal-ns
