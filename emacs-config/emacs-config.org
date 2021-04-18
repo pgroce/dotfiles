@@ -645,40 +645,6 @@ Bury buffers and delete the window they're in. Default behavior from some transi
    (pg-terminal-any (bind-key "s-Q" #'pg-bury-buffer-delete-window)))
 #+END_SRC
 
-***  =ibuffer=
-
-Tweaks to =ibuffer=:
-
- * Add divisions to =ibuffer-saved-filter-groups= that won't be added elsewhere
-
-=ibuffer-ediff-marked-files= h/t [[http://curiousprogrammer.wordpress.com/2009/04/02/ibuffer/][A Curious Programmer]].
-
-
-#+BEGIN_SRC emacs-lisp
-  (use-package ibuffer
-    :bind ("C-X C-b" . ibuffer-other-window)
-    :init
-    (progn
-      (setq ibuffer-view-ibuffer t)
-      (setq ibuffer-saved-filter-groups
-            '(("default" ())))))
-
-    :config
-    (progn
-      (defun ibuffer-ediff-marked-buffers ()
-        (interactive)
-        (let* ((marked-buffers (ibuffer-get-marked-buffers))
-               (len (length marked-buffers)))
-          (unless (= 2 len)
-            (error (format "%s buffer%s been marked (needs to be 2)"
-                           len (if (= len 1) " has" "s have"))))
-          (ediff-buffers (car marked-buffers) (cadr marked-buffers))))
-
-      (add-hook 'ibuffer-mode-hook
-                (lambda ()
-                  (ibuffer-switch-to-saved-filter-groups "default"))))
-#+END_SRC
-
 
 ** Directories (=dired=)
 
@@ -688,7 +654,6 @@ Lots of tweaks to =dired=:
    * Make =M-<= and =M->= do the right thing. (h/t [[http://whattheemacsd.com//setup-dired.el-02.html][What the emacs.d!?]])
    * =z= gets the size of marked files via =du=. (h/t [[http://oremacs.com/2015/01/12/dired-file-size/][(or emacs irrelevant)]])
    * =H= swaps between full and human-readable file sizes.
-   * Add =dired= header to =ibuffer=.
 
 #+BEGIN_SRC emacs-lisp
   (use-package dired
@@ -779,7 +744,7 @@ This bit of voodoo allows me to edit files on remote machines as =root=. I'm als
 
 ** Narrowing (=helm=)
 
-[[https://github.com/emacs-helm/helm][Helm]], like =ibuffer=, is a cross-cutting concern. This is the core setup; elsewhere in the config, other packages will customize Helm to their needs.
+[[https://github.com/emacs-helm/helm][Helm]] is a cross-cutting concern. This is the core setup; elsewhere in the config, other packages will customize Helm to their needs.
 
 #+BEGIN_SRC emacs-lisp
 
