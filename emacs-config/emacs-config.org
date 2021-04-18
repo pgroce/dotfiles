@@ -774,6 +774,10 @@ This bit of voodoo allows me to edit files on remote machines as =root=. I'm als
     :ensure t
     :after (helm)
     :bind ("C-h b" . helm-descbinds))
+
+  (use-package helm-ag
+    :ensure t
+    :after (helm ag))
 #+END_SRC
 
 
