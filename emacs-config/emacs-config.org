@@ -206,9 +206,400 @@ Same thing, trying to make things Apple-like backfiring. It's way too easy to hi
 ** Unicode
 [[https://github.com/rolandwalker/unicode-fonts][unicode-fonts]] does a lot of magic to ensure that you can see as many Unicode glyphs as possible. You have to download several fonts for it to work; check the page for details.
 
+This package is /slow/ to start and stop if you haven't loaded [[https://github.com/rolandwalker/persistent-soft][persistent-soft]] and [[https://github.com/sigma/pcache][pcache]] libraries.
+
 #+BEGIN_SRC emacs-lisp
-  (use-package unicode-fonts :ensure t :config (unicode-fonts-setup))
+  (use-package pcache :ensure t :demand t)
+  (use-package persistent-soft :ensure t :demand t)
 #+END_SRC
+
+This package is /still/ slow even with those installed. To speed it up, I limit myself to only the following fonts:
+
+- [[https://evertype.com/emono/evermono.zip][Everson Mono]]
+- [[https://noto-website-2.storage.googleapis.com/pkgs/NotoSans-unhinted.zip][Noto Sans]]
+- [[https://noto-website-2.storage.googleapis.com/pkgs/NotoSansSymbols-unhinted.zip][Noto Sans Symbols]]
+- [[https://fontlibrary.org/assets/downloads/symbola/cf81aeb303c13ce765877d31571dc5c7/symbola.zip][Symbola]]
+- [[http://quivira-font.com/files/Quivira.otf][Quivira]]
+- Inconsolata Nerd Font: Install from [[https://github.com/ryanoasis/nerd-fonts#option-3-install-script][Github]] or =brew install --cask font-inconsolata-nerd-font= (MacOS)
+- [[https://www.fontsquirrel.com/fonts/download/dejavu-sans][DejaVu Sans]]
+- [[http://mirrors.ctan.org/fonts/Asana-Math.zip][Asana Math]]
+- [[https://fontlibrary.org/assets/downloads/babelstone-modern/1fe2f5b6a0c5236fd1b07fc560ad6c1d/babelstone-modern.zip][Babelstone Modern]]
+- [[https://fontlibrary.org/assets/downloads/musica/d6fe11732daff6659da9f5db7178826e/musica.zip][Musica]]
+- [[https://www.fontspace.com/get/family/07r1][FreeSerif]]
+- [[https://cofonts.com/download/itc-zapf-dingbats][Zapf Dingbats]]
+- [[https://www.ffonts.net/Lucida-Sans-Unicode.font.zip][Lucida Sans Unicode]]
+
+(Plus the stock MS fonts for Windows use.)
+
+A few of the above fonts may be duplicative; I haven't spent a lot of time deconflicting, the main purpose was to trim the font list and speed up startup/shutdown without losing too much utility for me, so if you need to display non-Roman alphabets more than you need symbols and emoji, this list will not work well for you.
+
+Anyway, time to configure =unicode-fonts=:
+
+#+begin_src emacs-lisp
+  (use-package unicode-fonts
+    :ensure t
+    :config (unicode-fonts-setup)
+    :custom (unicode-fonts-block-font-mapping
+             '(("Aegean Numbers"
+                ("Noto Sans Symbols" "Symbola" "Quivira" "Everson Mono:weight=bold" ))
+               ("Alchemical Symbols"
+                ("Noto Sans Symbols" "Symbola" "Quivira" "Everson Mono:weight=bold"))
+               ("Alphabetic Presentation Forms"
+                ("DejaVu Sans:width=condensed" "Arial Unicode MS" "Cardo" "Code2000" "Quivira" "Everson Mono:weight=bold"))
+               ("Ancient Greek Musical Notation"
+                ("Noto Sans Symbols"   "Symbola" "Quivira" "Everson Mono:weight=bold"))
+               ("Ancient Greek Numbers"
+                ("Noto Sans Symbols" "Apple Symbols" "Quivira" "Symbola" "Everson Mono:weight=bold" ))
+               ("Ancient Symbols"
+                ("Noto Sans Symbols" "Analecta"  "Quivira" "Symbola" "Everson Mono:weight=bold" ))
+               ("Arabic"
+                ("Courier New"           "DejaVu Sans Mono" "DejaVu Sans:width=condensed" "Arial Unicode MS" "Tahoma" "Microsoft Sans Serif"))
+               ("Arabic Presentation Forms-A"
+                (  "Arial Unicode MS" "Microsoft Sans Serif" "Tahoma"        "DejaVu Sans Mono" "DejaVu Sans:width=condensed"  ))
+               ("Arabic Presentation Forms-B"
+                ("DejaVu Sans Mono"      "Arial Unicode MS" "Microsoft Sans Serif"  "DejaVu Sans:width=condensed"   ))
+               ("Arabic Supplement"
+                ("Courier New"            "Tahoma" "Microsoft Sans Serif" ))
+               ("Armenian"
+                ("DejaVu Sans Mono"    "DejaVu Sans:width=condensed" "Quivira"   "Arial Unicode MS" "Everson Mono:weight=bold" ))
+               ("Arrows"
+                ("DejaVu Sans Mono" "Apple Symbols" "Cambria Math" "Segoe UI Symbol" "DejaVu Sans:width=condensed" "Asana Math" "Arial Unicode MS" "BabelStone Modern" "Symbola" "Quivira"  "Noto Sans Symbols" "Everson Mono:weight=bold" ))
+               ("Bengali"
+                ("Arial Unicode MS"))
+               ("Block Elements"
+                ("DejaVu Sans Mono" "Noto Sans Symbols"  "DejaVu Sans:width=condensed" "Apple Symbols" "Segoe UI Symbol" "BabelStone Modern" "Symbola" "Quivira"  "Everson Mono:weight=bold"))
+               ("Bopomofo"
+                (              "Arial Unicode MS"   ))
+               ("Box Drawing"
+                ("DejaVu Sans Mono"  "DejaVu Sans" "Everson Mono" "Quivira"  "Noto Sans Symbols" "Segoe UI Symbol" "Symbola"))
+               ("Braille Patterns"
+                ("Quivira" "Apple Braille" "DejaVu Sans:width=condensed" "Apple Symbols" "Segoe UI Symbol" "Symbola" "Noto Sans Symbols"   "Everson Mono:weight=bold"))
+               ("Buhid"
+                ( "Quivira" ))
+               ("Byzantine Musical Symbols"
+                ("Noto Sans Symbols" "Musica" "Symbola" "FreeSerif"))
+               ("Carian"
+                (   "Quivira" "Everson Mono:weight=bold" ))
+               ("Cherokee"
+                ( "Quivira" "Everson Mono:weight=bold"  ))
+               ("Cherokee Supplement"
+                ("Everson Mono:weight=bold"))
+               ("CJK Compatibility"
+                ( "Arial Unicode MS" ))
+               ("CJK Compatibility Forms"
+                ( "Symbola" ))
+               ("CJK Compatibility Ideographs"
+                ( "Arial Unicode MS" ))
+               ("CJK Radicals Supplement"
+                ( "Apple Symbols" ))
+               ("CJK Symbols and Punctuation"
+                ( "Arial Unicode MS" ))
+               ("CJK Unified Ideographs"
+                ( "Apple LiGothic" "Arial Unicode MS" ))
+               ("Combining Diacritical Marks"
+                ("Monaco" "Consolas" "Noto Sans" "Cambria Math"   "Courier New" "DejaVu Sans:width=condensed" "DejaVu Sans Mono"     "Tahoma" "Microsoft Sans Serif" "Arial" "Quivira" "Symbola" "Everson Mono"  "Arial Unicode MS" ))
+               ("Combining Diacritical Marks Supplement"
+                ( "FreeSerif"   "DejaVu Sans:width=condensed" "Noto Sans" "Segoe UI"  "Everson Mono" ))
+               ("Combining Diacritical Marks for Symbols"
+                ("Cambria Math" "Segoe UI Symbol" "Noto Sans Symbols" "Symbola"  "Everson Mono" "Arial Unicode MS"))
+               ("Combining Half Marks"
+                ("Consolas" "DejaVu Sans:width=condensed" "Everson Mono:weight=bold" "Symbola"))
+
+               ("Control Pictures"
+                ("Apple Symbols" "BabelStone Modern" "Noto Sans Symbols" "Segoe UI Symbol" "Arial Unicode MS" "Symbola" "Quivira"   "Everson Mono:weight=bold"))
+               ("Coptic"
+                (    "Segoe UI Symbol" "Quivira"    "Everson Mono:weight=bold" ))
+               ("Coptic Epact Numbers"
+                ( "Symbola"))
+               ("Counting Rod Numerals"
+                ( "Noto Sans Symbols" "BabelStone Modern" "Symbola" "Quivira" "Apple Symbols" ))
+               ("Currency Symbols"
+                ("Monaco" "DejaVu Sans Mono" "DejaVu Sans:width=condensed" "Consolas" "Noto Sans Symbols" "Noto Sans" "Segoe UI" "Apple Symbols" "Symbola" "Quivira" "Everson Mono:weight=bold" ))
+               ("Cypriot Syllabary"
+                ( "Everson Mono:weight=bold" ))
+               ("Cyrillic"
+                ("Consolas" "Monaco" "DejaVu Sans Mono" "DejaVu Sans:width=condensed" "Noto Sans" "Courier New" "Calibri" "Microsoft Sans Serif"  "Arial Unicode MS"   "Symbola" "Quivira" "Everson Mono:weight=bold"))
+               ("Cyrillic Extended-A"
+                ("Quivira" "Everson Mono:weight=bold" "FreeSerif" ))
+               ("Cyrillic Extended-B"
+                ("Quivira"  "Everson Mono:weight=bold"))
+               ("Cyrillic Supplement"
+                ("Consolas" "Courier New" "Calibri" "Noto Sans" "DejaVu Sans:width=condensed"   "Symbola" "Quivira"  "Everson Mono:weight=bold"))
+               ("Deseret"
+                ( "Apple Symbols" "Segoe UI Symbol"   "Everson Mono:weight=bold"))
+               ("Devanagari"
+                (           "Arial Unicode MS" ))
+               ("Devanagari Extended"
+                (  "FreeSerif"))
+               ("Dingbats"
+                ("Apple Color Emoji" "DejaVu Sans Mono" "Segoe UI Symbol" "Zapf Dingbats" "DejaVu Sans:width=condensed" "Arial Unicode MS"  "Noto Sans Symbols" "Symbola" "Quivira" "Everson Mono:weight=bold"))
+               ("Domino Tiles"
+                ("DejaVu Sans:width=condensed" "Symbola" "Quivira" "Segoe UI Symbol" "Noto Sans Symbols"  "Everson Mono:weight=bold"))
+               ("Elbasan"
+                ("Everson Mono:weight=bold"))
+               ("Emoticons"
+                ("Apple Color Emoji" "Segoe UI Symbol" "Symbola" "Quivira"))
+               ("Enclosed Alphanumeric Supplement"
+                ("Segoe UI Symbol" "Noto Sans Symbols" "Symbola" "Quivira"  "BabelStone Modern"))
+               ("Enclosed Alphanumerics"
+                ("Noto Sans Symbols" "Segoe UI Symbol" "Arial
+               Unicode MS" "Symbola" "Quivira" "BabelStone
+               Modern" "Everson Mono:weight=bold"))
+               ("Enclosed CJK Letters and Months"
+                ( "Arial Unicode MS" "Quivira" ))
+               ("Enclosed Ideographic Supplement"
+                ("Segoe UI Symbol" "Noto Sans Symbols" "Symbola"))
+               ("General Punctuation"
+                ("Monaco" "Apple Symbols" "Segoe UI Symbol" "Cambria
+               Math" "DejaVu Sans Mono" "DejaVu
+               Sans:width=condensed" "Symbola" "Quivira" "Noto
+               Sans" "Everson Mono:weight=bold" "BabelStone
+               Modern"))
+               ("Geometric Shapes"
+                ("DejaVu Sans Mono" "DejaVu
+               Sans:width=condensed" "Segoe UI Symbol" "Arial
+               Unicode MS" "Symbola" "Noto Sans
+               Symbols" "Quivira" "BabelStone Modern" "Everson
+               Mono" ))
+               ("Geometric Shapes Extended"
+                ("Symbola" "Quivira"))
+               ("Georgian"
+                ("DejaVu Sans Mono" "Noto Sans Georgian" "Noto Serif
+               Georgian" "DejaVu Sans:width=condensed" "Arial
+               Unicode MS" "Quivira" "Everson Mono:weight=bold"))
+               ("Georgian Supplement"
+                ("Noto Sans Georgian" "Noto Serif Georgian" "DejaVu Serif:width=condensed"
+                 "Quivira" "Everson Mono:weight=bold"))
+               ("Glagolitic"
+                ("Segoe UI Symbol" "Quivira" "FreeSerif"))
+               ("Gothic"
+                ("Segoe UI Symbol" "FreeSerif" "Quivira"
+                 "Everson Mono:weight=bold"))
+               ("Greek Extended"
+                ("Consolas" "DejaVu Sans Mono" "Courier New"  "Noto Sans"
+                 "DejaVu Sans:width=condensed" "Microsoft Sans Serif"
+                 "Arial Unicode MS" "Arial" "Tahoma" "Quivira"
+                 "Everson Mono:weight=bold"  ))
+               ("Greek and Coptic"
+                ("Consolas" "DejaVu Sans Mono" "DejaVu Sans:width=condensed"
+                 "Noto Sans" "Segoe UI Symbol" "Calibri" "Microsoft Sans Serif"
+                 "Lucida Console" "Arial Unicode MS" "Symbola" "Quivira"
+                 "Everson Mono:weight=bold"  ))
+               ("Gujarati"
+                ("Arial Unicode MS"))
+               ("Gurmukhi"
+                ("Arial Unicode MS" ))
+               ("Halfwidth and Fullwidth Forms"
+                ( "Arial Unicode MS"      "Apple Symbols" "Quivira"  ))
+               ("Hangul Compatibility Jamo"
+                ("AppleMyungjo" "Arial Unicode MS"))
+               ("Hangul Jamo"
+                ("Arial Unicode MS" ))
+               ("Hangul Syllables"
+                ("AppleGothic" "Arial Unicode MS" ))
+               ("Hanunoo"
+                ("Noto Sans Hanunoo" "Quivira" "FreeSerif"))
+               ("Hebrew"
+                ("Courier New" "Microsoft Sans Serif" "Tahoma" "Lucida Sans Unicode"
+                 "Arial Unicode MS" "Arial" "Quivira" "Everson Mono:weight=bold" ))
+               ("Hiragana"
+                ("MS Gothic" "MS Mincho"  "Arial Unicode MS"))
+               ("Ideographic Description Characters"
+                ("AppleMyungjo" "Quivira"))
+               ("Imperial Aramaic"
+                ("Quivira" "Everson Mono:weight=bold"))
+               ("IPA Extensions"
+                ("Monaco" "Consolas" "DejaVu Sans Mono" "Courier New" "Noto Sans"
+                 "Arial Unicode MS" "Arial" "Tahoma" "Microsoft Sans Serif"
+                 "Symbola" "Quivira" "Everson Mono:weight=bold"))
+               ("Kanbun"
+                ("Arial Unicode MS"))
+               ("Kangxi Radicals"
+                ("AppleMyungjo" "Apple Symbols" ))
+               ("Kannada"
+                ("Arial Unicode MS" ))
+               ("Katakana"
+                ("MS Gothic" "Arial Unicode MS"))
+               ("Katakana Phonetic Extensions"
+                ("MS Gothic"))
+               ("Lao"
+                ("DejaVu Sans Mono" "Arial Unicode MS"
+                 "DejaVu Sans:width=condensed"))
+               ("Latin Extended-C"
+                ("DejaVu Sans Mono" "DejaVu Sans:width=condensed" "Noto Sans"
+                 "Cambria Math" "Quivira" "Everson Mono:weight=bold"))
+               ("Latin Extended-D"
+                ("DejaVu Sans Mono" "DejaVu Sans:width=condensed"
+                 "Quivira" "Everson Mono:weight=bold" ))
+               ("Latin Extended-E"
+                ("Quivira" "Everson Mono:weight=bold" ))
+               ("Letterlike Symbols"
+                ("Monaco" "Noto Sans Symbols" "Segoe UI Symbol" "Apple Symbols"
+                 "Cambria Math" "DejaVu Sans:width=condensed" "Arial Unicode MS"
+                 "Symbola" "Quivira"  "Everson Mono:weight=bold"))
+               ("Linear B Ideograms"
+                ("Everson Mono:weight=bold"))
+               ("Linear B Syllabary"
+                ("Everson Mono:weight=bold"))
+               ("Lisu"
+                ("Quivira" "Everson Mono:weight=bold"))
+               ("Lycian"
+                ("Quivira" "Everson Mono:weight=bold" ))
+               ("Lydian"
+                ("Quivira" "Everson Mono:weight=bold" ))
+               ("Mahjong Tiles"
+                ("Segoe UI Symbol" "Symbola" "Noto Sans Symbols" "Quivira" "Everson Mono"))
+               ("Malayalam"
+                (       "Arial Unicode MS"))
+               ("Mathematical Alphanumeric Symbols"
+                ("Cambria Math" "Noto Sans Symbols" "Asana Math"  "Symbola"
+                 "Quivira" "Everson Mono:weight=bold"))
+               ("Mathematical Operators"
+                ("Monaco" "DejaVu Sans Mono" "Segoe UI Symbol" "Cambria Math"
+                 "DejaVu Sans:width=condensed" "Noto Sans Symbols" "Apple Symbols"
+                 "Asana Math" "Arial Unicode MS" "Symbola" "Quivira"
+                 "Everson Mono:weight=bold" ))
+               ("Meroitic Cursive"
+                (  "Segoe UI Symbol"))
+
+               ("Miscellaneous Mathematical Symbols-A"
+                ("Noto Sans Symbols" "Apple Symbols" "Segoe UI Symbol" "Asana Math"
+                 "Symbola" "Quivira" "Cambria Math" "Everson Mono:weight=bold"))
+               ("Miscellaneous Mathematical Symbols-B"
+                ("Noto Sans Symbols" "Segoe UI Symbol" "Apple Symbols"
+                 "Cambria Math" "Asana Math"  "Symbola" "Quivira"))
+               ("Miscellaneous Symbols"
+                ("Noto Sans Symbols" "Segoe UI Symbol" "Apple Symbols"
+                 "DejaVu Sans Mono" "DejaVu Sans:width=condensed"
+                 "Arial Unicode MS" "Symbola" "Quivira" "MS Reference Sans Serif"
+                 "Everson Mono:weight=bold"))
+               ("Miscellaneous Symbols and Arrows"
+                ("Symbola" "Quivira" "Asana Math"  "Segoe UI Symbol"
+                 "Noto Sans Symbols"))
+               ("Miscellaneous Symbols and Pictographs"
+                ("Apple Color Emoji" "Segoe UI Symbol" "Symbola" "Quivira"))
+               ("Miscellaneous Technical"
+                ("Segoe UI Symbol" "Noto Sans Symbols" "Apple Symbols"
+                 "Cambria Math" "DejaVu Sans Mono" "Symbola" "Quivira"
+                 "Everson Mono:weight=bold"))
+               ("Modifier Tone Letters"
+                ("Apple Symbols" "Noto Sans Symbols"   "Quivira"   "DejaVu Sans Mono"))
+               ("Musical Symbols"
+                ("Noto Sans Symbols" "Musica" "FreeSerif" "Symbola" "Quivira"))
+               ("Nabataean" ("Everson Mono:weight=bold"))
+               ("NKo"
+                ("DejaVu Sans:width=condensed"))
+               ("Number Forms"
+                ("DejaVu Sans:width=condensed" "Asana Math" "Arial Unicode MS"
+                 "Symbola" "Quivira" "Everson Mono:weight=bold"  ))
+               ("Ogham"
+                ("Segoe UI Symbol" "DejaVu Sans:width=condensed" "BabelStone Modern"
+                 "Quivira" "Everson Mono:weight=bold"))
+               ("Old Italic"
+                ("Segoe UI Symbol" "DejaVu Sans:width=condensed"
+                 "Noto Sans Old Italic" "Quivira" "Everson Mono:weight=bold"))
+               ("Old Permic" ("Everson Mono:weight=bold"))
+               ("Old Persian" ( "FreeSans" ))
+               ("Old South Arabian"
+                (  "Quivira"  "Everson Mono:weight=bold"))
+               ("Old Turkic"
+                ("Segoe UI Symbol" "Quivira" "Everson Mono:weight=bold"))
+               ("Optical Character Recognition"
+                ("Apple Symbols" "Segoe UI Symbol" "Noto Sans Symbols"
+                 "Arial Unicode MS" "Symbola" "Quivira"  "BabelStone Modern"
+                 "Everson Mono"))
+               ("Oriya" ( "Arial Unicode MS"))
+               ("Ornamental Dingbats" ("Symbola"))
+               ("Osmanya" ( "Everson Mono:weight=bold"))
+               ("Phaistos Disc"
+                ( "Noto Sans Symbols" "Symbola" "Everson Mono:weight=bold"  ))
+               ("Phoenician"
+                (   "Quivira"  "Everson Mono:weight=bold" ))
+               ("Phonetic Extensions"
+                ("Monaco" "Consolas" "Calibri" "Noto Sans" "Quivira" "Courier New"
+                 "DejaVu Sans:width=condensed"  "Everson Mono:weight=bold" ))
+               ("Phonetic Extensions Supplement"
+                ("Consolas" "Calibri" "Courier New" "Noto Sans" "Quivira"
+                 "DejaVu Sans Mono" "DejaVu Sans:width=condensed"
+                 "Everson Mono:weight=bold" ))
+               ("Playing Cards"
+                ("DejaVu Sans:width=condensed" "Symbola" "Noto Sans Symbols"
+                 "Segoe UI Symbol" "Quivira"))
+               ("Rejang"
+                ( "Everson Mono:weight=bold"))
+               ("Runic"
+                ("Segoe UI Symbol" "Quivira" "Everson Mono:weight=bold"))
+               ("Samaritan"
+                ( "Quivira" "Everson Mono:weight=bold"))
+               ("Shavian"
+                (    "Apple Symbols"  "Everson Mono:weight=bold"))
+               ("Small Form Variants"
+                ("Apple Symbols" "Arial Unicode MS"    ))
+               ("Specials"
+                ("BabelStone Modern" "Noto Sans Symbols" "Apple Symbols"
+                 "Arial Unicode MS" "Symbola" "DejaVu Sans Mono"
+                 "DejaVu Sans:width=condensed" "Quivira"  ))
+
+               ("Superscripts and Subscripts"
+                ("Consolas" "Monaco" "Apple Symbols" "Cambria Math"
+                 "DejaVu Sans Mono" "DejaVu Sans:width=condensed"
+                 "Segoe UI Symbol" "Asana Math" "Symbola" "Quivira"
+                 "Everson Mono:weight=bold" ))
+               ("Supplemental Arrows-A"
+                ("Segoe UI Symbol" "Cambria Math" "DejaVu Sans:width=condensed"
+                 "Asana Math" "Quivira" "Symbola" "Apple Symbols"
+                 "Noto Sans Symbols" "Everson Mono:weight=bold"
+                 "BabelStone Modern"))
+               ("Supplemental Arrows-B"
+                ("Cambria Math" "Segoe UI Symbol" "Apple Symbols"
+                 "Noto Sans Symbols" "Asana Math" "Quivira" "Symbola"
+                 "Everson Mono:weight=bold"))
+               ("Supplemental Arrows-C" ("Symbola"))
+               ("Supplemental Mathematical Operators"
+                ("Cambria Math" "Segoe UI Symbol" "Noto Sans Symbols"
+                 "Apple Symbols" "Asana Math"  "Symbola" "Quivira"
+                 "Everson Mono:weight=bold"))
+               ("Supplemental Punctuation"
+                ("DejaVu Sans Mono" "Segoe UI Symbol" "Noto Sans Symbols"
+                 "Symbola" "Quivira" "Everson Mono:weight=bold"  ))
+               ("Supplemental Symbols and Pictographs"
+                ("Symbola"))
+               ("Tagalog" ("Quivira"))
+               ("Tagbanwa" ("Quivira"))
+               ("Tags" ("BabelStone Modern" ))
+               ("Tai Le" ("FreeSerif"))
+               ("Tai Xuan Jing Symbols"
+                ( "Apple Symbols" "Noto Sans Symbols" "Segoe UI Symbol"
+                  "DejaVu Sans:width=condensed" "Symbola" "Quivira"
+                  "BabelStone Modern"  "Everson Mono:weight=bold"))
+               ("Tamil" ("Arial Unicode MS"))
+               ("Telugu" ("Arial Unicode MS"))
+               ("Thaana" ("Everson Mono:weight=bold"))
+               ("Thai"
+                ("Tahoma" "Arial Unicode MS" "Quivira" "Everson Mono:weight=bold"))
+               ("Tibetan" ("Arial Unicode MS"))
+               ("Tifinagh"
+                ("DejaVu Sans:width=condensed"  "Quivira" "Everson Mono:weight=bold"))
+               ("Transport and Map Symbols"
+                ("Apple Color Emoji" "Segoe UI Symbol" "Symbola"))
+               ("Ugaritic"
+                ("Quivira" "Everson Mono:weight=bold" "FreeSans"))
+               ("Unified Canadian Aboriginal Syllabics"
+                ("Quivira" "Everson Mono:weight=bold"))
+               ("Unified Canadian Aboriginal Syllabics Extended"
+                ("Quivira" "Everson Mono:weight=bold"))
+               ("Vai" ("Quivira"))
+               ("Variation Selectors" ("BabelStone Modern"  ))
+               ("Variation Selectors Supplement" ("BabelStone Modern" ))
+               ("Vertical Forms" ("Symbola"))
+               ("Yijing Hexagram Symbols"
+                ( "Noto Sans Symbols" "Segoe UI Symbol" "Apple Symbols"
+                  "DejaVu Sans:width=condensed"  "Symbola" "Quivira"
+                  "BabelStone Modern"  "Everson Mono:weight=bold")))))
+
+
+#+end_src
+
 
 ** URLs
 
