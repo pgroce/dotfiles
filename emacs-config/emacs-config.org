@@ -1,9 +1,16 @@
 #+STARTUP: indent
 #+TITLE: Phil's Emacs Configuration
-
 This configuration integrates with my [[https://github.com/pgroce/emacs-config-framework][configuration framework]], although it could probably be used without it. It also uses some packages from [[https://github.com/pgroce/emacs-pkgs][my own package repository]]. (For the ELPA repo URL, see [[Package configuration]] below.)
 
 * Basic environment
+
+** Debugging
+
+Quick line to print timestamp.
+
+#+BEGIN_SRC emacs-lisp
+  (defmacro pg-ts () (format-time-string "MARK: %Y-%m-%dT%T"))
+#+END_SRC
 
 ** Proxy configuration
 
@@ -35,6 +42,8 @@ This configuration makes heavy use of Emacs packages, so first, configure the pa
     (package-refresh-contents)
     (package-install 'use-package))
   (require 'use-package)
+  (setq use-package-compute-statistics t)
+  (setq use-package-verbose t)
 #+END_SRC
 
 If we're profiling, additionally compute timing statistics. (TODO: Maybe move this up to the config framework?)
@@ -46,18 +55,31 @@ If we're profiling, additionally compute timing statistics. (TODO: Maybe move th
       :ensure t
       :config
       (add-hook 'after-init-hook 'benchmark-init/deactivate)))
-
 #+END_SRC
 
-** Foundation packages
+If things are running slow, it might be helpful to =C-g= during a lag and find out what's going on.
+
+#+begin_src emacs-lisp
+  (when (getenv "EMACS_CONFIG_PROFILE")
+    (setq debug-on-quit t))
+#+end_src
+
+** Foundation packages/libraries
 
 I use these packages in lots of places in the configuration, so load them now.
 
+- =pg-util= :: Utility grab-bag
+- =pg-shell-path= :: Manipulation of shell paths (e.g., =/a/b/c:x/y/z=)
+- =pg-terminal= :: Special handling for different windowing systems ("terminals" in Emacs parlance)
+
 #+BEGIN_SRC emacs-lisp
-  (use-package seq)
-  (use-package pg-util :ensure t)
-  (use-package pg-shell-path :ensure t)
-  (use-package pg-ibuffer :ensure t)
+  (use-package seq :demand t)
+  (use-package dash :demand t :ensure t)
+  (use-package s :demand t :ensure t)
+  (use-package diminish :demand t :ensure t)
+  (use-package pg-util :demand t :ensure t)
+  (use-package pg-shell-path :demand t :ensure t)
+  (use-package pg-terminal :demand t :ensure t)
 #+END_SRC
 
 ** Accomodating Emacs customization
@@ -85,20 +107,23 @@ This macro makes that a little clearer in the several places where I do it.
        (message "Pro-tip: %s" ,absent-msg)))
 #+END_SRC
 
+
 * General configuration
-
-** Verbose?
-
-#+BEGIN_SRC emacs-lisp
-(require 'use-package)
-(setq use-package-verbose t)
-
-#+END_SRC
 
 
 ** Look and feel
+<<look-and-feel>>
 
 Use the [[https://github.com/bbatsov/solarized-emacs][Solarized theme]] for shiny.
+
+I like to use a pretty Unicode chevron in the prompt (thanks [[https://starship.rs][starship]]!), but it messes with prompt parsing in the shell. This fixes that.
+
+#+BEGIN_SRC emacs-lisp
+  (setq shell-prompt-pattern
+        "^[^#$%>❯
+  ]*[#$%>❯] *")
+#+END_SRC
+
 
 #+BEGIN_SRC emacs-lisp
   (use-package solarized-theme
@@ -111,34 +136,93 @@ Use the [[https://github.com/bbatsov/solarized-emacs][Solarized theme]] for shin
 #+END_SRC
 
 
-** A quick note on Super bindings
+** Decontaminate =super= keybindings (~Macos~ =ns= terminals only)
+:PROPERTIES:
+:CUSTOM_ID: superpocalypse
+:END:
 
-Some platforms (\*cough\*OS X\*cough\*) put a bunch of nonsense in Super when terminals are configured.That can overwrite any Super keybinds previously defined. (I also blow away literally everything in Super in my OS X config to get rid of those customizations; that will overwrite those bindings too.)
 
-Because of this, defer all Super bindings so they run after the [[#superpocalypse][superpocalypse]].
+The =ns= Emacs port adds a number of keybindings to =super= in an attempt to make Emacs feel like a NeXTStep/Mac application.
+
+I'd rather use the Emacs style of interaction, because I've learned it already and because I can find better uses for =super=. (Most of these bindings are harmless, but a few, like =s-q= running =save-buffers-kill-emacs=, are infuriating.)
+
+Furthermore, I like to put my own bindings on =super=.
+
+Therefore, kill it all with fire.
+
+(Because of this, any =super= bindings need to be deferred until after terminal has set up, using =ecfw-defer= or something.)
+
+#+BEGIN_SRC emacs-lisp :tangle darwin.el
+  (pg-terminal-ns
+   (unbind-key "M-s-h")
+   (unbind-key "s-,")
+   (unbind-key "s-'")
+   (unbind-key "s-`")
+   (unbind-key "s-~")
+   (unbind-key "s--")
+   (unbind-key "s-:")
+   (unbind-key "s-?")
+   (unbind-key "s-^")
+   (unbind-key "s-&")
+   (unbind-key "s-C")
+   (unbind-key "s-D")
+   (unbind-key "s-E")
+   (unbind-key "s-L")
+   (unbind-key "s-M")
+   (unbind-key "s-S")
+   (unbind-key "s-a")
+   (unbind-key "s-c")
+   (unbind-key "s-d")
+   (unbind-key "s-e")
+   (unbind-key "s-f")
+   (unbind-key "s-g")
+   (unbind-key "s-h")
+   (unbind-key "s-H")
+   (unbind-key "s-j")
+   (unbind-key "s-k")
+   (unbind-key "s-l")
+   (unbind-key "s-m")
+   (unbind-key "s-n")
+   (unbind-key "s-o")
+   (unbind-key "s-p")
+   (message "UNBINDING: s-q")
+   (unbind-key "s-q")
+   (unbind-key "s-s")
+   (unbind-key "s-t")
+   (unbind-key "s-u")
+   (unbind-key "s-v")
+   (unbind-key "s-w")
+   (unbind-key "s-x")
+   (unbind-key "s-y")
+   (unbind-key "s-z")
+   (unbind-key "s-|")
+   (unbind-key "s-<kp-bar>")
+   (unbind-key "s-<right>")
+   (unbind-key "s-<left>"))
+#+END_SRC
+
+***** Disable =C-z=
+
+Same thing, trying to make things Apple-like backfiring. It's way too easy to hit =C-z= and accidentally send the frame to the dock. Unset it.
+
+#+BEGIN_SRC emacs-lisp
+  (pg-terminal-ns (unbind-key "C-z"))
+#+END_SRC
+
 
 ** Unicode
 [[https://github.com/rolandwalker/unicode-fonts][unicode-fonts]] does a lot of magic to ensure that you can see as many Unicode glyphs as possible. You have to download several fonts for it to work; check the page for details.
 
 #+BEGIN_SRC emacs-lisp
-  (use-package unicode-fonts
-    :ensure t
-    :config (unicode-fonts-setup))
+  (use-package unicode-fonts :ensure t :config (unicode-fonts-setup))
 #+END_SRC
 
 ** URLs
 
-See [[https://github.com/pgroce/emacs-pkgs/blob/master/pg-url-armor.org][the library documentation]] for more information on this package.
+Make it easier to call =browse-url-at-point=
 
 #+BEGIN_SRC emacs-lisp
-  (use-package pg-url-armor :ensure t)
-#+END_SRC
-
-Just make it easier to call =browse-url-at-point=
-
-#+BEGIN_SRC emacs-lisp
-  (ecfw-defer
-   (bind-key "s-b" #'browse-url-at-point))
+  (pg-terminal-any (bind-key "s-b" #'browse-url-at-point))
 #+END_SRC
 
 ** Buffers
@@ -148,11 +232,13 @@ Just make it easier to call =browse-url-at-point=
 =uniquify= ensures that buffer names are unique, but not ridiculously long. Handy if you're editing the same file in two different source trees, for instance.
 
 #+begin_src emacs-lisp
-  (require 'uniquify)
-  (setq uniquify-buffer-name-style 'forward)
-  (setq uniquify-separator "/")
-  (setq uniquify-after-kill-buffer-p t)
-  (setq uniquify-ignore-buffers-re "^\\*")
+  (use-package uniquify
+    :init
+    (progn
+      (setq uniquify-buffer-name-style 'forward)
+      (setq uniquify-separator "/")
+      (setq uniquify-after-kill-buffer-p t)
+      (setq uniquify-ignore-buffers-re "^\\*")))
 #+end_src
 
 *** Burying buffers
@@ -160,8 +246,7 @@ Just make it easier to call =browse-url-at-point=
 Bury buffers easily.
 
 #+begin_src emacs-lisp
-  (ecfw-defer
-   (bind-key "s-q" #'bury-buffer))
+  (pg-terminal-any (bind-key "s-q" #'bury-buffer))
 #+end_src
 
 Bury buffers and delete the window they're in. Default behavior from some transient-window-generating modes, but not others. And sometimes you're just done with a window split, darn it.
@@ -173,7 +258,7 @@ Bury buffers and delete the window they're in. Default behavior from some transi
     (delete-window))
 
   (ecfw-defer
-   (bind-key "s-Q" #'pg-bury-buffer-delete-window))
+   (pg-terminal-any (bind-key "s-Q" #'pg-bury-buffer-delete-window)))
 #+END_SRC
 
 ***  =ibuffer=
@@ -224,18 +309,6 @@ Lots of tweaks to =dired=:
 #+BEGIN_SRC emacs-lisp
   (use-package dired
     :defer t
-    :init
-    (progn
-      ;; Load dired accessory packages
-      (use-package wdired
-        :defer t
-        :init
-        (progn
-          (setq wdired-allow-to-change-permissions t
-                wdired-allow-to-redirect-links t
-                wdired-use-interactive-rename t
-                wdired-confirm-overwrite t))))
-
     :config
     (progn
       (defun dired-back-to-top ()
@@ -277,52 +350,71 @@ Lots of tweaks to =dired=:
           (setq dired-listing-switches dired-old-listing-switches))
         (dired-sort-other dired-listing-switches))
       (add-hook 'dired-mode-hook 'dired-toggle-show-human-sizes)
-      (bind-key "H" #'dired-toggle-show-human-sizes dired-mode-map)
+      (bind-key "H" #'dired-toggle-show-human-sizes dired-mode-map)))
 
-      (pg-ibuffer '("default" (("dired" . (mode . dired-mode)))))))
+  (progn
+    ;; Load dired accessory packages
+    (use-package wdired
+      :after (dired)
+      :init
+      (progn
+        (setq wdired-allow-to-change-permissions t
+              wdired-allow-to-redirect-links t
+              wdired-use-interactive-rename t
+              wdired-confirm-overwrite t))))
 #+END_SRC
+
+No one needs the default list-directory, make it dired instead.
+
+#+begin_src emacs-lisp
+  (bind-key "C-x C-d" 'dired)
+#+end_src
 
 ** Remote editing (=tramp=)
 
-This bit of voodoo allows me to edit files on remote machines as =root=.
+This bit of voodoo allows me to edit files on remote machines as =root=. I'm also modifying =tramp-shell-prompt-pattern= to accommodate starship, as done above in [[look-and-feel][Look and Feel]].
 
 #+BEGIN_SRC emacs-lisp
   (use-package tramp
-    :defer t
-
-    :init
-    (progn
-      (setq tramp-default-method "ssh")
-      ;; Allow sudo to root on remote machines
-      (setq tramp-default-proxies-alist '())
-      (add-to-list 'tramp-default-proxies-alist
-                   '(nil "\\`root\\'" "/ssh:%h:"))
-      (add-to-list 'tramp-default-proxies-alist
-                   '((regexp-quote (system-name)) nil nil))))
+    :after (helm)
+    :custom
+    (
+     ;; remote root voodoo
+     (tramp-default-method "ssh")
+     (tramp-default-proxies-alist
+      '(((regexp-quote (system-name)) nil nil)
+        (nil "\\`root\\'" "/ssh:%h:")))
+     ;; customize tramp prompt
+     (setq tramp-shell-prompt-pattern "\\(?:^\\|\\)[^]#$%>❯
+  ]*#?[]#$%>❯] *\\(\\[[0-9;]*[a-zA-Z] *\\)*")
+     ))
 #+END_SRC
+
+
+
 
 ** Narrowing (=helm=)
 
 [[https://github.com/emacs-helm/helm][Helm]], like =ibuffer=, is a cross-cutting concern. This is the core setup; elsewhere in the config, other packages will customize Helm to their needs.
 
 #+BEGIN_SRC emacs-lisp
+
   (use-package helm
-    :defer t
-    :ensure t
     :diminish helm-mode
+    :ensure t
     :bind (("M-x" . helm-M-x)
            ("C-x C-f" . helm-find-files)
            ("C-x b" . helm-buffers-list)
            ("M-y" . helm-show-kill-ring)
            ("C-h a" . helm-apropos)
+
            :map helm-map
            ("<tab>" . helm-execute-persistent-action)
            ("C-i"   . helm-execute-persistent-action)
            ("C-z"   . helm-select-action)
            )
-    :init
-    (progn
-      (helm-mode 1)))
+    :config
+    (helm-mode 1))
 
   (use-package helm-swoop
     :ensure t
@@ -347,6 +439,8 @@ Some very basic printing defaults.
 #+end_src
 
 ** Small things
+
+
 *** =expand-region=
 
 [[https://github.com/magnars/expand-region.el][expand-region]] expands the existing selection to the next largest semantic unit (character, word, sentence, paragraph; character, word, string, function; etc.) It is useful magic.
@@ -357,16 +451,6 @@ I have it bound to =M-2= as part of an ergonomic trifecta of keys: =M-1= is boun
   (use-package expand-region
     :ensure t
     :bind ("M-2" . er/expand-region))
-#+END_SRC
-
-*** =multiple-cursors=
-
-As I said above, bound to =M-3= because I'm just so clever.
-
-#+BEGIN_SRC emacs-lisp
-  (use-package multiple-cursors
-    :ensure t
-    :bind (("M-3" . mc/mark-all-dwim)))
 #+END_SRC
 
 *** Kaomoji
@@ -488,6 +572,7 @@ Save command history and some other variables.
 #+END_SRC
 
 
+
 * General terminal configurations
 
 Emacs extends the notion of the terminal (like xterm or VT-220 terminals) to include the GUI versions that run on GTK, Windows, OS X, etc.
@@ -560,6 +645,139 @@ These changes apply to every terminal-based Emacs I care about.
 
 
 * Customizing workflows
+
+** Text processing
+
+*** General customizations for text buffers
+
+Turn on spellcheck and visual line wrap in all text buffers. This should work for all modes derived from =text-mode=.
+
+#+BEGIN_SRC emacs-lisp
+  (use-package flyspell
+    :demand t
+    :diminish " ƒ"
+    :hook (text-mode . flyspell-mode))
+  (use-package simple
+    :diminish (visual-line-mode . " ↩")
+    :hook (text-mode . visual-line-mode))
+#+END_SRC
+
+Associate some modes with some file name regexes.
+
+#+BEGIN_SRC emacs-lisp
+  (use-package rst-mode :mode "\\.rst\\'")
+  (use-package nxml-mode :mode "\\.xml\\'")
+  (use-package sgml-mode :mode "\\.html\\'")
+  (use-package json-mode :ensure t :mode "\\.json\\'")
+  (use-package markdown-mode :ensure t :mode "\\.md\\'")
+#+END_SRC
+
+[[https://github.com/aki237/zen-mode][zen-mode]] sets Emacs up as a distraction-free editor. This can be pretty nice for buckling down and getting a document out the door.
+
+#+begin_src emacs-lisp
+  (use-package zen-mode :ensure t :commands (zen-mode))
+#+end_src
+
+*** Filling and unfilling paragraphs
+
+I had some semi-DIY code that did this for the longest time, but someone read [[http://endlessparentheses.com/fill-and-unfill-paragraphs-with-a-single-key.html][the same thing I did]] and wrote an [[https://github.com/purcell/unfill][actual MELPA package]] for it, so now I just use that.
+
+#+begin_src emacs-lisp
+  (use-package unfill
+    :ensure t
+    :bind ([remap fill-paragraph] . unfill-toggle))
+#+end_src
+
+*** Upcasing, downcasing, and capitalizing words
+
+The =upcase-word=, =downcase-word=, and =capitalize-word= functions are quite handy. Sometimes, though, you are at the end of the word you want to change. For that, these functions exist.
+
+The forward versions of these functions advance point to the end of the word when doing their transformation. That's optional in these functions; I just found that, more often than not, I didn't want that behavior when going in reverse.
+
+#+begin_src emacs-lisp
+  (defun pg-upcase-word-reverse (&optional arg)
+    (interactive)
+    (upcase-word -1)
+    (when (not (equal arg nil))
+      (backward-word)))
+
+  (defun pg-downcase-word-reverse (&optional arg)
+    (interactive)
+    (downcase-word -1)
+    (when (not (equal arg nil))
+      (backward-word)))
+
+  (defun pg-capitalize-word-reverse (&optional arg)
+    (interactive)
+    (capitalize-word -1)
+    (when (not (equal arg nil))
+      (backward-word)))
+
+  (bind-key "M-U" 'pg-upcase-word-reverse)
+  (bind-key "M-L" 'pg-downcase-word-reverse)
+  (bind-key "M-C" 'pg-capitalize-word-reverse)
+
+  (pg-terminal-any (bind-key "s-u" (lambda () (interactive) (pg-upcase-word-reverse 1))))
+  (pg-terminal-any (bind-key "s-l" (lambda () (interactive) (pg-downcase-word-reverse 1))))
+  (pg-terminal-any (bind-key "s-c" (lambda () (interactive) (pg-capitalize-word-reverse 1))))
+#+end_src
+
+*** Replacing "smart" Microsoft characters with normal characters
+
+This comes up when interoperating with Microsoft products. Translate various character codes that mean things in the Microsoft Extended Universe into their IRL counterparts.
+
+#+begin_src emacs-lisp
+  (defcustom pg-smart-to-ascii '(
+                              ("\x201C" . "\"")
+                              ("\x201D" . "\"")
+
+                              ("\x93" . "\"")
+                              ("\x94" . "\"")
+
+                              ("\x2018" . "'")
+                              ("\x2019" . "'")
+                              ("\x92" . "'")
+
+                              ;; en-dash
+                              ("\x2013" . "-")
+                              ;; em-dash
+                              ("\x2014" . "–"))
+    ""
+    :type '(repeat (cons (string :tag "Smart Character  ")
+                         (string :tag "Ascii Replacement"))))
+
+  (defun pg-replace-smart-to-ascii (beg end)
+    (interactive "r")
+    (format-replace-strings smart-to-ascii
+                            nil beg end))
+#+end_src
+
+*** Search and Replace
+
+[[https://github.com/ggreer/the_silver_searcher][The Silver Searcher]] (command name: =ag=) is a text search tool optimized for source code and software projects.
+
+You'll also need to have The Silver Searcher installed for this to run.
+
+#+BEGIN_SRC emacs-lisp
+  (ecfw-defer
+   (message "Running 'use-package ag' deferred")
+   (pg-if-available "ag"
+     "Install the Silver Searcher <https://github.com/ggreer/the_silver_searcher> for a better code search experience."
+     (use-package ag :ensure t)))
+
+
+  (use-package helm-ag :after (helm ag) :ensure t)
+#+END_SRC
+
+[[http://www.masteringemacs.org/articles/2011/04/12/re-builder-interactive-regexp-builder/][re-builder]] is a visual way to verify that you're writing the right regex. I use it whenever I'm building a complicated regular expression.
+
+Most of the time I'd like the output to be string-escaped so I can paste it right into some lisp code somewhere. The other useful option is ='read=, which is good for pasting into the minibuffer.
+
+
+#+begin_src emacs-lisp
+  (use-package re-builder :ensure t :custom (reb-re-syntax 'string))
+#+end_src
+
 
 ** Org mode
 
@@ -652,34 +870,43 @@ The code block below lets me query this list of customers and projects when I'm 
            ("M-P" . org-backward-heading-same-level)
            ("M-F" . org-next-visible-heading)
            ("M-B" . org-previous-visible-heading))
-
     :init
-    (progn
-      (setq
-       org-hide-leading-stars t
-       org-fast-tag-selection-single-key 'expert
+    (add-hook 'org-mode-hook (lambda () (setq mode-name "Ø")))
+    :custom
+    ((org-hide-leading-stars t)
+     (org-fast-tag-selection-single-key 'expert)
+     (org-default-notes-file "~/org-files/notes.org")
+     (org-refile-targets '((nil :maxlevel . 2)))
+     ;; Allow org-mode to refile deeper in the tree
+     (org-refile-use-outline-path t)
+     (org-outline-path-complete-in-steps nil)
+     ;; Log all my notes, clock time, etc. related to an item into a
+     ;; drawer named LOGBOOK, so it can be collapsed and doesn't clutter
+     ;; up the display.
+     (org-log-into-drawer "LOGBOOK")
+     ;; Customize org-modules to add org-tempo and remove some
+     ;; time-consuming nonsense:
+     ;;   ol-bbdb: I don't use BBDB
+     ;;   ol-irc, ol-mhe, ol-rmail, ol-gnus: I don't need to link to these
+     (org-modules '(ol-w3m ol-bibtex ol-docview ol-info  ol-eww org-tempo))
 
-       org-default-notes-file "~/org-files/notes.org"
 
-       ;; Allow org-mode to refile deeper in the tree
-       org-refile-targets '((nil :maxlevel . 2))
-       org-refile-use-outline-path t
-       org-outline-path-complete-in-steps nil
+     (org-export-with-smart-quotes t)
+     (org-babel-load-languages '((emacs-lisp . t)
+                                 (python . t)
+                                 (shell . t))))
 
-       ;; Log all my notes, clock time, etc. related to an item into a
-       ;; drawer named LOGBOOK, so it can be collapsed and doesn't clutter
-       ;; up the display.
-       org-log-into-drawer "LOGBOOK")
+    :mode ("\\.org\\'" . org-mode))
 
-      (add-to-list 'auto-mode-alist
-                   '("\\.org\\'" . (lambda ()
-                                     (org-mode)
-                                     (visual-line-mode)))))
+  (use-package org-tempo
+    :after (org)
     :config
-    (progn
-      (pg-util-diminish-major org-mode "")
-      ;; TODO: Is this necessary?
-      (add-hook 'org-mode-hook 'turn-on-font-lock)))
+    (pg-util-list-add-unique-var 'org-structure-template-alist
+                                 '(("n" . "notes"))))
+
+  (use-package org-indent
+    :after (org)
+    :diminish " I")
 #+END_SRC
 
 *** Agenda
@@ -691,6 +918,7 @@ A few of the variables configured here really live in =org.el=, but they're rele
 
 #+BEGIN_SRC emacs-lisp
   (use-package org-agenda
+    :after (org)
     :bind (("C-c a" . org-agenda)
            :map org-agenda-mode-map
            ("C-n" . next-line)
@@ -707,7 +935,7 @@ A few of the variables configured here really live in =org.el=, but they're rele
           org-agenda-start-on-weekday nil
           org-reverse-note-order t
 
-          ;; Control how teh Agenda view sorts tasks
+          ;; Control how the Agenda view sorts tasks
           org-agenda-sorting-strategy
           '((agenda
              habit-down
@@ -756,7 +984,7 @@ A few of the variables configured here really live in =org.el=, but they're rele
 
 *** Capture
 
-Configuration for [[http://orgmode.org/manual/Capture.html][org-capture]] (formerly =org-remember=).
+Configuration for [[http://orgmode.org/manual/Capture.html][org-capture]].
 
 #+BEGIN_SRC emacs-lisp
   (use-package org-capture
@@ -779,107 +1007,151 @@ Configuration for [[http://orgmode.org/manual/Capture.html][org-capture]] (forme
              "* TODO %?\n  %u" :prepend t)
             ("n" "Notes" entry (file+headline "~/org-files/notes.org" "Notes")
              "* %u %?" :prepend t)
-            ("c" "Contacts" entry (file+headline "~/org-files/contacts.org" "New Contacts")
-             ,(concat "* %(org-contacts-template-name)\n"
-                      ":PROPERTIES:\n"
-                      ":EMAIL: %(org-contacts-template-email)\n"
-                      ":END:\n"))
             ("a" "Accomplishments" entry (file+olp+datetree
                                           "~/org-files/accomplishments.org" "Accomplishments")
              (function pg-accomplishments-template) :prepend t :tree-type week))))
 #+END_SRC
 
-*** Indent
+*** Indentation
+
+Soft-indent org-mode files by default.
 
 #+BEGIN_SRC emacs-lisp
   (use-package org-indent
     :after (org-mode)
+    :hook (org-mode . org-indent-mode)
     :diminish org-indent-mode)
 #+END_SRC
 
 
 
+*** Converting between org and other formats with =pandoc=
 
-** Text processing
+I wrote enough code to convert org buffers using pandoc that it became [[https://github.com/pgroce/emacs-pkgs/blob/master/pg-pandoc.org][its own package]].
 
-*** Plain Text (=.txt=)
+#+begin_src emacs-lisp
+  (use-package pg-pandoc :ensure t)
+#+end_src
+
+*** Reference handling with =reftex= and =org-ref=
+
+Citations and references have become a much bigger part of my workflow in the last few years. BibTeX is indispensable to this process. These tools make working with BibTeX much easier.
+
+=reftex= is great for streamlining the process of inserting citations.
+
+#+begin_src emacs-lisp
+  (use-package reftex
+    :custom (reftex-cite-format 'natbib)
+    :hook (LaTeX-mode . reftex-mode))
+#+end_src
+
+The [[https://github.com/jkitchin/org-ref][org-ref]] project is an extremely powerful method for organizing references, especially academic papers and/or sources associated (or that can be associated) with PDFs.
+
+#+begin_src emacs-lisp
+(use-package org-ref :ensure t :after org
+  :config
+  (progn
+    (require 'org-ref-pdf)
+    (require 'org-ref-url-utils)))
+#+end_src
+
+*** Quick access to important files
+
+I keep my main notes and todo org files in =~/org-files=. It turns out having a shortcut to open one of those files from literally anywhere is pretty helpful.
+
+#+begin_src emacs-lisp
+  (defun pg-open-org-file ()
+    "Open one of the org-mode files in the `~/org-files' directory."
+    (interactive)
+    (let ((fname (read-file-name
+                  "Org file: "            ; prompt
+                  "~/org-files/"          ; dir
+                  nil                     ; default-filename
+                  t                       ; mustmatch
+                  nil                     ; initial
+                  (lambda (x) (s-ends-with-p ".org" x)))))
+      (find-file fname)))
+
+  (pg-terminal-any (bind-key "s-o" #'pg-open-org-file))
+  (pg-terminal-any (bind-key "C-c o" #'pg-open-org-file))
+#+end_src
+
+
+** Managing projects (=projectile=)
+
+I could probably use tooling around capital-letters Project Management too, but this form concerns managing information associated with the projects I work on.
+
+[[https://github.com/bbatsov/projectile][Projectile]] was written to navigate software projects, but its key features work admirably with projects of all kinds. Some key features:
+
+- Finding files in complex directory hierarchies
+- Tracking  project buffers so they can be  quickly killed or searched
+- An anchor point for starting subprocesses (e.g., shells, =magit= sessions).
+
+I often make git repos in project directories just to make it easier Projectile to notice. As a bonus, this encourages me to version-control most of what I do.
 
 #+BEGIN_SRC emacs-lisp
-  (add-to-list 'auto-mode-alist
-               '("\\.txt$" . (lambda ()
-                               (visual-line-mode)
-                               (flyspell-mode))))
-
-  (pg-ibuffer '("default" (("text" (or
-                                    (mode . text-mode)
-                                    (mode . fundamental-mode)
-                                    (mode . visual-line-mode))))))
-
-#+END_SRC
-
-
-
-*** TeX/LaTeX
-
-You will obviously need TeX/LaTeX installed on your machine for this to be valuable. (And =texbin= will need to be in =exec-path=. How that happens is platform-specific.)
-
-
-#+BEGIN_SRC emacs-lisp
-  (pg-ibuffer '("default" (("TeX" (or
-                                   (mode . tex-mode)
-                                   (mode . latex-mode))))))
-#+END_SRC
-
-*** reStructuredText (=.rst=)
-
-#+BEGIN_SRC emacs-lisp
-  (add-to-list 'auto-mode-alist
-               '("\\.rst$" . (lambda ()
-                               (rst-mode)
-                               (visual-line-mode)
-                               (flyspell-mode))))
-
-  (pg-ibuffer '("default" (("ReST" (mode . rst-mode)))))
-#+END_SRC
-
-*** XML and HTML
-
-[[http://www.thaiopensource.com/nxml-mode/][nXML mode]] is marvelous. I use it to edit XML. I used to use it for HTML, too, but now I prefer =sgml-mode=.
-
-#+BEGIN_SRC emacs-lisp
-  (use-package nxml-mode
-    :mode (("\\.xml$" . nxml-mode))
-    :config
-    (pg-ibuffer '("default" (("XML" (mode . nxml-mode))))))
-
-
-
-  (use-package sgml-mode
-    :mode (("\\.html$" . html-mode))
-    :config
-    (pg-ibuffer '("default" (("HTML" (mode . sgml-mode))))))
-#+END_SRC
-
-
-*** JSON
-
-#+BEGIN_SRC emacs-lisp
-  (use-package json-mode
+  (use-package projectile
     :ensure t
-    :mode "\\.json\\'")
-#+END_SRC
+    :diminish projectile-mode
+    :bind-keymap* ("C-c p" . projectile-command-map)
+    :init
+    (progn
+      (setq projectile-enable-caching t)
+      ;; projectile native indexing is slower, but more reliable imo
+      (setq projectile-indexing-method 'native))
 
-*** Markdown
-
-#+BEGIN_SRC emacs-lisp
-  (use-package markdown-mode
-    :ensure t
-    :mode (("\\.md$" . markdown-mode))
     :config
     (progn
-      (add-hook 'markdown-mode-hook 'visual-line-mode)))
+      (projectile-global-mode 1)
+
+      (defun pg-projectile-shell-in-project ()
+        (interactive)
+        (pg-ansi-term (projectile-project-name) (projectile-project-root)))
+
+      (bind-key "1" #'pg-projectile-shell-in-project projectile-command-map)
+
+
+      (defun pg-projectile-eshell-in-project ()
+        (interactive)
+        (helm-projectile-switch-to-eshell (projectile-project-root)))
+
+      (bind-key "`" #'pg-projectile-eshell-in-project projectile-command-map)))
+
+
+  (use-package helm-projectile
+    :ensure t
+    :after (helm projectile)
+    :init (setq projectile-switch-project-action 'helm-projectile)
+    :config (helm-projectile-on))
 #+END_SRC
 
+
+
+** Semantic editing (=smartparens=)
+<<smartparens>>
+
+[[https://github.com/Fuco1/smartparens][Semantic editing]] for lisp and other text formats structured with matching delimiters. (They actually use the Github wiki for documentation.)
+
+This is normally thought of as a programming concern, but most written forms of natural language use paired delimiters---not to mention all the markup formats text is often encoded in. So while this is thought of as a programming concern, it has a lot of general utility.
+
+==smartparens-strict-mode= is great, but not globally. In general, =smartparens= in =text-mode= buffers is a mixed bag.
+
+#+BEGIN_SRC emacs-lisp
+  (use-package smartparens
+    :ensure t
+    :bind (:map smartparens-mode-map
+                ("M-]" . 'sp-forward-sexp)
+                ("M-[" . 'sp-backward-sexp)
+                ("M-q" . 'sp-indent-defun)
+                ("<C-M-S-backspace>" . 'kill-whole-line))
+    :hook ((prog-mode . smartparens-strict-mode)
+           (text-mode . smartparens-mode))
+    :config (sp-use-paredit-bindings))
+
+  (use-package smartparens-config :after (smartparens))
+#+END_SRC
+
+kill-whole-line
 
 
 ** Programming and Software Development
@@ -898,23 +1170,18 @@ For whenever you want to view a =troff='ed file without installing it into the M
   (defalias 'man-file 'pg-man-file)
 #+END_SRC
 
-**** Documentation at point (=eldoc=)
-
-Specific languages have their own documentation facilities, but =eldoc= provides documentation for many languages.
-
-That doesn't mean I want it in the mode line, though. :)
+**** =eldoc=
 
 #+BEGIN_SRC emacs-lisp
-  (use-package eldoc
-    :diminish eldoc-mode)
+  (use-package eldoc :diminish eldoc-mode)
 #+END_SRC
 
 *** Shells
 
-Use [[https://github.com/pgroce/emacs-pkgs/blob/master/pg-sh.org][pg-sh]] to make using shells a little more pleasant. Defer it so the keybindings make it through the [[#superpocalypse][superpocalypse]]
+Use [[https://github.com/pgroce/emacs-pkgs/blob/master/pg-sh.org][pg-sh]] to make using shells a little more pleasant. Defer it so the keybindings make it through the super-debinding on MacOS.
 
 #+BEGIN_SRC emacs-lisp
-  (ecfw-defer
+  (pg-terminal-any
    (use-package pg-sh
      :ensure t
      :bind (("s-s" . pg-sh)
@@ -1001,113 +1268,7 @@ Some tweaks for the debugger.
 Configure magit, the best Git UI ever.
 
 #+BEGIN_SRC emacs-lisp
-  (use-package magit :ensure t
-    :commands (magit magit-init)
-    :config
-      (pg-ibuffer '("default" (("magit" (mode . magit-mode))))))
-#+END_SRC
-
-*** Search
-
-**** =ag=
-
-[[https://github.com/ggreer/the_silver_searcher][The Silver Searcher]] (command name: =ag=) is a text search tool optimized for source code and software projects.
-
-You'll also need to have The Silver Searcher installed for this to run.
-
-#+BEGIN_SRC emacs-lisp
-  (ecfw-defer
-   (message "Running 'use-package ag' deferred")
-   (pg-if-available "ag"
-     "Install the Silver Searcher <https://github.com/ggreer/the_silver_searcher> for a better code search experience."
-     (use-package ag
-       :ensure t
-       :config (use-package helm-ag :defer t :ensure t))))
-#+END_SRC
-
-**** =re-builder=
-
-[[http://www.masteringemacs.org/articles/2011/04/12/re-builder-interactive-regexp-builder/][re-builder]] is a visual way to verify that you're writing the right regex. I use it whenever I'm building a complicated regular expression.
-
-I set the default output syntax for re-builder to =string= instead of =read= so I don't have to backslash-escape every damn thing.
-
-#+begin_src emacs-lisp
-  (use-package re-builder
-    :ensure t
-    :config (setq reb-re-syntax 'string))
-#+end_src
-
-
-*** Semantic editing (=smartparens=)
-
-[[https://github.com/Fuco1/smartparens][Semantic editing]] for lisp and other text formats structured with matching delimiters. (They actually use the Github wiki for documentation.)
-
-#+BEGIN_SRC emacs-lisp
-  (use-package smartparens
-    :ensure t
-    :config (progn
-              (require 'smartparens-config)
-              (sp-use-paredit-bindings)
-              ;; (Edit: DON'T) use smartparens globally
-              (smartparens-global-strict-mode nil)
-              ;; But disable it when it gets in the way
-              ;; (usually masking useful mode commands)
-              (pg-util-list-add-unique-var
-               'sp-ignore-modes-list
-               '(message-mode
-                 org-mode
-                 tex-mode
-                 latex-mode
-                 slitex-mode
-                 plain-tex-mode
-                 doctex-mode
-                 tex-shell))
-              (bind-key "M-]" 'sp-forward-sexp smartparens-mode-map)
-              (bind-key "M-[" 'sp-backward-sexp smartparens-mode-map)
-              (bind-key "M-q" 'sp-indent-defun smartparens-mode-map)))
-#+END_SRC
-
-
-
-
-*** Managing projects (=projectile=)
-
-The killer feature that made me first use [[https://github.com/bbatsov/projectile][Projectile]] was finding files in Java projects, but now I think it's best feature is switching quickly between different contexts. It helps you find files, obviously; it keeps track of project buffers so you can quickly kill them all off or search through them; and it gives you an anchor from which you can start subprocesses (e.g., shells).
-
-Note the use of =pg-sh= to create a shell at the top level of the project directory.
-
-#+BEGIN_SRC emacs-lisp
-  (use-package projectile
-    :ensure t
-    :diminish projectile-mode
-    :bind-keymap* ("C-c p" . projectile-command-map)
-    :init
-    (progn
-      (setq projectile-enable-caching t)
-      ;; projectile native indexing is slower, but more reliable imo
-      (setq projectile-indexing-method 'native))
-
-    :config
-    (progn
-      (projectile-global-mode 1)
-
-      (use-package helm-projectile
-        :ensure t
-        :init (setq projectile-switch-project-action 'helm-projectile))
-      (helm-projectile-on)
-
-      (defun pg-projectile-shell-in-project ()
-        (interactive)
-        (pg-sh (projectile-project-name) (projectile-project-root)))
-
-      (bind-key "1" #'pg-projectile-shell-in-project projectile-command-map)
-
-
-      (defun pg-projectile-eshell-in-project ()
-        (interactive)
-        (helm-projectile-switch-to-eshell (projectile-project-root)))
-
-      (bind-key "`" #'pg-projectile-eshell-in-project projectile-command-map)))
+  (use-package magit :ensure t :commands (magit magit-init))
 #+END_SRC
 
 
@@ -1118,6 +1279,7 @@ Note the use of =pg-sh= to create a shell at the top level of the project direct
 
 #+BEGIN_SRC emacs-lisp
   (use-package vagrant-tramp
+    :defer t
     :ensure t)
 #+END_SRC
 
@@ -1137,7 +1299,7 @@ Note the use of =pg-sh= to create a shell at the top level of the project direct
 *** Languages
 **** Lisps
 
-Show matching parentheses.
+Show matching parentheses. (We also get a lot of juice here from [[smartparens][Smartparens mode]].
 
 #+BEGIN_SRC emacs-lisp
   (show-paren-mode 1)
@@ -1161,23 +1323,22 @@ Turn on =auto-completion=, =eldoc= and +=paredit=+ =smartparens=.
 #+END_SRC
 
 **** Python
-Python configuration is a little tricky; full functionality  depends on a lot of external tools, many of which are written in Python, so can (should) be installed in a virtual environment rather than in one canonical place in the system.
+Python configuration depends on external tools, many of which are written in Python. They can (and should) be installed in virtual environments rather than in one canonical place in the system, so they can report on the state of whatever you're working on.
 
-To get the full benefit of this configuration, you'll want to install the following in your virtualenv:
+To get the full benefit of this configuration, then, you'll want to install the following in your virtualenv:
 
 #+BEGIN_SRC sh :tangle no
   pip install jedi
   pip install flake8
 #+END_SRC
 
-(There will be additional requirement associated with Elpy, below.
+There will be additional requirement associated with Elpy, below.
 
 #+BEGIN_SRC emacs-lisp
-  (use-package py-autopep8 :ensure t)
-  (use-package pylint :ensure t)
-  (use-package pyvenv :ensure t)
-
   (use-package python
+    :mode ("\\.py\\'" . python-mode)
+    :interpreter ("python" . python-mode)
+
     :init
     (progn
       ;;; Ignore byte-compiled files when doing filename completion
@@ -1189,6 +1350,14 @@ To get the full benefit of this configuration, you'll want to install the follow
 
       (pg-util-diminish-major python-mode "py")
       (setq python-fill-docstring-style 'symmetric)))
+
+
+  (use-package py-autopep8 :ensure t :after (python))
+  (use-package pylint :ensure t :after (python))
+  (use-package pyvenv
+    :ensure t
+    :commands (pyvenv-activate pyvenv-workon))
+
 #+END_SRC
 
 ***** Elpy
@@ -1344,80 +1513,6 @@ macOS now uses =<f4>= to do something with the touch bar, so remap where =kmacro
 *** =ns= terminal configuration
 
 
-**** Decontaminate =super= keybindings
-:PROPERTIES:
-:CUSTOM_ID: superpocalypse
-:END:
-
-
-The =ns= Emacs port adds a number of keybindings to =super= in an attempt to make Emacs feel like a NeXTStep/Mac application.
-
-I'd rather use the Emacs style of interaction, because I've learned it already and because I can find better uses for =super=. (Most of these bindings are harmless, but a few, like =s-q= running =save-buffers-kill-emacs=, are infuriating.)
-
-Furthermore, I like to put my own bindings on =super=.
-
-Therefore, kill it all with fire.
-
-(Because of this, any =super= bindings need to be deferred until after terminal has set up, using =ecfw-defer= or something.)
-
-#+BEGIN_SRC emacs-lisp :tangle darwin.el
-  (pg-terminal-ns
-   (unbind-key "M-s-h")
-   (unbind-key "s-,")
-   (unbind-key "s-'")
-   (unbind-key "s-`")
-   (unbind-key "s-~")
-   (unbind-key "s--")
-   (unbind-key "s-:")
-   (unbind-key "s-?")
-   (unbind-key "s-^")
-   (unbind-key "s-&")
-   (unbind-key "s-C")
-   (unbind-key "s-D")
-   (unbind-key "s-E")
-   (unbind-key "s-L")
-   (unbind-key "s-M")
-   (unbind-key "s-S")
-   (unbind-key "s-a")
-   (unbind-key "s-c")
-   (unbind-key "s-d")
-   (unbind-key "s-e")
-   (unbind-key "s-f")
-   (unbind-key "s-g")
-   (unbind-key "s-h")
-   (unbind-key "s-H")
-   (unbind-key "s-j")
-   (unbind-key "s-k")
-   (unbind-key "s-l")
-   (unbind-key "s-m")
-   (unbind-key "s-n")
-   (unbind-key "s-o")
-   (unbind-key "s-p")
-   (message "UNBINDING: s-q")
-   (unbind-key "s-q")
-   (unbind-key "s-s")
-   (unbind-key "s-t")
-   (unbind-key "s-u")
-   (unbind-key "s-v")
-   (unbind-key "s-w")
-   (unbind-key "s-x")
-   (unbind-key "s-y")
-   (unbind-key "s-z")
-   (unbind-key "s-|")
-   (unbind-key "s-<kp-bar>")
-   (unbind-key "s-<right>")
-   (unbind-key "s-<left>"))
-#+END_SRC
-
-***** Disable =C-z=
-
-Same thing, trying to make things Apple-like backfiring. It's way too easy to hit =C-z= and accidentally send the frame to the dock. Unset it.
-
-#+BEGIN_SRC emacs-lisp
-  (pg-terminal-ns
-   (unbind-key "C-z"))
-#+END_SRC
-
 
 **** GUI setup
 
@@ -1451,7 +1546,7 @@ Make left command =meta=, and make right alt and right command =super=. (I shoul
 Open a file when it's dragged onto Emacs. (Default is to copy the file path.)
 
 #+BEGIN_SRC emacs-lisp :tangle darwin.el
-  (bind-key "<ns-drag-file>" 'ns-find-file)
+  (pg-terminal-ns (bind-key "<ns-drag-file>" 'ns-find-file))
 #+END_SRC
 
 ***** Restore mouse wheel
@@ -1488,6 +1583,7 @@ The mouse wheel setup will get clobbered when using a daemon, due to the differe
       (pg-shell-path-append "PATH" '("/Library/Tex/texbin"))
     (message "Pro-tip: Install Tex (or MacTeX) for a better LaTeX experience"))
 #+END_SRC
+
 
 * Wrapup
 
