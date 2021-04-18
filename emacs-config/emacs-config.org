@@ -57,13 +57,6 @@ If we're profiling, additionally compute timing statistics. (TODO: Maybe move th
       (add-hook 'after-init-hook 'benchmark-init/deactivate)))
 #+END_SRC
 
-If things are running slow, it might be helpful to =C-g= during a lag and find out what's going on.
-
-#+begin_src emacs-lisp
-  (when (getenv "EMACS_CONFIG_PROFILE")
-    (setq debug-on-quit t))
-#+end_src
-
 ** Foundation packages/libraries
 
 I use these packages in lots of places in the configuration, so load them now.
