@@ -764,6 +764,7 @@ This bit of voodoo allows me to edit files on remote machines as =root=. I'm als
   (use-package helm
     :diminish helm-mode
     :ensure t
+    :demand t
     :bind (("M-x" . helm-M-x)
            ("C-x C-f" . helm-find-files)
            ("C-x b" . helm-buffers-list)
@@ -1973,5 +1974,5 @@ Open =scratch.el=, because I always seem to be fiddling with it. Nuke the defaul
 Finally, open =todo.org= and start the day!
 
 #+BEGIN_SRC emacs-lisp
-  (find-file (expand-file-name "~/org-files/todo.org"))
+  ;(find-file (expand-file-name "~/org-files/todo.org"))
 #+END_SRC
