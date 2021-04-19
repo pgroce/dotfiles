@@ -719,6 +719,19 @@ No one needs the default list-directory, make it dired instead.
   (bind-key "C-x C-d" 'dired)
 #+end_src
 
+** Opening files
+
+I wrote a small library for opening files with the OS-registered viewer, relying on the OS-level facility in MacOS (=open=), Windows (=explorer=), and \*nix (varies, but I'm assuming =xdg-open=). I added some =dired= support as well, since opening a file seems like a natural thing to do there, so we load this after =dired=.
+
+#+begin_src emacs-lisp
+  (use-package pg-open
+    :after (dired)
+    :ensure t
+    :bind (("C-c <S-backspace>" . pg-open-dir)
+           ("C-c <backspace>" . pg-open-file)
+           :map dired-mode-map
+           ("S-<return>" . pg-open-file-dired)))
+#+end_src
 ** Remote editing (=tramp=)
 
 This bit of voodoo allows me to edit files on remote machines as =root=. I'm also modifying =tramp-shell-prompt-pattern= to accommodate starship, as done above in [[look-and-feel][Look and Feel]].
