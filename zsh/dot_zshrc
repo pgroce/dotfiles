@@ -6,7 +6,7 @@
 #######
 
 # PATH
-path=(~/bin /usr/local/bin /usr/local/sbin /usr/bin /usr/sbin /sbin /bin)
+path=(~/bin /Library/TeX/texbin /usr/local/bin /usr/local/sbin /usr/bin /usr/sbin /sbin /bin)
 
 # PYTHONPATH
 typeset -T PYTHONPATH pythonpath
