@@ -1472,7 +1472,7 @@ I often make git repos in project directories just to make it easier Projectile 
 
       (defun pg-projectile-shell-in-project ()
         (interactive)
-        (pg-ansi-term (projectile-project-name) (projectile-project-root)))
+        (pg-sh-ansi-term (projectile-project-name) (projectile-project-root)))
 
       (bind-key "1" #'pg-projectile-shell-in-project projectile-command-map)
 
