@@ -725,7 +725,7 @@ I wrote a small library for opening files with the OS-registered viewer, relying
 
 #+begin_src emacs-lisp
   (use-package pg-open
-    :after (dired)
+    :demand
     :ensure t
     :bind (("C-c <S-backspace>" . pg-open-dir)
            ("C-c <backspace>" . pg-open-file)
@@ -1269,9 +1269,11 @@ The code block below lets me query this list of customers and projects when I'm 
 
     :mode ("\\.org\\'" . org-mode)
     :config
-    (org-link-set-parameters pg-open-org-url-scheme
-                             :follow #'pg-open-file
-                             :complete #'pg-open-org-link-complete-fn))
+    (progn
+      (message "UNICORN SEX TYRE")
+      (org-link-set-parameters pg-open-org-url-scheme
+                               :follow #'pg-open-file
+                               :complete #'pg-open-org-link-complete-fn)))
 
   (use-package org-tempo
     :after (org)
