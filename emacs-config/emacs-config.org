@@ -1234,6 +1234,7 @@ The code block below lets me query this list of customers and projects when I'm 
 
 #+BEGIN_SRC emacs-lisp
   (use-package org
+    :after (pg-open)
     :bind (("C-c l"   . org-store-link)
            ("C-c RET" . org-open-at-point)
            ("M-N" . org-forward-heading-same-level)
@@ -1266,7 +1267,11 @@ The code block below lets me query this list of customers and projects when I'm 
                                  (python . t)
                                  (shell . t))))
 
-    :mode ("\\.org\\'" . org-mode))
+    :mode ("\\.org\\'" . org-mode)
+    :config
+    (org-link-set-parameters pg-open-org-url-scheme
+                             :follow #'pg-open-file
+                             :complete #'pg-open-org-link-complete-fn))
 
   (use-package org-tempo
     :after (org)
@@ -1277,13 +1282,6 @@ The code block below lets me query this list of customers and projects when I'm 
   (use-package org-indent
     :after (org)
     :diminish " I")
-
-  (use-package ol
-    :after (pg-open)
-    :config
-    (org-link-set-parameters pg-open-org-url-scheme
-                              :follow #'pg-open-file
-                              :complete #'pg-open-org-link-complete-fn))
 #+END_SRC
 
 *** Agenda
