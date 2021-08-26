@@ -1281,9 +1281,9 @@ The code block below lets me query this list of customers and projects when I'm 
   (use-package ol
     :after (org pg-open)
     :config
-    ((org-link-set-parameters pg-open-org-url-scheme
+    (org-link-set-parameters pg-open-org-url-scheme
                               :follow #'pg-open-file
-                              :complete #'pg-open-org-link-complete-fn)))
+                              :complete #'pg-open-org-link-complete-fn))
 #+END_SRC
 
 *** Agenda
