@@ -1279,7 +1279,7 @@ The code block below lets me query this list of customers and projects when I'm 
     :diminish " I")
 
   (use-package ol
-    :after (org pg-open)
+    :after (pg-open)
     :config
     (org-link-set-parameters pg-open-org-url-scheme
                               :follow #'pg-open-file
