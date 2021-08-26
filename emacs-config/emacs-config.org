@@ -732,6 +732,9 @@ I wrote a small library for opening files with the OS-registered viewer, relying
            :map dired-mode-map
            ("S-<return>" . pg-open-file-dired)))
 #+end_src
+
+
+
 ** Remote editing (=tramp=)
 
 This bit of voodoo allows me to edit files on remote machines as =root=. I'm also modifying =tramp-shell-prompt-pattern= to accommodate starship, as done above in [[look-and-feel][Look and Feel]].
@@ -1274,6 +1277,13 @@ The code block below lets me query this list of customers and projects when I'm 
   (use-package org-indent
     :after (org)
     :diminish " I")
+
+  (use-package ol
+    :after (org pg-open)
+    :config
+    ((org-link-set-parameters pg-open-org-url-scheme
+                              :follow #'pg-open-file
+                              :complete #'pg-open-org-link-complete-fn)))
 #+END_SRC
 
 *** Agenda
