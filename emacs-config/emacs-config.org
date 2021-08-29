@@ -1475,15 +1475,35 @@ I often make git repos in project directories just to make it easier Projectile 
       (projectile-global-mode 1)
 
       (defun pg-projectile-shell-in-project ()
+        "Start a shell associated with this project, or switch to
+  the shell buffer if one already exists.
+
+  This is similar to `ansi-term', but with the buffer naming and
+  persistence semantics of `projectile-run-eshell'."
         (interactive)
-        (pg-sh-ansi-term (projectile-project-name) (projectile-project-root)))
+        ;; Mainly ansi-term, without any of the code that mangles the
+        ;; buffer name.
+        (let* ((buff-name (format "*[%s] Term*" (projectile-project-name)))
+               (buff (get-buffer-create buff-name))
+               (shell-name (or explicit-shell-file-name
+                                 (getenv "ESHELL")
+                                 shell-file-name))
+               (buff (term-ansi-make-term buff-name shell-name)))
+          (set-buffer buff)
+          (term-mode)
+          (term-char-mode)
+          (let (term-escape-char)
+            (term-set-escape-char ?\C-x))
+          (switch-to-buffer buff-name)))
+
+
 
       (bind-key "1" #'pg-projectile-shell-in-project projectile-command-map)
 
 
       (defun pg-projectile-eshell-in-project ()
         (interactive)
-        (helm-projectile-switch-to-eshell (projectile-project-root)))
+        (projectile-run-eshell (projectile-project-root)))
 
       (bind-key "`" #'pg-projectile-eshell-in-project projectile-command-map)))
 
