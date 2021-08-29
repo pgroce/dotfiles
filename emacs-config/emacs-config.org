@@ -1474,31 +1474,31 @@ I often make git repos in project directories just to make it easier Projectile 
     (progn
       (projectile-global-mode 1)
 
-      (defun pg-projectile-shell-in-project ()
-        "Start a shell associated with this project, or switch to
-  the shell buffer if one already exists.
+      (defun pg-projectile-term-in-project (arg)
+        "Almost exactly equivalent to `projectile-run-term', but
+  don't ask for the program name. (Also look for the shell name in
+  `shell-file-name' too.)
 
-  This is similar to `ansi-term', but with the buffer naming and
-  persistence semantics of `projectile-run-eshell'."
-        (interactive)
-        ;; Mainly ansi-term, without any of the code that mangles the
-        ;; buffer name.
-        (let* ((buff-name (format "*[%s] Term*" (projectile-project-name)))
-               (buff (get-buffer-create buff-name))
-               (shell-name (or explicit-shell-file-name
-                                 (getenv "ESHELL")
-                                 shell-file-name))
-               (buff (term-ansi-make-term buff-name shell-name)))
-          (set-buffer buff)
-          (term-mode)
-          (term-char-mode)
-          (let (term-escape-char)
-            (term-set-escape-char ?\C-x))
-          (switch-to-buffer buff-name)))
+  When called with a universal argument, create a new
+  terminal. Otherwise, reuse a canonically primary buffer, or
+  create it if it doesn't exist."
+        (interactive "P")
+        (let* ((project (projectile-acquire-root))
+               (buffer-name (projectile-generate-process-name
+                             "term" arg project))
+               (program (or explicit-shell-file-name
+                            (getenv "ESHELL")
+                            (getenv "SHELL")
+                            shell-file-name
+                            "/bin/sh")))
+          (projectile-with-default-dir project
+            (set-buffer (term-ansi-make-term buffer-name program))
+            (term-mode)
+            (term-char-mode)
+            (let (term-escape-char) (term-set-escape-char ?\C-x)))
+          (switch-to-buffer buffer-name)))
 
-
-
-      (bind-key "1" #'pg-projectile-shell-in-project projectile-command-map)
+      (bind-key "1" #'pg-projectile-term-in-project projectile-command-map)
 
 
       (defun pg-projectile-eshell-in-project ()
