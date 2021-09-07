@@ -1289,7 +1289,6 @@ A few of the variables configured here really live in =org.el=, but they're rele
 
 #+BEGIN_SRC emacs-lisp
   (use-package org-agenda
-    :after (org)
     :bind (("C-c a" . org-agenda)
            :map org-agenda-mode-map
            ("C-n" . next-line)
