@@ -1231,7 +1231,11 @@ The code block below lets me query this list of customers and projects when I'm 
 
 *** Core org
 
+These are mainly just tweaks to existing org-mode parameters. One exception is =pg-org-interactive-todo=, which is bound to =C-c C-t=
+
 #+BEGIN_SRC emacs-lisp
+
+
   (use-package org
     :bind (("C-c l"   . org-store-link)
            ("C-c RET" . org-open-at-point)
@@ -1267,7 +1271,17 @@ The code block below lets me query this list of customers and projects when I'm 
 
     :mode ("\\.org\\'" . org-mode)
     :config
-    (pg-open-register-org-link))
+    (progn
+      (defun pg-org-interactive-todo ()
+        (interactive)
+        "Call `org-todo' with the results of a completing read on the
+  current set of todo keywords."
+        (let ((todo-keyword (completing-read "Status: " org-todo-keywords-1)))
+          (org-todo todo-keyword)))
+
+      (bind-key "C-c C-t" #'pg-org-interactive-todo org-mode-map)
+
+      (pg-open-register-org-link)))
 
   (use-package org-tempo
     :after (org)
