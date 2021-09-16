@@ -80,7 +80,7 @@ function pylist ()
     find . -depth 1 -a -type d -exec bash -c "if [ -e \"{}/bin/activate\" ]; then echo \"{}/\"; fi" \; 2>/dev/null
 }
 
-# Create a new python venv. 'pygo foo' creates in VENV_HOME. 'pygo
+# Create a new python venv. 'pynew foo' creates in VENV_HOME. 'pynew
 # ./foo' creates in local dir
 function pynew ()
 {
