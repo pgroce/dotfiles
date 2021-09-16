@@ -1700,6 +1700,17 @@ Configure magit, the best Git UI ever.
 
 
 *** Languages
+
+**** Company
+
+[[https://company-mode.github.io][Company]] is a completion framework used in many languages. I mainly use it for Python.
+
+It usually gets pulled in implicitly by other things , but now that I'm configuring a backend for it, I want to make it explicit.
+
+#+begin_src emacs-lisp
+  (use-package company :ensure t)
+#+end_src
+
 **** Lisps
 
 Show matching parentheses. (We also get a lot of juice here from [[smartparens][Smartparens mode]].
@@ -1763,6 +1774,18 @@ There will be additional requirement associated with Elpy, below.
 
 #+END_SRC
 
+***** Company-jedi
+
+Jedi is a completion framework for Python. This module integrates it with company.
+
+#+begin_src emacs-lisp
+  (use-package company-jedi
+    :ensure t
+    :demand
+    :hook
+    (python-mode . (lambda () (add-to-list 'company-backends 'company-jedi))))
+#+end_src
+
 ***** Elpy
 
 [[https://github.com/jorgenschaefer/elpy][Elpy]] provides IDE feature with the help of a subprocess running Python. For full benefit, install the following modules into your environment (in addition to those in [[Python]] above.
@@ -1772,6 +1795,7 @@ There will be additional requirement associated with Elpy, below.
   pip install autopep8
   pip install yapf
 #+END_SRC
+
 
 Remove =yasnippet= from elpy-modules because screw =yasnippet=.
 
