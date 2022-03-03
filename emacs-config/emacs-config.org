@@ -1265,6 +1265,7 @@ These are mainly just tweaks to existing org-mode parameters. One exception is =
 
 
      (org-export-with-smart-quotes t)
+     (org-export-backends '(ascii html icalendar latex odt md beamer))
      (org-babel-load-languages '((emacs-lisp . t)
                                  (python . t)
                                  (shell . t))))
