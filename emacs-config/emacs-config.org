@@ -1409,7 +1409,6 @@ Soft-indent org-mode files by default.
 #+END_SRC
 
 
-
 *** Converting between org and other formats with =pandoc=
 
 I wrote enough code to convert org buffers using pandoc that it became [[https://github.com/pgroce/emacs-pkgs/blob/master/pg-pandoc.org][its own package]].
@@ -1675,6 +1674,19 @@ Configure magit, the best Git UI ever.
   (use-package magit :ensure t :commands (magit magit-init))
 #+END_SRC
 
+*** Syntax checking (=flycheck=)
+
+Emacs comes with =flymake=, but [[https://www.flycheck.org/en/latest/index.html][Flycheck]] is a more comprehensive add-on package. It supports more languages, and in particular supports static type checking in Python with [[https://github.com/python/mypy][mypy]], so it's my preferred syntax checker.
+
+It is recommended to use =exec-path-from-shell=, but I do some other stuff in the Mac-specific section that may make that unnecessary.
+
+Flycheck provides the =global-flycheck-mode= command to turn on Flycheck everywhere. My experience with Smartparens leads me to be wary of this
+
+#+begin_src emacs-lisp
+  (use-package flycheck
+    :ensure t
+    :commands (flycheck-mode))
+#+end_src
 
 *** Virtualization
 **** Vagrant
@@ -1795,21 +1807,31 @@ Jedi is a completion framework for Python. This module integrates it with compan
   pip install importmagic
   pip install autopep8
   pip install yapf
+  pip install mypy
 #+END_SRC
 
 
-Remove =yasnippet= from elpy-modules because screw =yasnippet=.
+
+Remove =yasnippet= from elpy-modules because screw =yasnippet=. Add Flycheck because yay static typing. (Mypy is only available in Flycheck, not Flymake.)
 
 #+BEGIN_SRC emacs-lisp
+  (use-package flycheck-mypy :ensure t :after flycheck)
+
   (use-package elpy
     :ensure t
     :commands elpy-enable
+    :after (flycheck-mypy)
     :init
     (setq elpy-rpc-backend "jedi")
     :config
     (progn
-      (remove-hook 'elpy-modules 'elpy-module-yasnippet)))
-
+      (remove-hook 'elpy-modules 'elpy-module-yasnippet)
+      (when (load "flycheck" t t)
+        (remove-hook 'elpy-modules 'elpy-module-flymake)
+        (add-hook 'elpy-mode-hook 'flycheck-mode)
+        (pg-util-list-add-unique-var
+         'flycheck-disabled-checkers
+         '(python-flake8 python-pylint)))))
 #+END_SRC
 
 Elpy is complicated and has, in the past, been kind of janky. If it's undesirable to use Elpy, set =pg-enable-elpy= to =nil= and Emacs will just use the normal =python-mode=.
