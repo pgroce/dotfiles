@@ -1,2 +1,6 @@
 # -*- mode: sh -*-
-. ~/.zshrc
+export ZPROFILE_READ="YES"
+
+if [ "$ZSHRC_READ" != "YES" ]; then
+    . ~/.zshrc
+fi

@@ -1,5 +1,14 @@
 # -*- mode: sh -*-
-. ~/.zsh_functions
+export ZSHRC_READ="YES"
+
+if [ "$ZSHRC_FUNCTIONS_READ" != "YES" ]; then
+    . ~/.zsh_functions
+fi
+
+if [ "$ZPROFILE_READ" != "YES" ]; then
+    . ~/.zprofile
+fi
+
 
 #######
 # Paths

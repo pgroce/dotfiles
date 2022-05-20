@@ -1,4 +1,5 @@
 # -*- mode: sh -*-
+export ZSH_FUNCTIONS_READ="YES"
 
 export PROXY_HOST=proxy.example.com
 export PROXY_PORT=1234
