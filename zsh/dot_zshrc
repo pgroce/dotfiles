@@ -8,6 +8,17 @@
 # PATH
 path=(~/bin /Library/TeX/texbin /usr/local/bin /usr/local/sbin /usr/bin /usr/sbin /sbin /bin)
 
+
+if `command -v pyenv >/dev/null`; then
+    export PYENV_ROOT="$HOME/.pyenv"
+    path=($PYENV_ROOT/bin $path)
+    eval "$(pyenv init -)"
+    export PYENV_INITIALIZED=1
+else
+    export PYENV_INITIALIZED=0
+fi
+
+
 # PYTHONPATH
 typeset -T PYTHONPATH pythonpath
 pythonpath=(~/lib/python $pythonpath)
