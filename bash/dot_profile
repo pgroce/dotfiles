@@ -17,6 +17,17 @@ export PS1='[\t|\!]\n\h:\w\n$ '
 # Paths
 #######
 
+export PYENV_ROOT="$HOME/.pyenv"
+if `command -v pyenv >/dev/null`; then
+    export PYENV_ROOT="$HOME/.pyenv"
+    path -f $PYENV_ROOT/bin
+    eval "$(pyenv init -)"
+    export PYENV_INITIALIZED=1
+else
+    export PYENV_INITIALIZED=0
+fi
+
+
 # PATH
 path -f $HOME/bin /usr/local/bin /usr/local/sbin
 
