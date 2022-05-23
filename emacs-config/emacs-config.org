@@ -1233,10 +1233,13 @@ The code block below lets me query this list of customers and projects when I'm 
 
 These are mainly just tweaks to existing org-mode parameters. One exception is =pg-org-interactive-todo=, which is bound to =C-c C-t=
 
+(Putting =:after (python)= in here because org-mode loads all its =ob-*= babel backends at load, and =ob-python= requires Python, which doesn't seem to be hitting the =use-package= declaration later on. This is a bug, of course.)
+
 #+BEGIN_SRC emacs-lisp
 
 
   (use-package org
+    :after (python)
     :bind (("C-c l"   . org-store-link)
            ("C-c RET" . org-open-at-point)
            ("M-N" . org-forward-heading-same-level)
@@ -1752,17 +1755,90 @@ Turn on =auto-completion=, =eldoc= and +=paredit=+ =smartparens=.
 **** Python
 Python configuration depends on external tools, many of which are written in Python. They can (and should) be installed in virtual environments rather than in one canonical place in the system, so they can report on the state of whatever you're working on.
 
-To get the full benefit of this configuration, then, you'll want to install the following in your virtualenv:
+Beyond the basics, it is hard to install Python support for Emacs in a vacuum. For simple syntax highlighting, Python-mode is fine, and independent of anything else. However, Python's library and core runtime ecosystem has become quite complex. Emacs has to understand how that complexity is being managed in order to take advantage of libraries like Elpy that provide IDE features.
+
+This configuration below assumes that Python versions on the system are  managed using [[https://github.com/pyenv/pyenv#set-up-your-shell-environment-for-pyenv][Pyenv]], including virtual environment management using [[https://github.com/pyenv/pyenv-virtualenv][Pyenv-virtualenv]]. This requires some additional library support, as documented below in [[#pyenv-A57700D7-586E-481A-BDD1-C89B446E6CC9]].
+
+To get the full benefit of this configuration, you will also want to install the following:
 
 #+BEGIN_SRC sh :tangle no
+  # Used by python-mode
   pip install jedi
   pip install flake8
+
+  # Used by Elpy
+  pip install importmagic
+  pip install autopep8
+  pip install yapf
+  pip install mypy
 #+END_SRC
 
-There will be additional requirement associated with Elpy, below.
+Depending on how you prefer to manage your environment, you may choose to  install these into virtual environments or into the site packages of the Python version being used. If you install them into a virtual environment, it will need to be activated to use Elpy's features. If you install into the site packages, you will need to ensure that the appropriate Python installation is being used, probably via Pyenv; a function is defined below to help with this.
+
+Many thanks for Rakan Alhneiti for [[http://rakan.me/emacs/python-dev-with-emacs-and-pyenv/][their walkthrough]] setting all this up.
+
+***** Pyenv
+:PROPERTIES:
+:CUSTOM_ID:       pyenv-A57700D7-586E-481A-BDD1-C89B446E6CC9
+:END:
+
+Python runtimes are a mess. Virtual environments address part of the problem, installing libraries in discrete subspaces that can be associated with projects and managed separately from the core libraries in a Python installation.
+
+But the core Python installation itself is frequently a problem too.
+
+- Most Unix operating systems contain Python scripts, meaning they ship a system-level version of Python and a set of scripts that depend on it; it's unwise to develop arbitrary projects against that one.
+- Some systems still ship with the now-deprecated Python 2.x; users may reasonably want to target a different Python version for their projects. (In either direction–developers may develop on a system that uses 3.x, but target platforms that only support 2.x.)
+- When targeted Python versions change, there may be a transition period during which older scripts require older Python versions, requiring the system to ship all applicable versions of Python. This transition period may last forever.
+- A "system" doesn't have to be an OS. It can be a package manager, or even an independently distributed project. Homebrew packages, for instance, may depend on specific minor versions of Python; my system has full copies of Python 3.8, 3.9, and 3.10 on it right now, for instance. That's on top of the Python (3.8.9, at this writing) that Apple ships with Macos. (Ironically, as part of their deprecation of Python 2, Macos doesn't currently ship with a =/usr/bin/python= of any kind, so "be version-agnostic and run =/usr/sbin/env python=" won't help you.)
+
+Bottom line: There can be a ton of versions of Python on your system. Anywhere from zero (hello, Macos!) to infinity of them may be "system" versions, and those versions may change arbitrarily.
+
+The Python community has chosen to solve this in a predictable fashion, but installing more versions of Python. But they'll get it right this time! They swear!
+
+[[https://github.com/pyenv/pyenv][Pyenv]] is a set of shell libraries that:
+
+- Manages a set of Python installations
+- Determines which Python installation a user wants to invoke based on a set of configuration files, and "transparently" ensures that it is invoked when any Python-related binaries are called. (To do this, it must insinuate itself into your path, which isn't quite as transparent as symlinks in =/usr/local/bin= or something, but oh well.)
+
+Pyenv depends on a properly configured environment, so it has to be insinuated everywhere Python is used. It has directions for doing this into the shell; for Emacs, there's [[https://github.com/pythonic-emacs/pyenv-mode][Pyenv-mode]]. (Accessing Python in any other way requires additional thought.)
+
+#+begin_src emacs-lisp
+  (defun pyenv-activate-current-project ()
+    "Automatically activates pyenv version if .python-version file exists."
+    (interactive)
+    (let ((python-version-directory
+           (locate-dominating-file (buffer-file-name) ".python-version")))
+      (if python-version-directory
+          (let* ((pyenv-version-path
+                  (f-expand ".python-version" python-version-directory))
+                 (pyenv-current-version
+                  (s-trim (f-read-text pyenv-version-path 'utf-8))))
+            (pyenv-mode-set pyenv-current-version)
+            (message (concat "Setting pyenv to " pyenv-current-version))))))
+
+
+  (use-package pyenv-mode
+    :ensure t
+    :init
+    (progn
+      (add-to-list 'exec-path "~/.pyenv/shims")
+      (setenv "WORKON_HOME" "~/.pyenv/versions/"))
+    :config (pyenv-mode)
+    :bind
+    ("C-x p e" . pyenv-activate-current-project))
+#+end_src
+
+You may wonder how to use virtual environments with Pyenv. This is taken care of automatically when using the [[https://github.com/pyenv/pyenv-virtualenv][Pyvenv virtualenv plugin]]. The relevant =.python-version= file just points to a virtualenv (that Pyenv controls).
+
+***** Python-mode
+
+This is the core mode for editing Python files; it also provides functionality many other Python modules, such as Elpy, build on.
+
+We assert a dependency on Pyenv-mode to ensure there will be any Python at all to run for linting and whatnot. If Pyenv seems weird and scary to you, just remove =:after (pyenv-mode)= in the =use-package= clause.
 
 #+BEGIN_SRC emacs-lisp
   (use-package python
+    :after (pyenv-mode)
     :mode ("\\.py\\'" . python-mode)
     :interpreter ("python" . python-mode)
 
@@ -1776,7 +1852,10 @@ There will be additional requirement associated with Elpy, below.
       (add-to-list 'auto-mode-alist '("\\.psp$" . html-mode))
 
       (pg-util-diminish-major python-mode "py")
-      (setq python-fill-docstring-style 'symmetric)))
+      (setq python-fill-docstring-style 'symmetric))
+
+    :config
+    (elpy-enable))
 
 
   (use-package py-autopep8 :ensure t :after (python))
@@ -1799,23 +1878,16 @@ Jedi is a completion framework for Python. This module integrates it with compan
     (python-mode . (lambda () (add-to-list 'company-backends 'company-jedi))))
 #+end_src
 
+
+
 ***** Elpy
 
-[[https://github.com/jorgenschaefer/elpy][Elpy]] provides IDE feature with the help of a subprocess running Python. For full benefit, install the following modules into your environment (in addition to those in [[Python]] above.
-
-#+BEGIN_SRC sh :tangle no
-  pip install importmagic
-  pip install autopep8
-  pip install yapf
-  pip install mypy
-#+END_SRC
-
-
+[[https://github.com/jorgenschaefer/elpy][Elpy]] provides IDE feature with the help of a subprocess running Python. Note that it relies heavily on a number of Python libraries, listed in  [[Python]]. If these are not present in the Python version or virtual environment being used, Elpy will probably let you know.
 
 Remove =yasnippet= from elpy-modules because screw =yasnippet=. Add Flycheck because yay static typing. (Mypy is only available in Flycheck, not Flymake.)
 
 #+BEGIN_SRC emacs-lisp
-  (use-package flycheck-mypy :ensure t :after flycheck)
+  (use-package flycheck-mypy :ensure t :after (flycheck))
 
   (use-package elpy
     :ensure t
@@ -1825,14 +1897,20 @@ Remove =yasnippet= from elpy-modules because screw =yasnippet=. Add Flycheck bec
     (setq elpy-rpc-backend "jedi")
     :config
     (progn
+      (message "ELPY CONFIG!!!!")
       (remove-hook 'elpy-modules 'elpy-module-yasnippet)
-      (when (load "flycheck" t t)
-        (remove-hook 'elpy-modules 'elpy-module-flymake)
-        (add-hook 'elpy-mode-hook 'flycheck-mode)
-        (pg-util-list-add-unique-var
-         'flycheck-disabled-checkers
-         '(python-flake8 python-pylint)))))
+      (message "ELPY: Removed elpy-module-yasnippet from elpy modules")
+      (if (load "flycheck" t t)
+          (progn
+            (remove-hook 'elpy-modules 'elpy-module-flymake)
+            (add-hook 'elpy-mode-hook 'flycheck-mode)
+            (pg-util-list-add-unique-var
+             'flycheck-disabled-checkers
+             '(python-flake8 python-pylint)))
+        (message "ELPY: Not loading flycheck"))))
 #+END_SRC
+
+****** Disablying Elpy
 
 Elpy is complicated and has, in the past, been kind of janky. If it's undesirable to use Elpy, set =pg-enable-elpy= to =nil= and Emacs will just use the normal =python-mode=.
 
