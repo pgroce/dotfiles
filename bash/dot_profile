@@ -22,6 +22,7 @@ if `command -v pyenv >/dev/null`; then
     export PYENV_ROOT="$HOME/.pyenv"
     path -f $PYENV_ROOT/bin
     eval "$(pyenv init -)"
+    eval "$(pyenv virtualenv-init -)"
     export PYENV_INITIALIZED=1
 else
     export PYENV_INITIALIZED=0
