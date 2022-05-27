@@ -49,4 +49,6 @@ function no_proxy()
 
 
 # Python Virtualenv manipulation removed.
-# Use Pyenv instead: https://github.com/pyenv/pyenv
+# Use pyenv and pyenv-virtualenv instead:
+# https://github.com/pyenv/pyenv
+# https://github.com/pyenv/pyenv-virtualenv
