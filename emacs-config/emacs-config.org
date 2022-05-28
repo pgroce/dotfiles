@@ -1814,6 +1814,7 @@ Pyenv depends on a properly configured environment, so it has to be insinuated e
                  (pyenv-current-version
                   (s-trim (f-read-text pyenv-version-path 'utf-8))))
             (pyenv-mode-set pyenv-current-version)
+            (pyvenv-workon pyenv-current-version)
             (message (concat "Setting pyenv to " pyenv-current-version))))))
 
 
@@ -1823,7 +1824,8 @@ Pyenv depends on a properly configured environment, so it has to be insinuated e
     (progn
       (add-to-list 'exec-path "~/.pyenv/shims")
       (setenv "WORKON_HOME" "~/.pyenv/versions/"))
-    :config (pyenv-mode)
+    :config
+    (pyenv-mode)
     :bind
     ("C-x p e" . pyenv-activate-current-project))
 #+end_src
@@ -1838,7 +1840,6 @@ We assert a dependency on Pyenv-mode to ensure there will be any Python at all t
 
 #+BEGIN_SRC emacs-lisp
   (use-package python
-    :after (pyenv-mode)
     :mode ("\\.py\\'" . python-mode)
     :interpreter ("python" . python-mode)
 
@@ -1891,64 +1892,28 @@ Remove =yasnippet= from elpy-modules because screw =yasnippet=. Add Flycheck bec
 
   (use-package elpy
     :ensure t
-    :commands elpy-enable
-    :after (flycheck-mypy)
+    :commands (elpy-enable)
+    ;;:after (flycheck-mypy)
+    :custom
+    (elpy-rpc-virtualenv-path 'current)
+    :hook
+    (elpy-mode . (lambda () (add-hook 'before-save-hook
+                                      'elpy-format-code nil t)))
     :init
-    (setq elpy-rpc-backend "jedi")
+    (progn
+      (setq elpy-rpc-backend "jedi"))
     :config
     (progn
-      (message "ELPY CONFIG!!!!")
       (remove-hook 'elpy-modules 'elpy-module-yasnippet)
-      (message "ELPY: Removed elpy-module-yasnippet from elpy modules")
       (if (load "flycheck" t t)
           (progn
             (remove-hook 'elpy-modules 'elpy-module-flymake)
             (add-hook 'elpy-mode-hook 'flycheck-mode)
             (pg-util-list-add-unique-var
              'flycheck-disabled-checkers
-             '(python-flake8 python-pylint)))
-        (message "ELPY: Not loading flycheck"))))
+             '(python-flake8 python-pylint))))))
 #+END_SRC
 
-****** Disablying Elpy
-
-Elpy is complicated and has, in the past, been kind of janky. If it's undesirable to use Elpy, set =pg-enable-elpy= to =nil= and Emacs will just use the normal =python-mode=.
-
-I'd love to wrap this in a =use-package= stanza, but so far that's defeated me.
-
-#+BEGIN_SRC emacs-lisp
-  (setq pg--elpy-enabled nil)
-
-  (defcustom pg-enable-elpy t
-    "Flag set when elpy should be used in this configuration.")
-
-  (defun pg-python-mode ()
-    "If it's desired and hasn't been already, call `elpy-enable'
-  before running python-mode."
-
-
-    (when (and pg-enable-elpy
-               (not pg--elpy-enabled))
-      (elpy-enable))
-    (python-mode))
-
-  ;;; python-mode is in the core image, so root out baked-in references
-  ;;; to python-mode. This is probably unnecessary, but better safe than
-  ;;; sorry.
-  (setq auto-mode-alist
-        (--filter (not (equal "\\.py\\'" (car it))) auto-mode-alist))
-  (setq interpreter-mode-alist
-        (--filter (not (equal "python[0-9.]*" (car it))) interpreter-mode-alist))
-
-  (setq auto-mode-alist
-        (pg-util-update-auto-mode-alist "\\.py$" 'pg-python-mode))
-
-  (setq interpreter-mode-alist
-        (pg-util-update-auto-mode-alist
-         "\\.py$"
-         'pg-python-mode
-         interpreter-mode-alist))
-#+end_src
 
 **** Javascript
 
