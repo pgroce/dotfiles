@@ -1771,6 +1771,8 @@ To get the full benefit of this configuration, you will also want to install the
   pip install autopep8
   pip install yapf
   pip install mypy
+  # pylint is like flake8, but more
+  pip install pylint
 #+END_SRC
 
 Depending on how you prefer to manage your environment, you may choose to  install these into virtual environments or into the site packages of the Python version being used. If you install them into a virtual environment, it will need to be activated to use Elpy's features. If you install into the site packages, you will need to ensure that the appropriate Python installation is being used, probably via Pyenv; a function is defined below to help with this.
@@ -1909,6 +1911,7 @@ Remove =yasnippet= from elpy-modules because screw =yasnippet=. Add Flycheck bec
           (progn
             (remove-hook 'elpy-modules 'elpy-module-flymake)
             (add-hook 'elpy-mode-hook 'flycheck-mode)
+            ;; I /think/ these are disabled because of
             (pg-util-list-add-unique-var
              'flycheck-disabled-checkers
              '(python-flake8 python-pylint))))))
