@@ -807,6 +807,46 @@ Some very basic printing defaults.
 (setq-default ps-default-bg "white")
 #+end_src
 
+
+** Pop-up windows
+
+Manage some temporary buffers using pop-up windows.
+
+At some point I should probably make it possible to manage =popper-reference-buffers= in per-package configuration, so new packages can register buffers they create as transient like this. For now, this works.
+
+#+begin_src emacs-lisp
+  (use-package popper
+    :ensure t                             ; or :straight t
+    :bind (("C-`"   . popper-toggle-latest)
+           ("M-`"   . popper-cycle)
+           ("C-M-`" . popper-toggle-type))
+
+    :custom
+    ((popper-reference-buffers
+      '("\\*Messages\\*"
+        "Output\\*$"
+        "\\*Async Shell Command\\*"
+        help-mode
+        compilation-mode
+        inferior-python-mode
+        inferior-emacs-lisp-mode
+        "^\\*eshell.*\\*$" eshell-mode
+        "^\\*shell.*\\*$"  shell-mode
+        "^\\*term.*\\*$"   term-mode
+        "^\\*vterm.*\\*$"  vterm-mode))
+     (popper-window-height
+      (lambda (win)
+        (fit-window-to-buffer
+         win
+         (floor (frame-height) 6)
+         (floor (frame-height) 3)))))
+    :init
+    (popper-mode +1)
+    (popper-echo-mode +1))
+#+end_src
+
+
+
 ** Small things
 
 
