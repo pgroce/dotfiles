@@ -1317,8 +1317,8 @@ These are mainly just tweaks to existing org-mode parameters. One exception is =
     (progn
       (defun pg-org-interactive-todo ()
         (interactive)
-        "Call `org-todo' with the results of a completing read on the
-  current set of todo keywords."
+        "Call `org-todo' with the results of a completing read on
+  the current set of todo keywords."
         (let ((todo-keyword (completing-read "Status: " org-todo-keywords-1)))
           (org-todo todo-keyword)))
 
