@@ -1945,6 +1945,9 @@ Remove =yasnippet= from elpy-modules because screw =yasnippet=. Add Flycheck bec
       (setq elpy-rpc-backend "jedi"))
     :config
     (progn
+      ;; Unshadow smartparens keybindings
+      (unbind-key "<C-right>" 'elpy-mode-map)
+      (unbind-key "<C-left>" 'elpy-mode-map)
       (remove-hook 'elpy-modules 'elpy-module-yasnippet)
       (if (load "flycheck" t t)
           (progn
