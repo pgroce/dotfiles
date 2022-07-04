@@ -1521,9 +1521,7 @@ I often make git repos in project directories just to make it easier Projectile 
     :bind-keymap* ("C-c p" . projectile-command-map)
     :init
     (progn
-      (setq projectile-enable-caching t)
-      ;; projectile native indexing is slower, but more reliable imo
-      (setq projectile-indexing-method 'native))
+      (setq projectile-enable-caching t))
 
     :config
     (progn
