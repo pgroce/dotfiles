@@ -1932,9 +1932,11 @@ Remove =yasnippet= from elpy-modules because screw =yasnippet=. Add Flycheck bec
   (use-package elpy
     :ensure t
     :commands (elpy-enable)
-    ;;:after (flycheck-mypy)
+    :bind (:map elpy-mode-map
+                ("C-c ," . elpy-goto-definition))
     :custom
     (elpy-rpc-virtualenv-path 'current)
+    (elpy-test-runner 'elpy-test-pytest-runner)
     :hook
     (elpy-mode . (lambda () (add-hook 'before-save-hook
                                       'elpy-format-code nil t)))
@@ -1951,7 +1953,8 @@ Remove =yasnippet= from elpy-modules because screw =yasnippet=. Add Flycheck bec
           (progn
             (remove-hook 'elpy-modules 'elpy-module-flymake)
             (add-hook 'elpy-mode-hook 'flycheck-mode)
-            ;; I /think/ these are disabled because of
+            ;; TODO: This is cargo culted. I like pylint, it seems to
+            ;; work. Not sure why they're being disabled here though.
             (pg-util-list-add-unique-var
              'flycheck-disabled-checkers
              '(python-flake8 python-pylint))))))
