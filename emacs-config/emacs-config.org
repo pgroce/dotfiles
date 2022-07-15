@@ -1935,8 +1935,8 @@ Remove =yasnippet= from elpy-modules because screw =yasnippet=. Add Flycheck bec
     :commands (elpy-enable)
     :bind (:map elpy-mode-map
                 ("C-c ," . elpy-goto-definition)
-                ("C-c C-n" . flycheck-next-error)
-                ("C-c C-p" . flycheck-previous-error))
+                ("C-c n" . flycheck-next-error)
+                ("C-c p" . flycheck-previous-error))
     :custom
     (elpy-rpc-virtualenv-path 'current)
     (elpy-test-runner 'elpy-test-pytest-runner)
