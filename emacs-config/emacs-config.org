@@ -1289,6 +1289,7 @@ These are mainly just tweaks to existing org-mode parameters. One exception is =
     (add-hook 'org-mode-hook (lambda () (setq mode-name "Ø")))
     :custom
     ((org-hide-leading-stars t)
+     (org-hidden-keywords '(title subtitle author date email))
      (org-fast-tag-selection-single-key 'expert)
      (org-default-notes-file "~/org-files/notes.org")
      (org-refile-targets '((nil :maxlevel . 2)))
