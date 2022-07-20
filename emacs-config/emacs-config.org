@@ -1271,12 +1271,34 @@ The code block below lets me query this list of customers and projects when I'm 
 
 *** Core org
 
-These are mainly just tweaks to existing org-mode parameters. One exception is =pg-org-interactive-todo=, which is bound to =C-c C-t=
+These are mainly just tweaks to existing org-mode parameters. One exception is =pg-org-interactive-todo=, which is bound to =C-c C-t=. (Or just =t= in =org-agenda-mode=.)
 
 (Putting =:after (python)= in here because org-mode loads all its =ob-*= babel backends at load, and =ob-python= requires Python, which doesn't seem to be hitting the =use-package= declaration later on. This is a bug, of course.)
 
 #+BEGIN_SRC emacs-lisp
 
+  (defun pg-org-agenda-keywords-for-item ()
+    "Get keywords for an item in the agenda buffer, based on the
+  keywords in the item's original buffer. If not in the agenda
+  buffer, return nil. Code adapted from `org-agenda-switch-to'."
+    (when (eq major-mode 'org-agenda-mode)
+      (let* ((marker (or (org-get-at-bol 'org-marker)
+                         (org-agenda-error)))
+             (buffer (marker-buffer marker)))
+        (unless buffer (user-error "Trying to switch to non-existent buffer"))
+        (save-excursion
+          (set-buffer buffer)
+          org-todo-keywords-1))))
+
+  (defun pg-org-interactive-todo ()
+        (interactive)
+        "Call `org-todo' with the results of a completing read on
+  the current set of todo keywords."
+        (let ((todo-keyword
+               (completing-read "Status: "
+                                (or org-todo-keywords-1
+                                    (pg-org-agenda-keywords-for-item)))))
+          (org-todo todo-keyword)))
 
   (use-package org
     :bind (("C-c l"   . org-store-link)
@@ -1316,12 +1338,7 @@ These are mainly just tweaks to existing org-mode parameters. One exception is =
     :mode ("\\.org\\'" . org-mode)
     :config
     (progn
-      (defun pg-org-interactive-todo ()
-        (interactive)
-        "Call `org-todo' with the results of a completing read on
-  the current set of todo keywords."
-        (let ((todo-keyword (completing-read "Status: " org-todo-keywords-1)))
-          (org-todo todo-keyword)))
+
 
       (bind-key "C-c C-t" #'pg-org-interactive-todo org-mode-map)
 
@@ -1350,7 +1367,9 @@ A few of the variables configured here really live in =org.el=, but they're rele
     :bind (("C-c a" . org-agenda)
            :map org-agenda-mode-map
            ("C-n" . next-line)
-           ("C-p" . previous-line))
+           ("C-p" . previous-line)
+           ("t" . pg-org-interactive-todo)
+           ("C-c C-t" . pg-org-interactive-todo))
 
     :init
     (setq org-agenda-files '("~/org-files/todo.org"
