@@ -30,8 +30,8 @@ This configuration makes heavy use of Emacs packages, so first, configure the pa
 
 #+BEGIN_SRC emacs-lisp
   (setq package-archives
-        '(("gnu"         . "http://elpa.gnu.org/packages/")
-          ("melpa"       . "http://melpa.org/packages/")
+        '(("gnu"         . "https://elpa.gnu.org/packages/")
+          ("melpa"       . "https://melpa.org/packages/")
           ("pgroce"      . "https://pgroce.github.io/emacs-pkgs/elpa/")
   ))
 
