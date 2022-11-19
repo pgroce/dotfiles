@@ -46,4 +46,8 @@ export EDITOR=emacsclient
 
 export HOMEBREW_CASK_OPTS="--no-quarantine"
 
-eval "$(starship init zsh)"
+if [ `uname` eq 'Darwin' ]; then
+    eval "$(starship init zsh)"
+else
+    source "$HOME/.zsh/spaceship-prompt/spaceship.zsh"
+fi
