@@ -37,6 +37,11 @@ pythonpath=(~/lib/python $pythonpath)
 typeset -T CLASSPATH classpath
 classpath=(~/lib/java/lib ~/lib/java/jars\* $classpath)
 
+# Homebrew (if available)
+if [ -e /opt/homebrew/bin/brew ]; then
+    eval "$(/opt/homebrew/bin/brew shellenv)"
+fi
+
 # Open command line in the external editor
 autoload -U edit-command-line
 zle -N edit-command-line
