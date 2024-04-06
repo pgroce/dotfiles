@@ -1,4 +1,4 @@
-#+STARTUP: indent
++STARTUP: indent
 #+TITLE: Phil's Emacs Configuration
 This configuration integrates with my [[https://github.com/pgroce/emacs-config-framework][configuration framework]], although it could probably be used without it. It also uses some packages from [[https://github.com/pgroce/emacs-pkgs][my own package repository]]. (For the ELPA repo URL, see [[Package configuration]] below.)
 
@@ -1342,7 +1342,8 @@ These are mainly just tweaks to existing org-mode parameters. One exception is =
 
       (bind-key "C-c C-t" #'pg-org-interactive-todo org-mode-map)
 
-      (pg-open-register-org-link)))
+      ;(pg-open-register-org-link)
+      ))
 
   (use-package org-tempo
     :after (org)
@@ -1494,7 +1495,7 @@ Citations and references have become a much bigger part of my workflow in the la
 The [[https://github.com/jkitchin/org-ref][org-ref]] project is an extremely powerful method for organizing references, especially academic papers and/or sources associated (or that can be associated) with PDFs.
 
 #+begin_src emacs-lisp
-  (use-package org-ref :ensure t :after org
+  (use-package org-ref :ensure t :after (org pdf-tools)
     :custom (org-ref-default-citation-link "citep"))
 
   (use-package org-ref-pdf :after (org-ref))
@@ -1912,16 +1913,16 @@ We assert a dependency on Pyenv-mode to ensure there will be any Python at all t
       (add-to-list 'auto-mode-alist '("\\.psp$" . html-mode))
 
       (pg-util-diminish-major python-mode "py")
-      (setq python-fill-docstring-style 'symmetric))
+      (setq python-fill-docstring-style 'symmetric)))
 
-    :config
-    (elpy-enable))
-
+  (use-package elpy :ensure t :after python
+    :config (elpy-enable))
 
   (use-package py-autopep8 :ensure t :after (python))
   (use-package pylint :ensure t :after (python))
   (use-package pyvenv
     :ensure t
+    :after python
     :commands (pyvenv-activate pyvenv-workon))
 
 #+END_SRC
@@ -2133,9 +2134,7 @@ The mouse wheel setup will get clobbered when using a daemon, due to the differe
 **** =pdf-tools=
 
 #+BEGIN_SRC emacs-lisp :tangle darwin.el
-  (pg-if-available "epdfinfo"
-    "Install pdf-tools (e.g., 'brew install pdf-tools') for better PDF experience."
-    (use-package pdf-tools :ensure t))
+  (use-package pdf-tools :ensure t)
 #+END_SRC
 
 
