@@ -29,14 +29,12 @@ fi
 pyenv_command=`command -v pyenv`
 
 if [ "$pyenv_command" != "" ]; then
-    echo "Initializing pyenv"
     export PYENV_ROOT="$HOME/.pyenv"
     path=($PYENV_ROOT/bin $path)
     eval "$(pyenv init -)"
     eval "$(pyenv virtualenv-init -)"
     export PYENV_INITIALIZED=1
 else
-    echo "No pyenv initialized"
     export PYENV_INITIALIZED=0
 fi
 
