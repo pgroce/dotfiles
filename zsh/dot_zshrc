@@ -14,17 +14,26 @@ fi
 # Paths
 #######
 
+
 # PATH
 path=(~/bin /Library/TeX/texbin /usr/local/bin /usr/local/sbin /usr/bin /usr/sbin /sbin /bin)
 
+# Homebrew (if available)
+if [ -e /opt/homebrew/bin/brew ]; then
+    eval "$(/opt/homebrew/bin/brew shellenv zsh)"
+fi
 
-if `command -v pyenv >/dev/null`; then
+pyenv_command=`command -v pyenv`
+
+if [ "$pyenv_command" != "" ]; then
+    echo "Initializing pyenv"
     export PYENV_ROOT="$HOME/.pyenv"
     path=($PYENV_ROOT/bin $path)
     eval "$(pyenv init -)"
     eval "$(pyenv virtualenv-init -)"
     export PYENV_INITIALIZED=1
 else
+    echo "No pyenv initialized"
     export PYENV_INITIALIZED=0
 fi
 
@@ -37,10 +46,6 @@ pythonpath=(~/lib/python $pythonpath)
 typeset -T CLASSPATH classpath
 classpath=(~/lib/java/lib ~/lib/java/jars\* $classpath)
 
-# Homebrew (if available)
-if [ -e /opt/homebrew/bin/brew ]; then
-    eval "$(/opt/homebrew/bin/brew shellenv)"
-fi
 
 # Open command line in the external editor
 autoload -U edit-command-line
