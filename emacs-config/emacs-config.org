@@ -1853,7 +1853,7 @@ But the core Python installation itself is frequently a problem too.
 
 Bottom line: There can be a ton of versions of Python on your system. Anywhere from zero (hello, Macos!) to infinity of them may be "system" versions, and those versions may change arbitrarily.
 
-The Python community has chosen to solve this in a predictable fashion, but installing more versions of Python. But they'll get it right this time! They swear!
+The Python community has chosen to solve this in a predictable fashion, by installing more versions of Python. But they'll get it right this time! They swear!
 
 [[https://github.com/pyenv/pyenv][Pyenv]] is a set of shell libraries that:
 
