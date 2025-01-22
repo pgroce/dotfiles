@@ -19,6 +19,9 @@ fi
 path=(~/bin /Library/TeX/texbin /usr/local/bin /usr/local/sbin /usr/bin /usr/sbin /sbin /bin)
 
 # Homebrew (if available)
+#
+# Homebrew needs to be set up before anything that uses it (e.g.,
+# pyenv)
 if [ -e /opt/homebrew/bin/brew ]; then
     eval "$(/opt/homebrew/bin/brew shellenv zsh)"
 fi
@@ -39,6 +42,7 @@ fi
 
 
 # PYTHONPATH
+# Ensure homedir libraries are seen first in python
 typeset -T PYTHONPATH pythonpath
 pythonpath=(~/lib/python $pythonpath)
 
