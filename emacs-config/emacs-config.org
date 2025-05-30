@@ -2065,14 +2065,6 @@ OS X has horrible long temporary directory paths that sometimes exceed the lengt
   (setenv "TMPDIR" "/tmp")
 #+END_SRC
 
-**** Remap =kmacro-start/end-macro=
-
-macOS now uses =<f4>= to do something with the touch bar, so remap where =kmacro-start-macro= and =kmacro-end-macro= live. (No, =C-c (= and =C-c )= are not adequate replacements.)
-
-#+BEGIN_SRC emacs-lisp :tangle darwin.el
-  (bind-key "<f5>" 'kmacro-start-macro)
-  (bind-key "<f6>" 'kmacro-end-or-call-macro)
-#+END_SRC
 
 *** =ns= terminal configuration
 
@@ -2093,16 +2085,18 @@ Use the navigation functions defined in the general configuration in OS X GUI Em
 
 ***** Modifier keys
 
-Make left command =meta=, and make right alt and right command =super=. (I should experiment with right command being =hyper=, but haven't so far.)
+Make left/right command =meta=, and make right alt =super=. Don't do anything with the left Option key, so I can type extended punctuation.
 
 #+BEGIN_SRC emacs-lisp :tangle darwin.el
 
+  ;; ns-right-command-modifier should, by default, be 'left, inheriting
+  ;; ns-command-modifier
+
   (pg-terminal-ns
-   ;(setq ns-right-control-modifier 'super)
    (setq ns-option-modifier  nil)
    (setq ns-right-option-modifier  'super)
-   (setq ns-right-command-modifier 'super)
    (setq ns-command-modifier 'meta))
+
 #+END_SRC
 
 ***** Drag and drop
