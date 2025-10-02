@@ -289,7 +289,7 @@ Now I can keep bits configuration around for later, but turn it off while I'm no
 #+begin_src emacs-lisp
   (provide 'pg-fonts)
 #+end_src
-  (provide 'pg-fonts)
+
 ** Other UI elements (=pg-ui-misc.el=)
 :PROPERTIES:
 :header-args: :tangle build/pg-modules/pg-ui-misc.el
@@ -691,7 +691,11 @@ Now I can keep bits configuration around for later, but turn it off while I'm no
 #+end_src
 
 *** Context actions: Embark (=pg-context-actions.el=)
-#+begin_src emacs-lisp :tangle build/pg-modules/pg-context-actions.el
+:PROPERTIES:
+:header-args: :tangle build/pg-modules/pg-context-actions.el
+:END:
+
+#+begin_src emacs-lisp
   ;; Embark
   (use-package embark
     :ensure t
@@ -956,7 +960,10 @@ More default settings, and plenty of them. I don't have opinions on much of it a
   (provide 'pg-devel)
 #+end_src
 *** YAML (=pg-devel-yaml.el=)
-#+begin_src emacs-lisp :tangle build/pg-modules/pg-devel-yaml.el
+:PROPERTIES:
+:header-args: :tangle build/pg-modules/pg-devel-yaml.el
+:END:
+#+begin_src emacs-lisp
   ;; Not using yaml-ts-mode bc they made some bad choices:
   ;; https://www.reddit.com/r/emacs/comments/17gtxmr/indentation_in_yamltsmode/
 
@@ -968,7 +975,11 @@ More default settings, and plenty of them. I don't have opinions on much of it a
   (provide 'pg-devel-yaml)
 #+end_src
 **** Ansible (=pg-devel-ansible.el=)
-#+begin_src emacs-lisp :tangle build/pg-modules/pg-devel-ansible.el
+:PROPERTIES:
+:header-args: :tangle build/pg-modules/pg-devel-ansible.el
+:END:
+
+#+begin_src emacs-lisp
   (use-package ansible
     :ensure t
     :if (and (boundp 'pg-cf-ansible) pg-cf-ansible)
@@ -1002,7 +1013,12 @@ More default settings, and plenty of them. I don't have opinions on much of it a
   (provide 'pg-devel-ansible)
 #+end_src
 ** Org mode (=pg-org=)
-#+begin_src emacs-lisp :tangle build/pg-modules/pg-org.el
+:PROPERTIES:
+:header-args: :tangle build/pg-modules/pg-org.el
+:END:
+
+
+#+begin_src emacs-lisp
   ;; Org Mode stuff (much more later, I'm sure....)
 
   (defcustom pg-org-dir "~/org-files/"
@@ -1050,6 +1066,10 @@ More default settings, and plenty of them. I don't have opinions on much of it a
   (provide 'pg-org)
 #+end_src
 ** Anki (=pg-anki=)
+:PROPERTIES:
+:header-args: :tangle build/pg-modules/pg-anki.el
+:END:
+
 #+begin_src emacs-lisp
   ;; Additional UI to simplify adding clozes and other functionality
   (when pg-cf-anki
@@ -1165,7 +1185,7 @@ More default settings, and plenty of them. I don't have opinions on much of it a
 :PROPERTIES:
 :header-args: :tangle build/darwin.el
 :END:
-#+begin_src emacs-lisp :tangle build/darwin.el
+#+begin_src emacs-lisp
   (require 'pg-ui-misc) ; for pg-clean-frames
 
   (pg-terminal-ns
