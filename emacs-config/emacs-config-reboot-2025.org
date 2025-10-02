@@ -565,6 +565,7 @@ Now I can keep bits configuration around for later, but turn it off while I'm no
   ;; Orderless: Unorded sets of selectors in completion
 
   (use-package orderless
+    :ensure t
     :custom
     ;; (orderless-style-dispatchers '(orderless-affix-dispatch))
     ;; (orderless-component-separator #'orderless-escapable-split-on-space)
@@ -599,6 +600,7 @@ Now I can keep bits configuration around for later, but turn it off while I'm no
 #+begin_src emacs-lisp
   ;; Corfu
   (use-package corfu
+    :ensure t
     ;; Optional customizations
     ;; :custom
     ;; (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
