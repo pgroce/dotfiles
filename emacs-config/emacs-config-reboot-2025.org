@@ -1,0 +1,1255 @@
+#+title: Emacs Config (2025 Reboot)
+#+startup: indent
+* Intro
+This GNU Emacs [fn:: This document is about GNU Emacs, which I will refer to subsequently only as "Emacs."] configuration replaces one I maintained since around 2017 (so, Emacs 25 or so), and which contained elements from the initial configuration I started accumulating when I began using Emacs in ca. 2010 (Emacs 23 or thereabouts).
+
+This configuration, too, contains many elements I'm carrying over:
+
+  - My minimal [[https://github.com/pgroce/emacs-config-framework][configuration framework]]
+  - A few of the libraries in my [[https://github.com/pgroce/emacs-pkgs][Emacs packages]], notably [[https://github.com/pgroce/emacs-pkgs/blob/master/pg-terminal.org][pg-terminal]] and [[https://github.com/pgroce/emacs-pkgs/blob/master/pg-open.org][pg-open]]
+  - The =scratch.el= buffer, a persistent version of =\*scratch\*= where I can prototype configuration changes
+  - Some snippets that date from my early days with Emacs, one way or another
+
+By and large, though, this differs significantly from my previous config in a number of ways. So does Emacs. My previous config relied heavily on [[https://emacs-helm.github.io/helm/][Helm]], [[https://github.com/jorgenschaefer/elpy][Elpy]], and other libraries that existed to update Emacs for how modern users worked and what they expected from an editor. Emacs has changed a lot since then, and a new generation of tools now exist that work more closely with core Emacs; this config is centered around them.
+
+** Configuration structure
+I'm also structuring the configuration in a more modular way on disk. Aside from packages, I'm breaking the configuration up into multiple smaller files, and adding "configuration features" to enable or disable parts of them. This modularity is a little superficial; I'm still planning on maintaining everything from this Org file. The hope, though, is that this makes the configuration easier to debug. The configuration features should, at least, let me deactivate parts of my config that I use sporadically, like some pieces of language support.
+
+** Document structure
+The main value, to me, of this literate configuration is being able to break it up structurally into sections and subsections. I've added some explanatory prose where I thought it might help other readers, but I've also tried to push some things into the source code comments for easier debugging. (For this reason, you may see a few source blocks containing only comments.) I've also inserted links into the document where applicable, as they aren't too useful in code.
+
+* Main config file (=emacs-config.el=)
+:PROPERTIES:
+:header-args: :tangle build/emacs-config.el
+:END:
+
+
+#+begin_src emacs-lisp
+  ;;;;; -- Pre-configuration --
+
+
+#+end_src
+
+** Package setup
+
+#+begin_src emacs-lisp
+  ;;; Package setup
+
+  (setq package-archives
+        '(("gnu"         . "https://elpa.gnu.org/packages/")
+          ("nongnu"      . "https://elpa.nongnu.org/nongnu/")
+          ("melpa"       . "https://melpa.org/packages/")
+          ("pgroce"      . "https://pgroce.github.io/emacs-pkgs/elpa/")
+  ))
+
+  (require 'package)
+  (package-initialize)
+  (unless (package-installed-p 'use-package)
+    (package-refresh-contents)
+    (package-install 'use-package))
+  (require 'use-package)
+  ;(setopt use-package-compute-statistics t)
+  ;(setopt use-package-verbose t)
+#+end_src
+
+** Contain custom variables
+I set most of my =defcustom= variables in my config with the =:custom= tag of =use-package= or =setopt=, so I set the Custom file to a temp file and ignore it.
+
+#+begin_src emacs-lisp
+  ;;; Customize this!
+  (setopt custom-file (make-temp-file "emacs-custom"))
+#+end_src
+
+If you do want to use Customize, you can instead keep the file around and load it in your init. The following illustrates a way to do so that plays nicely with my config framework:
+
+#+begin_src emacs-lisp :tangle no
+  ;;; No, really, customize this
+  (setopt custom-file (ecfw-root "emacs-customize.el"))
+  (when (file-exists-p custom-file)
+    (load custom-file))
+#+end_src
+
+** Bring in foundation libraries
+[[https://github.com/NicolasPetton/seq.el?tab=readme-ov-file][Seq]], [[https://github.com/magnars/dash.el][Dash]], and [[https://github.com/magnars/s.el][S]] are tremendously useful libraries for writing Emacs Lisp on top of. [[https://github.com/pgroce/emacs-pkgs/blob/master/pg-util.org][PG Util]] is a set of similar functions I've collected over the years. (I should check and see if I can retire some of them now.) [[https://github.com/pgroce/emacs-pkgs/blob/master/pg-shell-path.org][PG Shell Path]] is a sort of list manipulation library for strings that use shell path variable syntax.
+
+[[https://github.com/pgroce/emacs-pkgs/blob/master/pg-terminal.org][PG Terminal]] is the odd one; Emacs calls different windowing systems "terminals," by analogy to old physical terminals. PG Terminal provides a few functions to facilitate calling code only in specific terminal types, like the GUI versions of Emacs running on MacOS or Windows.
+
+#+begin_src emacs-lisp
+  ;;; Standard library enhancements
+  (use-package seq :demand t)
+  (use-package dash :demand t :ensure t)
+  (use-package s :demand t :ensure t)
+  (use-package pg-util :demand t :ensure t)
+  (use-package pg-shell-path :demand t :ensure t)
+  (use-package pg-terminal :demand t :ensure t)
+
+#+end_src
+
+** =pg-if-available=
+A function for checking that external configuration has been done. If an external executable exists, do something about it. If not, send a message to the user letting them know the executable is missing.
+
+#+begin_src emacs-lisp
+  ;;; Ensure external executables exist (used in darwin.el and
+  ;;; hypothetically other platforms)
+  (defmacro pg-if-available (cmd absent-msg &rest exists-forms)
+    (declare (indent 1))
+    `(if (executable-find ,cmd)
+         (progn
+           ,@exists-forms)
+       (message "Pro-tip: %s" ,absent-msg)))
+
+#+end_src
+
+** Set some core variables
+Some core defaults I prefer.
+
+#+begin_src emacs-lisp
+  ;;;; -- Core Configuration --
+
+  (use-package emacs
+    :config
+    (setq inhibit-splash-screen t)
+    (setq backup-directory-alist '(("." . "~/.emacs.d/backup")))
+    (setq-default indent-tabs-mode nil)
+    (setq apropos-do-all t)
+    (setq read-file-name-completion-ignore-case t)
+    (setq completion-ignore-case t)
+    (setq large-file-warning-threshold nil)
+    (setq split-height-threshold nil)
+
+    :hook
+    (before-save . delete-trailing-whitespace)
+
+    :config
+    (fset 'yes-or-no-p 'y-or-n-p)
+    (put 'narrow-to-region 'disabled nil)
+    )
+
+#+end_src
+
+
+** Conditional loading (configuration features)
+I often find myself developing a project in a particular programming language, and therefore configuring Emacs to load the language mode, LSP servers, etc. Then I get done with that project, but that configuration code just...sort of sticks around. You don't necessarily want to get rid of it in case you need it later. But right now, it's just clogging up your namespace and slowing down your load time.
+
+To mitigate against this, I'm using what I'm calling /configuration features/, which are just booleans telling me whether a module should be enabled. The support for any such language is in a module, which will conditionally load depending on whether its configuration feature is enabled. (The module has to play nice to make this work, of course.)
+
+Now I can keep bits configuration around for later, but turn it off while I'm not using it, or on specific machines where I don't need it.
+
+#+begin_src emacs-lisp
+  ;;;; Config Features
+
+  (defcustom pg-cf-yaml t
+    "Config option to enable/disable YAML mode")
+
+  (defcustom pg-cf-ansible t
+    "Config option to enable/disable YAML mode")
+
+  (defcustom pg-cf-anki t
+    "Config option to enable/disable anki-editor")
+
+  ;; You have options in setting these. One is simply to change the
+  ;; default values—nothing will happen without a reboot anyway. You can
+  ;; also customize the values through the GUI if you're persisting your
+  ;; custom file, or use `setopt' here.
+#+end_src
+
+** Load modules
+#+begin_src emacs-lisp
+  ;; Add config-modules directory to load-path
+  (add-to-list 'load-path (ecfw-root "pg-modules"))
+
+  ;;;;; Modules
+
+  ;;; -- Look and feel --
+
+  (require 'pg-themes)
+  (require 'pg-fonts)
+  (require 'pg-ui-misc)
+
+  (require 'pg-completion-minibuffer)
+  (require 'pg-completion-selection)
+  (require 'pg-completion-in-buffer)
+  (require 'pg-context-actions)
+
+  ;;; -- Misc capabilities --
+  (require 'pg-dired)
+  (require 'pg-serial-terminal)
+
+
+  ;;; -- Development --
+  (require 'pg-devel)
+  (require 'pg-devel-yaml)
+  (require 'pg-devel-ansible)
+
+  (require 'pg-org)
+  (require 'pg-anki)
+#+end_src
+
+** Emacs server
+#+begin_src emacs-lisp
+  ;; Start the emacs server, if desired.
+  (require 'warnings)
+  (add-to-list 'warning-suppress-types '(server))
+  ;; Comment this out if you're running more than one copy of Emacs
+  ;; (e.g., testing a new config). Otherwise it will fail trying to open
+  ;; a second server on the same port.
+  (server-start)
+
+#+end_src
+
+** Initialize startup buffer
+#+begin_src emacs-lisp
+  ;; My startup buffer. I like to have a clean, persistent scratch
+  ;; buffer where I can try new packages out and whatnot. This means I
+  ;; don't need the default scratch buffer, so I kill it.
+  (find-file (expand-file-name "scratch.el" ecfw-config-dir))
+  (condition-case nil (kill-buffer "*scratch*") nil)
+#+end_src
+
+* Modules (=pg-modules/pg-*.el=)
+
+** Themes (=pg-themes.el=)
+:PROPERTIES:
+:header-args: :tangle build/pg-modules/pg-themes.el
+:END:
+
+#+begin_src emacs-lisp
+
+  (use-package modus-themes
+    :ensure t
+    :init
+    (setq modus-themes-italic-constructs t
+          modus-themes-bold-constructs nil
+          modus-themes-to-toggle '(modus-operandi-tinted modus-vivendi-tinted))
+    :config
+    (load-theme 'modus-operandi-tinted t))
+
+
+  (provide 'pg-themes)
+
+#+end_src
+** Fonts (=pg-fonts.el=)
+:PROPERTIES:
+:header-args: :tangle build/pg-modules/pg-fonts.el
+:END:
+*** Default font
+#+begin_src emacs-lisp
+  ;; --> DEFAULT FONT <--
+  ;; https://www.programmingfonts.org/
+  (set-face-attribute 'default nil
+                      :family "Monaspace Neon Frozen" :height 145 :weight 'normal)
+
+#+end_src
+*** Ligatures
+#+begin_src emacs-lisp
+  ;; Install ligatures. Gonna regret this...
+  ;; https://github.com/mickeynp/ligature.el
+  ;; This assumes you've installed the package via MELPA.
+  (use-package ligature
+    :ensure t
+    :config
+    ;; Enable the "www" ligature in every possible major mode
+    ;(ligature-set-ligatures 't '("www"))
+    ;; Enable traditional ligature support in eww-mode, if the
+    ;; `variable-pitch' face supports it
+    (ligature-set-ligatures 'eww-mode '("ff" "fi" "ffi"))
+    ;; Enable all Cascadia Code ligatures in programming modes
+    (ligature-set-ligatures
+     'prog-mode
+     '("|||>" "<|||" "<==>" "<!--" "####" "~~>" "***" "||=" "||>"
+       ":::" "::=" "=:=" "===" "==>" "=!=" "=>>" "=<<" "=/=" "!=="
+       "!!." ">=>" ">>=" ">>>" ">>-" ">->" "->>" "-->" "---" "-<<"
+       "<~~" "<~>" "<*>" "<||" "<|>" "<$>" "<==" "<=>" "<=<" "<->"
+       "<--" "<-<" "<<=" "<<-" "<<<" "<+>" "</>" "###" "#_(" "..<"
+       "..." "+++" "/==" "///" "_|_" "www" "&&" "^=" "~~" "~@" "~="
+       "~>" "~-" "**" "*>" "*/" "||" "|}" "|]" "|=" "|>" "|-" "{|"
+       "[|" "]#" "::" ":=" ":>" ":<" "$>" "==" "=>" "!=" "!!" ">:"
+       ">=" ">>" ">-" "-~" "-|" "->" "--" "-<" "<~" "<*" "<|" "<:"
+       "<$" "<=" "<>" "<-" "<<" "<+" "</" "#{" "#[" "#:" "#=" "#!"
+       "##" "#(" "#?" "#_" "%%" ".=" ".-" ".." ".?" "+>" "++" "?:"
+       "?=" "?." "??" ";;" "/*" "/=" "/>" "//" "__" "~~" "(*" "*)"
+       "\\\\" "://"))
+    ;; Enables ligature checks globally in all buffers. You can also do it
+    ;; per mode with `ligature-mode'.
+    (global-ligature-mode t))
+#+end_src
+*** Nerd icons
+#+begin_src emacs-lisp
+  ;; Icons used in other packages (because it's 2025, this is what we do)
+  (use-package nerd-icons
+    :ensure t
+    ;; :custom
+    ;; The Nerd Font you want to use in GUI
+    ;; "Symbols Nerd Font Mono" is the default and is recommended
+    ;; but you can use any other Nerd Font if you want
+    ;; (nerd-icons-font-family "Symbols Nerd Font Mono")
+    )
+#+end_src
+*** Provide
+#+begin_src emacs-lisp
+  (provide 'pg-fonts)
+#+end_src
+  (provide 'pg-fonts)
+** Other UI elements (=pg-ui-misc.el=)
+:PROPERTIES:
+:header-args: :tangle build/pg-modules/pg-ui-misc.el
+:END:
+*** GUI frame setup
+#+begin_src emacs-lisp
+  ;;; This function is my preferred setup for gui windows. Put it here
+  ;;; so I can use it later in terminal-specific configuration
+  (defun pg-clean-frames ()
+    (tool-bar-mode -1)
+    (scroll-bar-mode -1)
+    (transient-mark-mode -1)
+    (setq inhibit-splash-screen t)
+    (show-paren-mode 1)
+    (column-number-mode)
+
+    (pg-util-alist-update-var 'window-system-default-frame-alist
+                              '((nil (menu-bar-lines . 0)
+                                     (tool-bar-lines . 0)))))
+#+end_src
+*** Buffer name deduplication (=uniquify=)
+#+begin_src emacs-lisp
+  ;; Make buffer name deduping prettier
+  (use-package uniquify
+    :init
+    (progn
+      (setq uniquify-buffer-name-style 'forward)
+      (setq uniquify-separator "/")
+      (setq uniquify-after-kill-buffer-p t)
+      (setq uniquify-ignore-buffers-re "^\\*")))
+#+end_src
+*** Save history across Emacs sessions
+#+begin_src emacs-lisp
+  ;; Save history across emacs sessions
+  (use-package savehist
+    :ensure nil ; savehist is built-in
+    :hook (after-init . savehist-mode)
+    :config
+    (setq savehist-additional-variables
+          '(kill-ring search-ring regexp-search-ring)))
+#+end_src
+*** Diminish minor modes
+#+begin_src emacs-lisp
+  ;; Diminish minor modes
+  (use-package diminish :demand t :ensure t)
+#+end_src
+*** Parentheses/Brace-oriented editing
+#+begin_src emacs-lisp
+  ;; Parentheses (Not a programming mode! Everything can use matching
+  ;; braces.)
+  (use-package smartparens
+    :ensure smartparens
+    :bind (:map smartparens-mode-map
+                ("M-]" . 'sp-forward-sexp)
+                ("M-[" . 'sp-backward-sexp)
+                ("M-q" . 'sp-indent-defun)
+                ("M-r" . sp-splice-sexp-killing-around) ; "raise"
+                ("M-(" . sp-wrap-round)
+                ("C-<right>" . sp-forward-slurp-sexp)
+                ("C-<left>" . sp-forward-barf-sexp)
+                ("M-s" . sp-splice-sexp)
+                ("<C-M-S-backspace>" . 'kill-whole-line)
+                )
+    :hook ((prog-mode . smartparens-strict-mode)
+           ((text-mode markdown-mode) . smartparens-mode))
+    :config
+    (require 'smartparens-config)
+    )
+
+  (show-paren-mode 1)
+#+end_src
+*** Open files with external application
+#+begin_src emacs-lisp
+  (use-package pg-open
+    :ensure t
+    :demand t
+    :commands (pg-open dir pg-open-file pg-open-file-dired)
+
+    :bind (("C-c <S-backspace>" . pg-open-dir)
+           ("C-c <backspace>" . pg-open-file)
+           ;;:map dired-mode-map
+           ;("S-<return>" . pg-open-file-dired)
+           ))
+#+end_src
+*** Provide
+#+begin_src emacs-lisp
+  (provide 'pg-ui-misc)
+#+end_src
+
+** Completion
+
+*** In the minibuffer: =mct= (=pg-completion-minibuffer.el=)
+:PROPERTIES:
+:header-args: :tangle build/pg-modules/pg-completion-minibuffer.el
+:END:
+
+**** Marginalia
+#+begin_src emacs-lisp
+  ;; Marginalia
+  (use-package marginalia
+    :ensure t
+    ;; Bind `marginalia-cycle' locally in the minibuffer.  To make the binding
+    ;; available in the *Completions* buffer, add it to the
+    ;; `completion-list-mode-map'.
+    :bind (:map minibuffer-local-map
+           ("M-A" . marginalia-cycle)
+           :map completion-list-mode-map
+           ("M-A" . marginalia-cycle))
+
+    :init
+    ;; Marginalia must be activated in the :init section of use-package such that
+    ;; the mode gets enabled right away. Note that this forces loading the
+    ;; package.
+    (marginalia-mode))
+#+end_src
+
+**** MCT
+[[https://github.com/minad/vertico][Vertico]] is a strict superset of MCT, and may be preferred by others. I find MCT to be no more nor less than what I need and want.
+
+#+begin_src emacs-lisp
+  ;;; MCT
+  (use-package mct
+    :ensure t
+    :config
+    (mct-mode 1))
+
+#+end_src
+
+**** Better =delete= behavior in file searches
+
+#+begin_src emacs-lisp
+  ;; Adaptation of `icomplete-fido-backward-updir'. Backspace deletes a
+  ;; directory component at a time when working with filesystem paths.
+  (defun my-backward-updir ()
+    "Delete char before point or go up a directory."
+    (interactive nil mct-mode)
+    (cond
+     ((and (eq (char-before) ?/)
+           (eq (mct--completion-category) 'file))
+      (when (string-equal (minibuffer-contents) "~/")
+        (delete-minibuffer-contents)
+        (insert (expand-file-name "~/"))
+        (goto-char (line-end-position)))
+      (save-excursion
+        (goto-char (1- (point)))
+        (when (search-backward "/" (minibuffer-prompt-end) t)
+          (delete-region (1+ (point)) (point-max)))))
+     (t (call-interactively 'backward-delete-char))))
+
+  (bind-key (kbd "DEL") #'my-backward-updir minibuffer-local-filename-completion-map)
+#+end_src
+
+**** Provide
+#+begin_src emacs-lisp
+  (provide 'pg-completion-minibuffer)
+#+end_src
+
+*** Selection (=pg-completion-selection.el=)
+:PROPERTIES:
+:header-args: :tangle build/pg-modules/pg-completion-selection.el
+:END:
+
+**** Consult
+#+begin_src emacs-lisp
+  ;; Consult
+  ;; Example configuration for Consult
+  (use-package consult
+    :ensure t
+    ;; Replace bindings. Lazily loaded by `use-package'.
+    :bind (;; C-c bindings in `mode-specific-map'
+           ("C-c M-x" . consult-mode-command)
+           ("C-c h" . consult-history)
+           ("C-c k" . consult-kmacro)
+           ("C-c m" . consult-man)
+           ("C-c i" . consult-info)
+           ([remap Info-search] . consult-info)
+           ;; C-x bindings in `ctl-x-map'
+           ("C-x M-:" . consult-complex-command)     ;; orig. repeat-complex-command
+           ("C-x b" . consult-buffer)                ;; orig. switch-to-buffer
+           ("C-x 4 b" . consult-buffer-other-window) ;; orig. switch-to-buffer-other-window
+           ("C-x 5 b" . consult-buffer-other-frame)  ;; orig. switch-to-buffer-other-frame
+           ("C-x t b" . consult-buffer-other-tab)    ;; orig. switch-to-buffer-other-tab
+           ("C-x r b" . consult-bookmark)            ;; orig. bookmark-jump
+           ("C-x p b" . consult-project-buffer)      ;; orig. project-switch-to-buffer
+           ;; Custom M-# bindings for fast register access
+           ("M-#" . consult-register-load)
+           ("M-'" . consult-register-store)          ;; orig. abbrev-prefix-mark (unrelated)
+           ("C-M-#" . consult-register)
+           ;; Other custom bindings
+           ("M-y" . consult-yank-pop)                ;; orig. yank-pop
+           ;; M-g bindings in `goto-map'
+           ("M-g e" . consult-compile-error)
+           ("M-g r" . consult-grep-match)
+           ("M-g f" . consult-flymake)               ;; Alternative: consult-flycheck
+           ("M-g g" . consult-goto-line)             ;; orig. goto-line
+           ("M-g M-g" . consult-goto-line)           ;; orig. goto-line
+           ("M-g o" . consult-outline)               ;; Alternative: consult-org-heading
+           ("M-g m" . consult-mark)
+           ("M-g k" . consult-global-mark)
+           ("M-g i" . consult-imenu)
+           ("M-g I" . consult-imenu-multi)
+           ;; M-s bindings in `search-map'
+           ("M-s d" . consult-find)                  ;; Alternative: consult-fd
+           ("M-s c" . consult-locate)
+           ("M-s g" . consult-grep)
+           ("M-s G" . consult-git-grep)
+           ("M-s r" . consult-ripgrep)
+           ("M-s l" . consult-line)
+           ("M-s L" . consult-line-multi)
+           ("M-s k" . consult-keep-lines)
+           ("M-s u" . consult-focus-lines)
+           ;; Isearch integration
+           ("M-s e" . consult-isearch-history)
+           :map isearch-mode-map
+           ("M-e" . consult-isearch-history)         ;; orig. isearch-edit-string
+           ("M-s e" . consult-isearch-history)       ;; orig. isearch-edit-string
+           ("M-s l" . consult-line)                  ;; needed by consult-line to detect isearch
+           ("M-s L" . consult-line-multi)            ;; needed by consult-line to detect isearch
+           ;; Minibuffer history
+           :map minibuffer-local-map
+           ("M-s" . consult-history)                 ;; orig. next-matching-history-element
+           ("M-r" . consult-history))                ;; orig. previous-matching-history-element
+
+    ;; Enable automatic preview at point in the *Completions* buffer. This is
+    ;; relevant when you use the default completion UI.
+    :hook (completion-list-mode . consult-preview-at-point-mode)
+
+    :init
+
+    ;; Tweak the register preview for `consult-register-load',
+    ;; `consult-register-store' and the built-in commands.  This improves the
+    ;; register formatting, adds thin separator lines, register sorting and hides
+    ;; the window mode line.
+    (advice-add #'register-preview :override #'consult-register-window)
+    (setq register-preview-delay 0.5)
+
+    ;; Use Consult to select xref locations with preview
+    (setq xref-show-xrefs-function #'consult-xref
+          xref-show-definitions-function #'consult-xref)
+
+    ;; Configure other variables and modes in the :config section,
+    ;; after lazily loading the package.
+    :config
+
+    ;; Optionally configure preview. The default value
+    ;; is 'any, such that any key triggers the preview.
+    ;; (setq consult-preview-key 'any)
+    ;; (setq consult-preview-key "M-.")
+    ;; (setq consult-preview-key '("S-<down>" "S-<up>"))
+    ;; For some commands and buffer sources it is useful to configure the
+    ;; :preview-key on a per-command basis using the `consult-customize' macro.
+    (consult-customize
+     consult-theme :preview-key '(:debounce 0.2 any)
+     consult-ripgrep consult-git-grep consult-grep consult-man
+     consult-bookmark consult-recent-file consult-xref
+     consult--source-bookmark consult--source-file-register
+     consult--source-recent-file consult--source-project-recent-file
+     ;; :preview-key "M-."
+     :preview-key '(:debounce 0.4 any))
+
+    ;; Optionally configure the narrowing key.
+    ;; Both < and C-+ work reasonably well.
+    (setq consult-narrow-key "<") ;; "C-+"
+
+    ;; Optionally make narrowing help available in the minibuffer.
+    ;; You may want to use `embark-prefix-help-command' or which-key instead.
+    ;; (keymap-set consult-narrow-map (concat consult-narrow-key " ?") #'consult-narrow-help)
+  )
+#+end_src
+
+**** Orderless
+#+begin_src emacs-lisp
+  ;; Orderless: Unorded sets of selectors in completion
+
+  (use-package orderless
+    :custom
+    ;; (orderless-style-dispatchers '(orderless-affix-dispatch))
+    ;; (orderless-component-separator #'orderless-escapable-split-on-space)
+    (completion-styles '(orderless basic))
+    (completion-category-overrides '((file (styles partial-completion))))
+    (completion-category-defaults nil)   ;; Disable defaults, use our settings
+    (completion-pcm-leading-wildcard t)) ;; Emacs 31: partial-completion behaves like substring
+#+end_src
+
+**** Expand-region
+
+#+begin_src emacs-lisp
+  ;; Expand-region
+  (use-package expand-region
+    :ensure t
+    :bind ("M-2" . er/expand-region))
+#+end_src
+
+**** Provide
+
+#+begin_src emacs-lisp
+  (provide 'pg-completion-selection)
+#+end_src
+
+*** In the main buffer (=pg-completion-in-buffer.el=)
+:PROPERTIES:
+:header-args: :tangle build/pg-modules/pg-completion-in-buffer.el
+:END:
+
+
+**** Corfu
+#+begin_src emacs-lisp
+  ;; Corfu
+  (use-package corfu
+    ;; Optional customizations
+    ;; :custom
+    ;; (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
+    ;; (corfu-quit-at-boundary nil)   ;; Never quit at completion boundary
+    ;; (corfu-quit-no-match nil)      ;; Never quit, even if there is no match
+    ;; (corfu-preview-current nil)    ;; Disable current candidate preview
+    ;; (corfu-preselect 'prompt)      ;; Preselect the prompt
+    ;; (corfu-on-exact-match nil)     ;; Configure handling of exact matches
+
+    :init
+
+    ;; Recommended: Enable Corfu globally.  Recommended since many modes provide
+    ;; Capfs and Dabbrev can be used globally (M-/).  See also the customization
+    ;; variable `global-corfu-modes' to exclude certain modes.
+    (global-corfu-mode)
+
+    ;; Enable optional extension modes:
+    (corfu-history-mode)
+    (corfu-popupinfo-mode)
+    )
+
+  ;; A few more useful configurations...
+  (use-package emacs
+    :custom
+    ;; TAB cycle if there are only few candidates
+    ;; (completion-cycle-threshold 3)
+
+    ;; Enable indentation+completion using the TAB key.
+    ;; `completion-at-point' is often bound to M-TAB.
+    (tab-always-indent 'complete)
+
+    ;; Emacs 30 and newer: Disable Ispell completion function.
+    ;; Try `cape-dict' as an alternative.
+    (text-mode-ispell-word-completion nil)
+
+    ;; Hide commands in M-x which do not apply to the current mode.  Corfu
+    ;; commands are hidden, since they are not used via M-x. This setting is
+    ;; useful beyond Corfu.
+    (read-extended-command-predicate #'command-completion-default-include-p))
+#+end_src
+
+**** Dabbrev
+#+begin_src emacs-lisp
+  ;; Use Dabbrev with Corfu!
+  (use-package dabbrev
+    ;; Swap M-/ and C-M-/
+    :bind (("M-/" . dabbrev-completion)
+           ("C-M-/" . dabbrev-expand))
+    :config
+    (add-to-list 'dabbrev-ignored-buffer-regexps "\\` ")
+    (add-to-list 'dabbrev-ignored-buffer-modes 'authinfo-mode)
+    (add-to-list 'dabbrev-ignored-buffer-modes 'doc-view-mode)
+    (add-to-list 'dabbrev-ignored-buffer-modes 'pdf-view-mode)
+    (add-to-list 'dabbrev-ignored-buffer-modes 'tags-table-mode))
+#+end_src
+
+**** Cape (completion at point)
+
+#+begin_src emacs-lisp
+  ;; cape (completion improvements for Corfu et al.)
+
+  (use-package cape
+    :ensure t
+    ;; Bind prefix keymap providing all Cape commands under a mnemonic key.
+    ;; Press C-c p ? to for help.
+    :bind ("C-c p" . cape-prefix-map) ;; Alternative key: M-<tab>, M-p, M-+
+    ;; Alternatively bind Cape commands individually.
+    ;; :bind (("C-c p d" . cape-dabbrev)
+    ;;        ("C-c p h" . cape-history)
+    ;;        ("C-c p f" . cape-file)
+    ;;        ...)
+    :init
+    ;; Add to the global default value of `completion-at-point-functions' which is
+    ;; used by `completion-at-point'.  The order of the functions matters, the
+    ;; first function returning a result wins.  Note that the list of buffer-local
+    ;; completion functions takes precedence over the global list.
+    (add-hook 'completion-at-point-functions #'cape-dabbrev)
+    (add-hook 'completion-at-point-functions #'cape-file)
+    (add-hook 'completion-at-point-functions #'cape-elisp-block)
+    (add-hook 'completion-at-point-functions #'cape-history)
+    (add-hook 'completion-at-point-functions #'cape-dict)
+    ;; ...
+  )
+#+end_src
+
+**** Provide
+
+#+begin_src emacs-lisp
+  (provide 'pg-completion-in-buffer)
+#+end_src
+
+*** Context actions: Embark (=pg-context-actions.el=)
+#+begin_src emacs-lisp :tangle build/pg-modules/pg-context-actions.el
+  ;; Embark
+  (use-package embark
+    :ensure t
+
+    :bind
+    (("C-." . embark-act)         ;; pick some comfortable binding
+     ("C-;" . embark-dwim)        ;; good alternative: M-.
+     ("C-h B" . embark-bindings)) ;; alternative for `describe-bindings'
+
+    :init
+
+    ;; Optionally replace the key help with a completing-read interface
+    (setq prefix-help-command #'embark-prefix-help-command)
+
+    ;; Show the Embark target at point via Eldoc. You may adjust the
+    ;; Eldoc strategy, if you want to see the documentation from
+    ;; multiple providers. Beware that using this can be a little
+    ;; jarring since the message shown in the minibuffer can be more
+    ;; than one line, causing the modeline to move up and down:
+
+    ;; (add-hook 'eldoc-documentation-functions #'embark-eldoc-first-target)
+    ;; (setq eldoc-documentation-strategy #'eldoc-documentation-compose-eagerly)
+
+    ;; Add Embark to the mouse context menu. Also enable `context-menu-mode'.
+    ;; (context-menu-mode 1)
+    ;; (add-hook 'context-menu-functions #'embark-context-menu 100)
+
+    :config
+
+    ;; Hide the mode line of the Embark live/completions buffers
+    (add-to-list 'display-buffer-alist
+                 '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
+                   nil
+                   (window-parameters (mode-line-format . none)))))
+
+  ;; Consult users will also want the embark-consult package.
+  (use-package embark-consult
+    :ensure t ; only need to install it, embark loads it after consult if found
+    :hook
+    (embark-collect-mode . consult-preview-at-point-mode))
+
+
+
+  (provide 'pg-context-actions)
+#+end_src
+
+** Directory browsing: Dirvish and =dired= (=pg-dired.el=)
+:PROPERTIES:
+:header-args: :tangle build/pg-modules/pg-dired.el
+:END:
+
+*** (Soft) external application dependencies
+#+begin_src emacs-lisp
+  ;; Check dependencies
+
+  (pg-if-available "fd"
+    "Pro tip: Install «fd» for more functionality in dired/dirvish"
+    nil)
+
+  (pg-if-available "vipsthumbnail"
+    "Pro tip: Install «libvips» (for «vipsthumbnail») for dirvish previews")
+
+  (pg-if-available "pdftoppm"
+    "Pro tip: Install «poppler» (for «pdf2ppm») for dirvish previews")
+
+  (pg-if-available "mediainfo"
+    "Pro tip: Install «mediainfo» for dirvish previews")
+
+  (pg-if-available "7zz"
+    "Pro tip: Install «7zip» to preiew archives in dirvish")
+
+
+#+end_src
+
+*** Base Dired config
+
+This is the default configuration from the [[https://github.com/alexluigit/dirvish][Dirvish Github page]].
+
+The listing switches ensure =ls= provides some useful additional information.
+
+=dired-find-alternate-file= opens a file in a new window and kills the dired buffer. This is not regular Emacs behavior, so it's considered desirable by some, confusing by others. For this reason, the function is included in =dired=, but disabled. Dirvish recommends to enable it (per the comment in the code), and overrides the function (using =:override= advice) to further customize it.
+
+#+begin_src emacs-lisp
+  (use-package dired
+    :config
+    (setq dired-listing-switches
+          "-l --almost-all --human-readable --group-directories-first --no-group")
+    ;; this command is useful when you want to close the window of `dirvish-side'
+    ;; automatically when opening a file
+    (put 'dired-find-alternate-file 'disabled nil))
+#+end_src
+
+*** Open files with external application
+Sometimes one wishes to open a file, but not in Emacs. I'd rather use a native app for most non-text file formats.
+
+This function is adapted from one on the Dirvish website that didn't work well for me for some reason, and uses a function I wrote to open files using the system opener (e.g., =open= on Mac); it gets wired into the main Dirvish configuration below.
+
+#+begin_src emacs-lisp
+  (defun pg-dirvish-open-binaries-externally (file fn)
+    "When FN is not `dired', open binary FILE externally."
+    (if (and (not (eq fn 'dired))
+             (file-exists-p file)
+             (not (file-directory-p file))
+             (member (downcase (or (file-name-extension file) ""))
+                     dirvish-binary-exts))
+        (prog1 t
+          ;(message "dirvish: Opening «%s» externally" file)
+          (pg-open-file-dired))
+      (progn
+        ;(message "dirvish: Not trying to open «%s» externally" file)
+        nil)))
+#+end_src
+
+*** Dirvish configuration
+More default settings, and plenty of them. I don't have opinions on much of it at this time, but find the overall result satisfying.
+
+#+begin_src emacs-lisp
+  (use-package dirvish
+    :ensure t
+    :init
+    (dirvish-override-dired-mode)
+    :custom
+    (dirvish-quick-access-entries ; It's a custom option, `setq' won't work
+     '(("h" "~/"                          "Home")
+       ("d" "~/Downloads/"                "Downloads")
+       ;("m" "/mnt/"                       "Drives")
+       ;("s" "/ssh:my-remote-server")      "SSH server"
+       ;("e" "/sudo:root@localhost:/etc")  "Modify program settings"
+       ;("t" "~/.local/share/Trash/files/" "TrashCan")
+       ))
+    :hook
+    (dirvish-find-entry . pg-dirvish-open-binaries-externally)
+    :config
+    (dirvish-peek-mode)             ; Preview files in minibuffer
+    (dirvish-side-follow-mode)      ; similar to `treemacs-follow-mode'
+    (setq dirvish-mode-line-format
+          '(:left (sort symlink) :right (omit yank index)))
+    (setq dirvish-attributes           ; The order *MATTERS* for some attributes
+          '(vc-state subtree-state nerd-icons collapse git-msg file-time file-size)
+          dirvish-side-attributes
+          '(vc-state nerd-icons collapse file-size))
+    ;; open large directory (over 20000 files) asynchronously with `fd' command
+    (setq dirvish-large-directory-threshold 20000)
+    :bind ; Bind `dirvish-fd|dirvish-side|dirvish-dwim' as you see fit
+    (("C-c f" . dirvish)
+     :map dirvish-mode-map               ; Dirvish inherits `dired-mode-map'
+     (";"   . dired-up-directory)        ; So you can adjust `dired' bindings here
+     ("?"   . dirvish-dispatch)          ; [?] a helpful cheatsheet
+     ("a"   . dirvish-setup-menu)        ; [a]ttributes settings:`t' toggles mtime, `f' toggles fullframe, etc.
+     ("f"   . dirvish-file-info-menu)    ; [f]ile info
+     ("o"   . dirvish-quick-access)      ; [o]pen `dirvish-quick-access-entries'
+     ("s"   . dirvish-quicksort)         ; [s]ort file list
+     ("r"   . dirvish-history-jump)      ; [r]ecent visited
+     ("l"   . dirvish-ls-switches-menu)  ; [l]s command flags
+     ("v"   . dirvish-vc-menu)           ; [v]ersion control commands
+     ("*"   . dirvish-mark-menu)
+     ("y"   . dirvish-yank-menu)
+     ("N"   . dirvish-narrow)
+     ("^"   . dirvish-history-last)
+     ("TAB" . dirvish-subtree-toggle)
+     ("M-f" . dirvish-history-go-forward)
+     ("M-b" . dirvish-history-go-backward)
+     ("M-e" . dirvish-emerge-menu)))
+#+end_src
+
+*** Provide
+
+#+begin_src emacs-lisp
+  (provide 'pg-dired)
+#+end_src
+
+** Shells and Serial Terminals (=pg-serial-terminal.el=)
+:PROPERTIES:
+:header-args: :tangle build/pg-modules/pg-terminal.el
+:END:
+
+*** Tramp
+#+begin_src emacs-lisp
+  ;; Tramp
+  (use-package tramp
+    :defer
+    :custom
+    (
+     ;; remote root voodoo
+     (tramp-default-method "ssh")
+     (tramp-default-proxies-alist
+      '(((regexp-quote (system-name)) nil nil)
+        (nil "\\`root\\'" "/ssh:%h:")))
+     ;; customize tramp prompt
+     (setq tramp-shell-prompt-pattern "\\(?:^\\|\\)[^]#$%>❯
+  ]*#?[]#$%>❯] *\\(\\[[0-9;]*[a-zA-Z] *\\)*")
+     ))
+#+end_src
+
+*** Eat (Emulate a Terminal)
+#+begin_src emacs-lisp
+
+  (defun pg-eat-scroll-conservatively ()
+    "Disable unwanted recentering behavior after every command on some
+  displays. See https://codeberg.org/akib/emacs-eat/issues/145"
+    (setq-local scroll-conservatively 101))
+
+  (use-package eat
+    :ensure t
+    :after project
+    :hook
+    ((eshell-load . eat-eshell-mode)
+     (eshell-load . eat-eshell-visual-command-mode)
+     (eat-mode . pg-eat-scroll-conservatively))
+    :bind
+    (:map project-prefix-map
+          ("s" . eat-project))
+    )
+#+end_src
+
+*** Provide
+#+begin_src emacs-lisp
+  (provide 'pg-serial-terminal)
+#+end_src
+
+** Development
+*** Common configuration (=pg-devel.el=)
+:PROPERTIES:
+:header-args: :tangle build/pg-modules/pg-devel.el
+:END:
+
+**** Magit
+#+begin_src emacs-lisp
+  (defun pg-project-magit ()
+    (interactive)
+    (magit-status (project-root (project-current t))))
+
+  (use-package magit
+    :ensure t
+    :after (project)
+    :commands (magit magit-status magit-init)
+    :bind
+    (:map project-prefix-map
+          ("v" . pg-project-magit))
+  )
+
+
+#+end_src
+**** Tree sitter
+#+begin_src emacs-lisp
+  ;; Maybe run this occasionally to update grammars
+  ;;
+  ;; Be sure to rename them and move them to (ecfw-root
+  ;; "tree-sitter-grammars") when you're done.
+  ;;
+  ;; (use-package tree-sitter-langs
+  ;;   :ensure t :demand
+  ;;   :config
+  ;;   ;; (require 'tree-sitter-langs)
+  ;;  (tree-sitter-langs-install-latest-grammar))
+
+  (add-to-list 'treesit-extra-load-path
+               (ecfw-root "tree-sitter-grammars"))
+#+end_src
+**** Provide
+#+begin_src emacs-lisp
+  (provide 'pg-devel)
+#+end_src
+*** YAML (=pg-devel-yaml.el=)
+#+begin_src emacs-lisp :tangle build/pg-modules/pg-devel-yaml.el
+  ;; Not using yaml-ts-mode bc they made some bad choices:
+  ;; https://www.reddit.com/r/emacs/comments/17gtxmr/indentation_in_yamltsmode/
+
+  (use-package yaml-mode
+    :ensure t
+    :if (and (boundp 'pg-cf-yaml) pg-cf-yaml)
+    :mode "\\.ya?ml\\'")
+
+  (provide 'pg-devel-yaml)
+#+end_src
+**** Ansible (=pg-devel-ansible.el=)
+#+begin_src emacs-lisp :tangle build/pg-modules/pg-devel-ansible.el
+  (use-package ansible
+    :ensure t
+    :if (and (boundp 'pg-cf-ansible) pg-cf-ansible)
+    :hook (yaml-mode . ansible-mode))
+
+
+  (defun pg-ansible-doc-module-colorize (&rest args)
+    "Render ANSI color codes in ansible-doc-mode buffer"
+    (save-excursion
+      (let ((buffer-read-only nil))
+        (ansi-color-apply-on-region (point-min) (point-max)))))
+
+
+  (use-package ansible-doc
+    :ensure t
+    :after (eglot)
+    :if (and (boundp 'pg-cf-ansible) pg-cf-ansible)
+    :hook
+    ((yaml-mode . ansible-doc-mode)
+     (yaml-mode . eglot-ensure)) ;; Add LSP support
+
+    :config
+    ;; The output of ansible-doc contains ANSI SGR escape
+    ;; sequences. This advice tries to fontify them for prettier output
+    (advice-add 'ansible-doc-revert-module-buffer :after
+                #'pg-ansible-doc-module-colorize)
+    (add-to-list 'eglot-server-programs
+                 '(yaml-mode . ("ansible-language-server" "--stdio")))
+    )
+
+  (provide 'pg-devel-ansible)
+#+end_src
+** Org mode (=pg-org=)
+#+begin_src emacs-lisp :tangle build/pg-modules/pg-org.el
+  ;; Org Mode stuff (much more later, I'm sure....)
+
+  (defcustom pg-org-dir "~/org-files/"
+    "Directory containing my main Org files."
+    :type 'directory)
+
+  ; save some keystrokes
+  (defun pg-org--dir (fname)
+    (file-name-concat pg-org-dir fname))
+
+  (defun pg-open-org-file ()
+    "Open one of the org-mode files in the `~/org-files' directory."
+    (interactive)
+    (let ((fname (read-file-name
+                  "Org file: "            ; prompt
+                  pg-org-dir              ; dir
+                  nil                     ; default-filename
+                  t                       ; mustmatch
+                  nil                     ; initial
+                  (lambda (x) (s-ends-with-p ".org" x)))))
+      (find-file fname)))
+
+  (pg-terminal-any (bind-key "s-o" #'pg-open-org-file))
+  (pg-terminal-any (bind-key "C-c o" #'pg-open-org-file))
+
+
+  (use-package org
+    :defer t
+    :hook ((org-mode . visual-line-mode))
+    :config
+    (add-to-list 'org-modules 'org-tempo))
+
+  (use-package org-capture
+    :bind ("s-r" . org-capture)
+    :custom
+    (org-capture-templates
+     `(("t" "TODO" entry (file+headline (pg-org--dir "todo.org") "Tasks")
+             "* TODO %?\n  %u" :prepend t)
+       ("n" "Notes" entry (file+headline
+                           (pg-org--dir "notes.org") "Notes")
+             "* %u %?" :prepend t)
+            ))
+    )
+
+  (provide 'pg-org)
+#+end_src
+** Anki (=pg-anki=)
+#+begin_src emacs-lisp
+  ;; Additional UI to simplify adding clozes and other functionality
+  (when pg-cf-anki
+    (defvar pg-anki--my-org-file "/Users/pgroce/org-files/anki.org"
+      "Location of Anki question bank (an Org file)")
+
+    (defvar pg-anki--cloze-counter 0
+      "Internal counter used to keep track of close numbers")
+
+    (defun pg-anki--cloze-reset (&optional arg)
+      "Non-interactive (no user output) function to reset cloze number. Returns new cloze number."
+      (let ((reset-num (or arg 1)))
+        (setq pg-anki--cloze-counter reset-num)
+        reset-num))
+
+    (defun pg-anki-cloze-reset (&optional arg)
+      "Reset cloze number. Reset to 1 unless universal argument, in which case prompt."
+      (interactive)
+      (let ((num (if current-prefix-arg
+                     (read-number "Set cloze number to: ")
+                   1)))
+        (message "Cloze number set to %d"
+                 (pg-anki--cloze-reset num))))
+
+    (defun pg-anki-cloze-region-auto-incr (&optional arg)
+      "Cloze region without hint and increase card number."
+      (interactive)
+      (anki-editor-cloze-region pg-anki--cloze-counter "")
+      (setq pg-anki--cloze-counter (1+ pg-anki--cloze-counter))
+      (forward-sexp))
+    (defun pg-anki-cloze-region-dont-incr (&optional arg)
+      "Cloze region without hint using the previous card number."
+      (interactive)
+      (anki-editor-cloze-region (1- pg-anki--cloze-counter) "")
+      (forward-sexp))
+
+
+    (defun pg-anki-push-tree ()
+      "Push all notes under a tree."
+      (interactive)
+      (anki-editor-push-notes 'tree)
+      (pg-anki--cloze-reset))
+    (defun pg-anki-jump-to-last-note ()
+      (interactive)
+      (bookmark-jump (bookmark-get-bookmark "org-capture-last-stored")))
+
+    ;; We have to define these template entries after org-capture loads,
+    ;; but before it is used. Use-package doesn't really help us here;
+    ;; it's about what code runs before/after anki-editor is loaded.  We
+    ;; want to code to run relative to when org-capture is loaded.
+    ;; Therefore, we use with-eval-after-load
+
+    (with-eval-after-load 'org-capture
+      (add-to-list 'org-capture-templates
+                   `("a" "Anki basic"
+                     entry
+                     (file+headline pg-anki--my-org-file "Dispatch Shelf")
+                     ,(concat "* %<%Y/%m/%d-%H:%M>   %^g\n"
+                             ":PROPERTIES:\n"
+                             ":ANKI_NOTE_TYPE: Basic\n"
+                             ":ANKI_DECK: Tank\n"
+                             ":END:\n"
+                             "** Front\n"
+                             "%?\n"
+                             "** Back\n"
+                             "%x\n")))
+      (add-to-list 'org-capture-templates
+                   `("A" "Anki cloze"
+                     entry
+                     (file+headline pg-anki--my-org-file "Dispatch Shelf")
+                     ,(concat "* %<%Y/%m/%d-%H:%M>   %^g\n"
+                             ":PROPERTIES:\n"
+                             ":ANKI_NOTE_TYPE: Cloze\n"
+                             ":ANKI_DECK: Tank\n"
+                             ":END:\n"
+                             "** Text\n"
+                             "%?\n"))))
+    )
+
+
+
+
+  (use-package anki-editor
+    :if pg-cf-anki
+    :ensure t
+    :vc (:url "https://github.com/anki-editor/anki-editor.git" :rev :newest)
+    :init
+    :bind (:map org-mode-map
+                ("S-<f12>" . pg-anki-jump-to-last-note)
+                ("<f12>" . pg-anki-cloze-region-auto-incr)
+                ("C-c C-x i" . pg-anki-cloze-region-auto-incr)
+                ("<f11>" . pg-anki-cloze-region-dont-incr)
+                ("C-c C-x u" . pg-anki-cloze-region-dont-incr)
+                ("<f10>" . pg-anki-cloze-reset)
+                ("C-c C-x y" . pg-anki-cloze-reset)
+                ("<f9>"  . pg-anki-push-tree)
+                ("C-c C-x h"  . pg-anki-push-tree))
+
+    :hook
+    ;; Reset cloze-number after each capture.
+    (org-capture-after-finalize . pg-anki--cloze-reset)
+
+    :custom
+    (anki-editor-org-tags-as-anki-tags t)
+
+    )
+
+
+  (provide 'pg-anki)
+#+end_src
+
+* MacOS Platform Config File (=darwin.el=)
+:PROPERTIES:
+:header-args: :tangle build/darwin.el
+:END:
+#+begin_src emacs-lisp :tangle build/darwin.el
+  (require 'pg-ui-misc) ; for pg-clean-frames
+
+  (pg-terminal-ns
+   (unbind-key "C-z")
+   (unbind-key "M-s-h")
+   (unbind-key "s-,")
+   (unbind-key "s-'")
+   (unbind-key "s-`")
+   (unbind-key "s-~")
+   (unbind-key "s--")
+   (unbind-key "s-:")
+   (unbind-key "s-?")
+   (unbind-key "s-^")
+   (unbind-key "s-&")
+   (unbind-key "s-C")
+   (unbind-key "s-D")
+   (unbind-key "s-E")
+   (unbind-key "s-L")
+   (unbind-key "s-M")
+   (unbind-key "s-S")
+   (unbind-key "s-a")
+   (unbind-key "s-c")
+   (unbind-key "s-d")
+   (unbind-key "s-e")
+   (unbind-key "s-f")
+   (unbind-key "s-g")
+   (unbind-key "s-h")
+   (unbind-key "s-H")
+   (unbind-key "s-j")
+   (unbind-key "s-k")
+   (unbind-key "s-l")
+   (unbind-key "s-m")
+   (unbind-key "s-n")
+   (unbind-key "s-o")
+   (unbind-key "s-p")
+   (message "UNBINDING: s-q")
+   (unbind-key "s-q")
+   (unbind-key "s-s")
+   (unbind-key "s-t")
+   (unbind-key "s-u")
+   (unbind-key "s-v")
+   (unbind-key "s-w")
+   (unbind-key "s-x")
+   (unbind-key "s-y")
+   (unbind-key "s-z")
+   (unbind-key "s-|")
+   (unbind-key "s-<kp-bar>")
+   (unbind-key "s-<right>")
+   (unbind-key "s-<left>"))
+
+  (let ((paths '("/usr/local/bin" "/usr/local/sbin")))
+    (pg-shell-path-with ("PATH" :into t :as -path)
+      (pg-util-list-add-unique paths -path))
+    (pg-util-list-add-unique-var 'exec-path paths))
+
+  (setq locate-command "mdfind")
+
+  (pg-if-available "aspell"
+    "Install aspell for spellchecking"
+    (setq-default ispell-program-name (executable-find "aspell")))
+
+  (setenv "TMPDIR" "/tmp")
+
+  (pg-terminal-ns
+   ;(setq ns-right-control-modifier 'super)
+   (setq ns-option-modifier  nil)
+   (setq ns-right-option-modifier  'super)
+   (setq ns-right-command-modifier 'meta)
+   (setq ns-command-modifier 'meta))
+
+  (pg-terminal-ns (bind-key "<ns-drag-file>" 'ns-find-file))
+
+  (pg-terminal-ns
+   (when (daemonp)
+     (progn
+       (setq-default mouse-wheel-down-event 'wheel-up
+                     mouse-wheel-up-event 'wheel-down)
+       (bind-key "<wheel-up>" 'mwheel-scroll)
+       (bind-key "<wheel-down>" 'mwheel-scroll))))
+
+  (pg-terminal-ns (pg-clean-frames))
+
+  (if (file-exists-p "/Library/TeX/texbin")
+      (pg-shell-path-append "PATH" '("/Library/Tex/texbin"))
+    (message "Pro-tip: Install Tex (or MacTeX) for a better LaTeX experience"))
+
+#+end_src
