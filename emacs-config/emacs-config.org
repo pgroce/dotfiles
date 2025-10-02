@@ -1,4 +1,5 @@
-+STARTUP: indent
+#+STARTUP: indent
+#+PROPERTY: header-args :tangle build/emacs-config.el
 #+TITLE: Phil's Emacs Configuration
 This configuration integrates with my [[https://github.com/pgroce/emacs-config-framework][configuration framework]], although it could probably be used without it. It also uses some packages from [[https://github.com/pgroce/emacs-pkgs][my own package repository]]. (For the ELPA repo URL, see [[Package configuration]] below.)
 
@@ -87,14 +88,14 @@ Load the output of Emacs' [[http://www.gnu.org/software/emacs/manual/html_node/e
 
 ** =pg-if-available=
 
-I do several configurations contingent on the presence of certain commands; if the command exists, I tweak something, and if it doesn't, I usually want to mention it to the user.
+I do several configurations contingent on the presence of certain commands; if the command exists, I tweak something, and if it doesn't, I usually want to mention it to the user. (You know, me.)
 
 This macro makes that a little clearer in the several places where I do it.
 
 #+BEGIN_SRC emacs-lisp
   (defmacro pg-if-available (cmd absent-msg &rest exists-forms)
     (declare (indent 1))
-    `(if (= 0 (call-process "which" nil nil nil ,cmd))
+    `(if (executable-find ,cmd)
          (progn
            ,@exists-forms)
        (message "Pro-tip: %s" ,absent-msg)))
@@ -145,7 +146,7 @@ Therefore, kill it all with fire.
 
 Since I'm wrapping this in =pg-terminal-ns=, it will run in =emacs-startup-hook=, so any subsequent rebindings of =super= should do the same. =pg-terminal-any= is a good way to do this generically.
 
-#+BEGIN_SRC emacs-lisp :tangle darwin.el
+#+BEGIN_SRC emacs-lisp :tangle build/darwin.el
   (pg-terminal-ns
    (unbind-key "M-s-h")
    (unbind-key "s-,")
@@ -208,7 +209,7 @@ Same thing, trying to make things Apple-like backfiring. It's way too easy to hi
 
 This package is /slow/ to start and stop if you haven't loaded [[https://github.com/rolandwalker/persistent-soft][persistent-soft]] and [[https://github.com/sigma/pcache][pcache]] libraries.
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle no
   (use-package pcache :ensure t :demand t)
   (use-package persistent-soft :ensure t :demand t)
 #+END_SRC
@@ -233,9 +234,405 @@ This package is /still/ slow even with those installed. To speed it up, I limit 
 
 A few of the above fonts may be duplicative; I haven't spent a lot of time deconflicting, the main purpose was to trim the font list and speed up startup/shutdown without losing too much utility for me, so if you need to display non-Roman alphabets more than you need symbols and emoji, this list will not work well for you.
 
-Anyway, time to configure =unicode-fonts=:
+Anyway, time to configure =unicode-fonts=! The following list of Unicode blocks has been pared down to (hopefully) improve performance while removing glyphs I'll likely never need.
 
+#+name: unicode-fonts-setup-tiny
 #+begin_src emacs-lisp
+  (use-package unicode-fonts
+    :ensure t
+    :config (unicode-fonts-setup)
+    :custom (unicode-fonts-block-font-mapping
+             '(("Alphabetic Presentation Forms"
+                ("DejaVu Sans:width=condensed" "Arial Unicode MS" "Cardo" "Code2000" "Quivira" "Everson Mono:weight=bold"))
+               ("Arrows"
+                ("DejaVu Sans Mono" "Apple Symbols" "Cambria Math" "Segoe UI Symbol" "DejaVu Sans:width=condensed" "Asana Math" "Arial Unicode MS" "BabelStone Modern" "Symbola" "Quivira"  "Noto Sans Symbols" "Everson Mono:weight=bold" ))
+               ("Block Elements"
+                ("DejaVu Sans Mono" "Noto Sans Symbols"  "DejaVu Sans:width=condensed" "Apple Symbols" "Segoe UI Symbol" "BabelStone Modern" "Symbola" "Quivira"  "Everson Mono:weight=bold"))
+               ("Box Drawing"
+                ("DejaVu Sans Mono"  "DejaVu Sans" "Everson Mono" "Quivira"  "Noto Sans Symbols" "Segoe UI Symbol" "Symbola"))
+               ("Braille Patterns"
+                ("Quivira" "Apple Braille" "DejaVu Sans:width=condensed" "Apple Symbols" "Segoe UI Symbol" "Symbola" "Noto Sans Symbols"   "Everson Mono:weight=bold"))
+               ("Combining Diacritical Marks"
+                ("Monaco" "Consolas" "Noto Sans" "Cambria Math"   "Courier New" "DejaVu Sans:width=condensed" "DejaVu Sans Mono"     "Tahoma" "Microsoft Sans Serif" "Arial" "Quivira" "Symbola" "Everson Mono"  "Arial Unicode MS" ))
+               ("Combining Diacritical Marks Supplement"
+                ( "FreeSerif"   "DejaVu Sans:width=condensed" "Noto Sans" "Segoe UI"  "Everson Mono" ))
+               ("Combining Diacritical Marks for Symbols"
+                ("Cambria Math" "Segoe UI Symbol" "Noto Sans Symbols" "Symbola"  "Everson Mono" "Arial Unicode MS"))
+               ("Combining Half Marks"
+                ("Consolas" "DejaVu Sans:width=condensed" "Everson Mono:weight=bold" "Symbola"))
+               ("Currency Symbols"
+                ("Monaco" "DejaVu Sans Mono" "DejaVu Sans:width=condensed" "Consolas" "Noto Sans Symbols" "Noto Sans" "Segoe UI" "Apple Symbols" "Symbola" "Quivira" "Everson Mono:weight=bold" ))
+               ("Cyrillic"
+                ("Consolas" "Monaco" "DejaVu Sans Mono" "DejaVu Sans:width=condensed" "Noto Sans" "Courier New" "Calibri" "Microsoft Sans Serif"  "Arial Unicode MS"   "Symbola" "Quivira" "Everson Mono:weight=bold"))
+               ("Cyrillic Extended-A"
+                ("Quivira" "Everson Mono:weight=bold" "FreeSerif" ))
+               ("Cyrillic Extended-B"
+                ("Quivira"  "Everson Mono:weight=bold"))
+               ("Cyrillic Supplement"
+                ("Consolas" "Courier New" "Calibri" "Noto Sans" "DejaVu Sans:width=condensed"   "Symbola" "Quivira"  "Everson Mono:weight=bold"))
+               ("Dingbats"
+                ("Apple Color Emoji" "DejaVu Sans Mono" "Segoe UI Symbol" "Zapf Dingbats" "DejaVu Sans:width=condensed" "Arial Unicode MS"  "Noto Sans Symbols" "Symbola" "Quivira" "Everson Mono:weight=bold"))
+               ("Domino Tiles"
+                ("DejaVu Sans:width=condensed" "Symbola" "Quivira" "Segoe UI Symbol" "Noto Sans Symbols"  "Everson Mono:weight=bold"))
+               ("Emoticons"
+                ("Apple Color Emoji" "Segoe UI Symbol" "Symbola" "Quivira"))
+               ("Enclosed Alphanumeric Supplement"
+                ("Segoe UI Symbol" "Noto Sans Symbols" "Symbola" "Quivira"  "BabelStone Modern"))
+               ("Enclosed Alphanumerics"
+                ("Noto Sans Symbols" "Segoe UI Symbol" "Arial
+               Unicode MS" "Symbola" "Quivira" "BabelStone
+               Modern" "Everson Mono:weight=bold"))
+               ("General Punctuation"
+                ("Monaco" "Apple Symbols" "Segoe UI Symbol" "Cambria
+               Math" "DejaVu Sans Mono" "DejaVu
+               Sans:width=condensed" "Symbola" "Quivira" "Noto
+               Sans" "Everson Mono:weight=bold" "BabelStone
+               Modern"))
+               ("Geometric Shapes"
+                ("DejaVu Sans Mono" "DejaVu
+               Sans:width=condensed" "Segoe UI Symbol" "Arial
+               Unicode MS" "Symbola" "Noto Sans
+               Symbols" "Quivira" "BabelStone Modern" "Everson
+               Mono" ))
+               ("Geometric Shapes Extended"
+                ("Symbola" "Quivira"))
+               ("Greek and Coptic"
+                ("Consolas" "DejaVu Sans Mono" "DejaVu Sans:width=condensed"
+                 "Noto Sans" "Segoe UI Symbol" "Calibri" "Microsoft Sans Serif"
+                 "Lucida Console" "Arial Unicode MS" "Symbola" "Quivira"
+                 "Everson Mono:weight=bold"  ))
+               ("Hebrew"
+                ("Courier New" "Microsoft Sans Serif" "Tahoma" "Lucida Sans Unicode"
+                 "Arial Unicode MS" "Arial" "Quivira" "Everson Mono:weight=bold" ))
+               ("IPA Extensions"
+                ("Monaco" "Consolas" "DejaVu Sans Mono" "Courier New" "Noto Sans"
+                 "Arial Unicode MS" "Arial" "Tahoma" "Microsoft Sans Serif"
+                 "Symbola" "Quivira" "Everson Mono:weight=bold"))
+               ("Letterlike Symbols"
+                ("Monaco" "Noto Sans Symbols" "Segoe UI Symbol" "Apple Symbols"
+                 "Cambria Math" "DejaVu Sans:width=condensed" "Arial Unicode MS"
+                 "Symbola" "Quivira"  "Everson Mono:weight=bold"))
+               ("Mahjong Tiles"
+                ("Segoe UI Symbol" "Symbola" "Noto Sans Symbols" "Quivira" "Everson Mono"))
+               ("Mathematical Alphanumeric Symbols"
+                ("Cambria Math" "Noto Sans Symbols" "Asana Math"  "Symbola"
+                 "Quivira" "Everson Mono:weight=bold"))
+               ("Mathematical Operators"
+                ("Monaco" "DejaVu Sans Mono" "Segoe UI Symbol" "Cambria Math"
+                 "DejaVu Sans:width=condensed" "Noto Sans Symbols" "Apple Symbols"
+                 "Asana Math" "Arial Unicode MS" "Symbola" "Quivira"
+                 "Everson Mono:weight=bold" ))
+               ("Miscellaneous Mathematical Symbols-A"
+                ("Noto Sans Symbols" "Apple Symbols" "Segoe UI Symbol" "Asana Math"
+                 "Symbola" "Quivira" "Cambria Math" "Everson Mono:weight=bold"))
+               ("Miscellaneous Mathematical Symbols-B"
+                ("Noto Sans Symbols" "Segoe UI Symbol" "Apple Symbols"
+                 "Cambria Math" "Asana Math"  "Symbola" "Quivira"))
+               ("Miscellaneous Symbols"
+                ("Noto Sans Symbols" "Segoe UI Symbol" "Apple Symbols"
+                 "DejaVu Sans Mono" "DejaVu Sans:width=condensed"
+                 "Arial Unicode MS" "Symbola" "Quivira" "MS Reference Sans Serif"
+                 "Everson Mono:weight=bold"))
+               ("Miscellaneous Symbols and Arrows"
+                ("Symbola" "Quivira" "Asana Math"  "Segoe UI Symbol"
+                 "Noto Sans Symbols"))
+               ("Miscellaneous Symbols and Pictographs"
+                ("Apple Color Emoji" "Segoe UI Symbol" "Symbola" "Quivira"))
+               ("Miscellaneous Technical"
+                ("Segoe UI Symbol" "Noto Sans Symbols" "Apple Symbols"
+                 "Cambria Math" "DejaVu Sans Mono" "Symbola" "Quivira"
+                 "Everson Mono:weight=bold"))
+               ("Musical Symbols"
+                ("Noto Sans Symbols" "Musica" "FreeSerif" "Symbola" "Quivira"))
+               ("Number Forms"
+                ("DejaVu Sans:width=condensed" "Asana Math" "Arial Unicode MS"
+                 "Symbola" "Quivira" "Everson Mono:weight=bold"  ))
+               ("Optical Character Recognition"
+                ("Apple Symbols" "Segoe UI Symbol" "Noto Sans Symbols"
+                 "Arial Unicode MS" "Symbola" "Quivira"  "BabelStone Modern"
+                 "Everson Mono"))
+               ("Ornamental Dingbats" ("Symbola"))
+               ("Phonetic Extensions"
+                ("Monaco" "Consolas" "Calibri" "Noto Sans" "Quivira" "Courier New"
+                 "DejaVu Sans:width=condensed"  "Everson Mono:weight=bold" ))
+               ("Phonetic Extensions Supplement"
+                ("Consolas" "Calibri" "Courier New" "Noto Sans" "Quivira"
+                 "DejaVu Sans Mono" "DejaVu Sans:width=condensed"
+                 "Everson Mono:weight=bold" ))
+               ("Playing Cards"
+                ("DejaVu Sans:width=condensed" "Symbola" "Noto Sans Symbols"
+                 "Segoe UI Symbol" "Quivira"))
+               ("Runic"
+                ("Segoe UI Symbol" "Quivira" "Everson Mono:weight=bold"))
+               ("Specials"
+                ("BabelStone Modern" "Noto Sans Symbols" "Apple Symbols"
+                 "Arial Unicode MS" "Symbola" "DejaVu Sans Mono"
+                 "DejaVu Sans:width=condensed" "Quivira"  ))
+               ("Superscripts and Subscripts"
+                ("Consolas" "Monaco" "Apple Symbols" "Cambria Math"
+                 "DejaVu Sans Mono" "DejaVu Sans:width=condensed"
+                 "Segoe UI Symbol" "Asana Math" "Symbola" "Quivira"
+                 "Everson Mono:weight=bold" ))
+               ("Supplemental Arrows-A"
+                ("Segoe UI Symbol" "Cambria Math" "DejaVu Sans:width=condensed"
+                 "Asana Math" "Quivira" "Symbola" "Apple Symbols"
+                 "Noto Sans Symbols" "Everson Mono:weight=bold"
+                 "BabelStone Modern"))
+               ("Supplemental Arrows-B"
+                ("Cambria Math" "Segoe UI Symbol" "Apple Symbols"
+                 "Noto Sans Symbols" "Asana Math" "Quivira" "Symbola"
+                 "Everson Mono:weight=bold"))
+               ("Supplemental Arrows-C" ("Symbola"))
+               ("Supplemental Mathematical Operators"
+                ("Cambria Math" "Segoe UI Symbol" "Noto Sans Symbols"
+                 "Apple Symbols" "Asana Math"  "Symbola" "Quivira"
+                 "Everson Mono:weight=bold"))
+               ("Supplemental Symbols and Pictographs"
+                ("Symbola"))
+               ("Tags" ("BabelStone Modern" ))
+               ("Transport and Map Symbols"
+                ("Apple Color Emoji" "Segoe UI Symbol" "Symbola"))
+               ("Variation Selectors" ("BabelStone Modern"  ))
+               ("Variation Selectors Supplement" ("BabelStone Modern" ))
+               ("Vertical Forms" ("Symbola"))
+               )))
+#+end_src
+
+#+name: unicode-fonts-setup-small
+#+begin_src emacs-lisp :tangle no
+  (use-package unicode-fonts
+    :ensure t
+    :config (unicode-fonts-setup)
+    :custom (unicode-fonts-block-font-mapping
+             '(("Alchemical Symbols"
+                ("Noto Sans Symbols" "Symbola" "Quivira" "Everson Mono:weight=bold"))
+               ("Alphabetic Presentation Forms"
+                ("DejaVu Sans:width=condensed" "Arial Unicode MS" "Cardo" "Code2000" "Quivira" "Everson Mono:weight=bold"))
+               ("Arabic"
+                ("Courier New"           "DejaVu Sans Mono" "DejaVu Sans:width=condensed" "Arial Unicode MS" "Tahoma" "Microsoft Sans Serif"))
+               ("Arabic Supplement"
+                ("Courier New"            "Tahoma" "Microsoft Sans Serif" ))
+               ("Arrows"
+                ("DejaVu Sans Mono" "Apple Symbols" "Cambria Math" "Segoe UI Symbol" "DejaVu Sans:width=condensed" "Asana Math" "Arial Unicode MS" "BabelStone Modern" "Symbola" "Quivira"  "Noto Sans Symbols" "Everson Mono:weight=bold" ))
+               ("Block Elements"
+                ("DejaVu Sans Mono" "Noto Sans Symbols"  "DejaVu Sans:width=condensed" "Apple Symbols" "Segoe UI Symbol" "BabelStone Modern" "Symbola" "Quivira"  "Everson Mono:weight=bold"))
+               ("Box Drawing"
+                ("DejaVu Sans Mono"  "DejaVu Sans" "Everson Mono" "Quivira"  "Noto Sans Symbols" "Segoe UI Symbol" "Symbola"))
+               ("Braille Patterns"
+                ("Quivira" "Apple Braille" "DejaVu Sans:width=condensed" "Apple Symbols" "Segoe UI Symbol" "Symbola" "Noto Sans Symbols"   "Everson Mono:weight=bold"))
+               ("CJK Compatibility"
+                ( "Arial Unicode MS" ))
+               ("CJK Compatibility Forms"
+                ( "Symbola" ))
+               ("CJK Compatibility Ideographs"
+                ( "Arial Unicode MS" ))
+               ("CJK Radicals Supplement"
+                ( "Apple Symbols" ))
+               ("CJK Symbols and Punctuation"
+                ( "Arial Unicode MS" ))
+               ("CJK Unified Ideographs"
+                ( "Apple LiGothic" "Arial Unicode MS" ))
+               ("Combining Diacritical Marks"
+                ("Monaco" "Consolas" "Noto Sans" "Cambria Math"   "Courier New" "DejaVu Sans:width=condensed" "DejaVu Sans Mono"     "Tahoma" "Microsoft Sans Serif" "Arial" "Quivira" "Symbola" "Everson Mono"  "Arial Unicode MS" ))
+               ("Combining Diacritical Marks Supplement"
+                ( "FreeSerif"   "DejaVu Sans:width=condensed" "Noto Sans" "Segoe UI"  "Everson Mono" ))
+               ("Combining Diacritical Marks for Symbols"
+                ("Cambria Math" "Segoe UI Symbol" "Noto Sans Symbols" "Symbola"  "Everson Mono" "Arial Unicode MS"))
+               ("Combining Half Marks"
+                ("Consolas" "DejaVu Sans:width=condensed" "Everson Mono:weight=bold" "Symbola"))
+               ("Currency Symbols"
+                ("Monaco" "DejaVu Sans Mono" "DejaVu Sans:width=condensed" "Consolas" "Noto Sans Symbols" "Noto Sans" "Segoe UI" "Apple Symbols" "Symbola" "Quivira" "Everson Mono:weight=bold" ))
+               ("Cyrillic"
+                ("Consolas" "Monaco" "DejaVu Sans Mono" "DejaVu Sans:width=condensed" "Noto Sans" "Courier New" "Calibri" "Microsoft Sans Serif"  "Arial Unicode MS"   "Symbola" "Quivira" "Everson Mono:weight=bold"))
+               ("Cyrillic Extended-A"
+                ("Quivira" "Everson Mono:weight=bold" "FreeSerif" ))
+               ("Cyrillic Extended-B"
+                ("Quivira"  "Everson Mono:weight=bold"))
+               ("Cyrillic Supplement"
+                ("Consolas" "Courier New" "Calibri" "Noto Sans" "DejaVu Sans:width=condensed"   "Symbola" "Quivira"  "Everson Mono:weight=bold"))
+               ("Devanagari"
+                (           "Arial Unicode MS" ))
+               ("Devanagari Extended"
+                (  "FreeSerif"))
+               ("Dingbats"
+                ("Apple Color Emoji" "DejaVu Sans Mono" "Segoe UI Symbol" "Zapf Dingbats" "DejaVu Sans:width=condensed" "Arial Unicode MS"  "Noto Sans Symbols" "Symbola" "Quivira" "Everson Mono:weight=bold"))
+               ("Domino Tiles"
+                ("DejaVu Sans:width=condensed" "Symbola" "Quivira" "Segoe UI Symbol" "Noto Sans Symbols"  "Everson Mono:weight=bold"))
+               ("Emoticons"
+                ("Apple Color Emoji" "Segoe UI Symbol" "Symbola" "Quivira"))
+               ("Enclosed Alphanumeric Supplement"
+                ("Segoe UI Symbol" "Noto Sans Symbols" "Symbola" "Quivira"  "BabelStone Modern"))
+               ("Enclosed Alphanumerics"
+                ("Noto Sans Symbols" "Segoe UI Symbol" "Arial
+               Unicode MS" "Symbola" "Quivira" "BabelStone
+               Modern" "Everson Mono:weight=bold"))
+               ("Enclosed CJK Letters and Months"
+                ( "Arial Unicode MS" "Quivira" ))
+               ("Enclosed Ideographic Supplement"
+                ("Segoe UI Symbol" "Noto Sans Symbols" "Symbola"))
+               ("General Punctuation"
+                ("Monaco" "Apple Symbols" "Segoe UI Symbol" "Cambria
+               Math" "DejaVu Sans Mono" "DejaVu
+               Sans:width=condensed" "Symbola" "Quivira" "Noto
+               Sans" "Everson Mono:weight=bold" "BabelStone
+               Modern"))
+               ("Geometric Shapes"
+                ("DejaVu Sans Mono" "DejaVu
+               Sans:width=condensed" "Segoe UI Symbol" "Arial
+               Unicode MS" "Symbola" "Noto Sans
+               Symbols" "Quivira" "BabelStone Modern" "Everson
+               Mono" ))
+               ("Geometric Shapes Extended"
+                ("Symbola" "Quivira"))
+               ("Georgian"
+                ("DejaVu Sans Mono" "Noto Sans Georgian" "Noto Serif
+               Georgian" "DejaVu Sans:width=condensed" "Arial
+               Unicode MS" "Quivira" "Everson Mono:weight=bold"))
+               ("Georgian Supplement"
+                ("Noto Sans Georgian" "Noto Serif Georgian" "DejaVu Serif:width=condensed"
+                 "Quivira" "Everson Mono:weight=bold"))
+               ("Greek and Coptic"
+                ("Consolas" "DejaVu Sans Mono" "DejaVu Sans:width=condensed"
+                 "Noto Sans" "Segoe UI Symbol" "Calibri" "Microsoft Sans Serif"
+                 "Lucida Console" "Arial Unicode MS" "Symbola" "Quivira"
+                 "Everson Mono:weight=bold"  ))
+               ("Gujarati"
+                ("Arial Unicode MS"))
+               ("Gurmukhi"
+                ("Arial Unicode MS" ))
+               ("Hangul Syllables"
+                ("AppleGothic" "Arial Unicode MS" ))
+               ("Hebrew"
+                ("Courier New" "Microsoft Sans Serif" "Tahoma" "Lucida Sans Unicode"
+                 "Arial Unicode MS" "Arial" "Quivira" "Everson Mono:weight=bold" ))
+               ("Hiragana"
+                ("MS Gothic" "MS Mincho"  "Arial Unicode MS"))
+               ("IPA Extensions"
+                ("Monaco" "Consolas" "DejaVu Sans Mono" "Courier New" "Noto Sans"
+                 "Arial Unicode MS" "Arial" "Tahoma" "Microsoft Sans Serif"
+                 "Symbola" "Quivira" "Everson Mono:weight=bold"))
+               ("Kangxi Radicals"
+                ("AppleMyungjo" "Apple Symbols" ))
+               ("Kannada"
+                ("Arial Unicode MS" ))
+               ("Katakana"
+                ("MS Gothic" "Arial Unicode MS"))
+               ("Katakana Phonetic Extensions"
+                ("MS Gothic"))
+               ("Lao"
+                ("DejaVu Sans Mono" "Arial Unicode MS"
+                 "DejaVu Sans:width=condensed"))
+               ("Letterlike Symbols"
+                ("Monaco" "Noto Sans Symbols" "Segoe UI Symbol" "Apple Symbols"
+                 "Cambria Math" "DejaVu Sans:width=condensed" "Arial Unicode MS"
+                 "Symbola" "Quivira"  "Everson Mono:weight=bold"))
+               ("Lisu"
+                ("Quivira" "Everson Mono:weight=bold"))
+               ("Mahjong Tiles"
+                ("Segoe UI Symbol" "Symbola" "Noto Sans Symbols" "Quivira" "Everson Mono"))
+               ("Malayalam"
+                (       "Arial Unicode MS"))
+               ("Mathematical Alphanumeric Symbols"
+                ("Cambria Math" "Noto Sans Symbols" "Asana Math"  "Symbola"
+                 "Quivira" "Everson Mono:weight=bold"))
+               ("Mathematical Operators"
+                ("Monaco" "DejaVu Sans Mono" "Segoe UI Symbol" "Cambria Math"
+                 "DejaVu Sans:width=condensed" "Noto Sans Symbols" "Apple Symbols"
+                 "Asana Math" "Arial Unicode MS" "Symbola" "Quivira"
+                 "Everson Mono:weight=bold" ))
+               ("Miscellaneous Mathematical Symbols-A"
+                ("Noto Sans Symbols" "Apple Symbols" "Segoe UI Symbol" "Asana Math"
+                 "Symbola" "Quivira" "Cambria Math" "Everson Mono:weight=bold"))
+               ("Miscellaneous Mathematical Symbols-B"
+                ("Noto Sans Symbols" "Segoe UI Symbol" "Apple Symbols"
+                 "Cambria Math" "Asana Math"  "Symbola" "Quivira"))
+               ("Miscellaneous Symbols"
+                ("Noto Sans Symbols" "Segoe UI Symbol" "Apple Symbols"
+                 "DejaVu Sans Mono" "DejaVu Sans:width=condensed"
+                 "Arial Unicode MS" "Symbola" "Quivira" "MS Reference Sans Serif"
+                 "Everson Mono:weight=bold"))
+               ("Miscellaneous Symbols and Arrows"
+                ("Symbola" "Quivira" "Asana Math"  "Segoe UI Symbol"
+                 "Noto Sans Symbols"))
+               ("Miscellaneous Symbols and Pictographs"
+                ("Apple Color Emoji" "Segoe UI Symbol" "Symbola" "Quivira"))
+               ("Miscellaneous Technical"
+                ("Segoe UI Symbol" "Noto Sans Symbols" "Apple Symbols"
+                 "Cambria Math" "DejaVu Sans Mono" "Symbola" "Quivira"
+                 "Everson Mono:weight=bold"))
+               ("Musical Symbols"
+                ("Noto Sans Symbols" "Musica" "FreeSerif" "Symbola" "Quivira"))
+               ("NKo"
+                ("DejaVu Sans:width=condensed"))
+               ("Number Forms"
+                ("DejaVu Sans:width=condensed" "Asana Math" "Arial Unicode MS"
+                 "Symbola" "Quivira" "Everson Mono:weight=bold"  ))
+               ("Optical Character Recognition"
+                ("Apple Symbols" "Segoe UI Symbol" "Noto Sans Symbols"
+                 "Arial Unicode MS" "Symbola" "Quivira"  "BabelStone Modern"
+                 "Everson Mono"))
+               ("Oriya" ( "Arial Unicode MS"))
+               ("Ornamental Dingbats" ("Symbola"))
+               ("Osmanya" ( "Everson Mono:weight=bold"))
+               ("Phonetic Extensions"
+                ("Monaco" "Consolas" "Calibri" "Noto Sans" "Quivira" "Courier New"
+                 "DejaVu Sans:width=condensed"  "Everson Mono:weight=bold" ))
+               ("Phonetic Extensions Supplement"
+                ("Consolas" "Calibri" "Courier New" "Noto Sans" "Quivira"
+                 "DejaVu Sans Mono" "DejaVu Sans:width=condensed"
+                 "Everson Mono:weight=bold" ))
+               ("Playing Cards"
+                ("DejaVu Sans:width=condensed" "Symbola" "Noto Sans Symbols"
+                 "Segoe UI Symbol" "Quivira"))
+               ("Runic"
+                ("Segoe UI Symbol" "Quivira" "Everson Mono:weight=bold"))
+               ("Specials"
+                ("BabelStone Modern" "Noto Sans Symbols" "Apple Symbols"
+                 "Arial Unicode MS" "Symbola" "DejaVu Sans Mono"
+                 "DejaVu Sans:width=condensed" "Quivira"  ))
+               ("Superscripts and Subscripts"
+                ("Consolas" "Monaco" "Apple Symbols" "Cambria Math"
+                 "DejaVu Sans Mono" "DejaVu Sans:width=condensed"
+                 "Segoe UI Symbol" "Asana Math" "Symbola" "Quivira"
+                 "Everson Mono:weight=bold" ))
+               ("Supplemental Arrows-A"
+                ("Segoe UI Symbol" "Cambria Math" "DejaVu Sans:width=condensed"
+                 "Asana Math" "Quivira" "Symbola" "Apple Symbols"
+                 "Noto Sans Symbols" "Everson Mono:weight=bold"
+                 "BabelStone Modern"))
+               ("Supplemental Arrows-B"
+                ("Cambria Math" "Segoe UI Symbol" "Apple Symbols"
+                 "Noto Sans Symbols" "Asana Math" "Quivira" "Symbola"
+                 "Everson Mono:weight=bold"))
+               ("Supplemental Arrows-C" ("Symbola"))
+               ("Supplemental Mathematical Operators"
+                ("Cambria Math" "Segoe UI Symbol" "Noto Sans Symbols"
+                 "Apple Symbols" "Asana Math"  "Symbola" "Quivira"
+                 "Everson Mono:weight=bold"))
+               ("Supplemental Symbols and Pictographs"
+                ("Symbola"))
+               ("Tagalog" ("Quivira"))
+               ("Tags" ("BabelStone Modern" ))
+               ("Tamil" ("Arial Unicode MS"))
+               ("Telugu" ("Arial Unicode MS"))
+               ("Thai"
+                ("Tahoma" "Arial Unicode MS" "Quivira" "Everson Mono:weight=bold"))
+               ("Tibetan" ("Arial Unicode MS"))
+               ("Transport and Map Symbols"
+                ("Apple Color Emoji" "Segoe UI Symbol" "Symbola"))
+               ("Variation Selectors" ("BabelStone Modern"  ))
+               ("Variation Selectors Supplement" ("BabelStone Modern" ))
+               ("Vertical Forms" ("Symbola"))
+               ("Yijing Hexagram Symbols"
+                ( "Noto Sans Symbols" "Segoe UI Symbol" "Apple Symbols"
+                  "DejaVu Sans:width=condensed"  "Symbola" "Quivira"
+                  "BabelStone Modern"  "Everson Mono:weight=bold")))))
+#+end_src
+
+The more comprehensive version is here, if any of them need to be dredged back up.
+
+#+name: unicode-fonts-setup-big
+#+begin_src emacs-lisp :tangle no
   (use-package unicode-fonts
     :ensure t
     :config (unicode-fonts-setup)
@@ -2019,7 +2416,7 @@ I don't wrap these in =pg-terminal-ns= because they're OS X-specific, not strict
 
 Since you're running [[https://brew.sh/][Homebrew]] (right??) you'll want =/usr/local/bin= and =/usr/local/sbin= in your path.
 
-#+BEGIN_SRC emacs-lisp :tangle darwin.el
+#+BEGIN_SRC emacs-lisp :tangle build/darwin.el
   (let ((paths '("/usr/local/bin" "/usr/local/sbin")))
     (pg-shell-path-with ("PATH" :into t :as -path)
       (pg-util-list-add-unique paths -path))
@@ -2031,7 +2428,7 @@ Since you're running [[https://brew.sh/][Homebrew]] (right??) you'll want =/usr/
 
 On many Unix systems, the =locate= command will run the system =locate= command to search a pre-compiled file database for a file. On OS X, the =mdfind= command (which searches Spotlight) has sufficiently similar syntax that it can be used instead.
 
-#+BEGIN_SRC emacs-lisp :tangle darwin.el
+#+BEGIN_SRC emacs-lisp :tangle build/darwin.el
   (setq locate-command "mdfind")
 #+END_SRC
 
@@ -2039,7 +2436,7 @@ On many Unix systems, the =locate= command will run the system =locate= command 
 
 OS X =ls= is not GNU, so use =gls= (the version of =ls= from GNU Coreutils) on the Mac instead of =/bin/ls=, because the GNU version supports dired better. (Make sure it's installed via MacPorts, Homebrew, etc.)
 
-#+BEGIN_SRC emacs-lisp :tangle darwin.el
+#+BEGIN_SRC emacs-lisp :tangle build/darwin.el
   (pg-if-available "gls"
     "Install 'gls' ('brew install coreutils') for a better dired experience."
     (setq insert-directory-program "gls"))
@@ -2049,10 +2446,10 @@ OS X =ls= is not GNU, so use =gls= (the version of =ls= from GNU Coreutils) on t
 **** Spellcheck
 
 Make my spelling directory =aspell= if I can
-#+BEGIN_SRC emacs-lisp :tangle darwin.el
+#+BEGIN_SRC emacs-lisp :tangle build/darwin.el
   (pg-if-available "aspell"
     "Install aspell for spellchecking"
-    (setq-default ispell-program-name "/opt/homebrew/bin/aspell"))
+    (setq-default ispell-program-name (executable-find "aspell")))
 #+END_SRC
 
 
@@ -2061,10 +2458,19 @@ Make my spelling directory =aspell= if I can
 
 OS X has horrible long temporary directory paths that sometimes exceed the lengths some applications are expecting. Just use =/tmp=
 
-#+BEGIN_SRC emacs-lisp :tangle darwin.el
+#+BEGIN_SRC emacs-lisp :tangle build/darwin.el
   (setenv "TMPDIR" "/tmp")
 #+END_SRC
 
+
+**** Remap =kmacro-start/end-macro=
+
+macOS now uses =<f4>= to do something with the touch bar, so remap where =kmacro-start-macro= and =kmacro-end-macro= live. (No, =C-c (= and =C-c )= are not adequate replacements.)
+
+#+BEGIN_SRC emacs-lisp :tangle build/darwin.el
+  (bind-key "<f5>" 'kmacro-start-macro)
+  (bind-key "<f6>" 'kmacro-end-or-call-macro)
+#+END_SRC
 
 *** =ns= terminal configuration
 
@@ -2074,7 +2480,7 @@ OS X has horrible long temporary directory paths that sometimes exceed the lengt
 
 Use the navigation functions defined in the general configuration in OS X GUI Emacs.
 
-#+BEGIN_SRC emacs-lisp :tangle darwin.el
+#+BEGIN_SRC emacs-lisp :tangle build/darwin.el
   (pg-terminal-ns
    (pg-clean-frames)
    (pg-navigate-frames)
@@ -2085,9 +2491,11 @@ Use the navigation functions defined in the general configuration in OS X GUI Em
 
 ***** Modifier keys
 
-Make left/right command =meta=, and make right alt =super=. Don't do anything with the left Option key, so I can type extended punctuation.
 
-#+BEGIN_SRC emacs-lisp :tangle darwin.el
+My priorities used to be maximizing the number of available modifiers, Space Cadet style. It turns out there's a lot to be said for symmetry on the left and right hand, though. I've become attached to =super=, though, so keep it on =option=, which is functionally =AltGr=.
+Make left command =meta=, and make right alt and right command =super=. (I should experiment with right command being =hyper=, but haven't so far.)
+
+#+BEGIN_SRC emacs-lisp :tangle build/darwin.el
 
   ;; ns-right-command-modifier should, by default, be 'left, inheriting
   ;; ns-command-modifier
@@ -2095,6 +2503,7 @@ Make left/right command =meta=, and make right alt =super=. Don't do anything wi
   (pg-terminal-ns
    (setq ns-option-modifier  nil)
    (setq ns-right-option-modifier  'super)
+   (setq ns-right-command-modifier 'meta)
    (setq ns-command-modifier 'meta))
 
 #+END_SRC
@@ -2103,7 +2512,7 @@ Make left/right command =meta=, and make right alt =super=. Don't do anything wi
 
 Open a file when it's dragged onto Emacs. (Default is to copy the file path.)
 
-#+BEGIN_SRC emacs-lisp :tangle darwin.el
+#+BEGIN_SRC emacs-lisp :tangle build/darwin.el
   (pg-terminal-ns (bind-key "<ns-drag-file>" 'ns-find-file))
 #+END_SRC
 
@@ -2111,7 +2520,7 @@ Open a file when it's dragged onto Emacs. (Default is to copy the file path.)
 
 The mouse wheel setup will get clobbered when using a daemon, due to the different order in which things start up. This restores it.
 
-#+begin_src emacs-lisp :tangle darwin.el
+#+begin_src emacs-lisp :tangle build/darwin.el
   (pg-terminal-ns
    (when (daemonp)
      (progn
@@ -2127,14 +2536,14 @@ The mouse wheel setup will get clobbered when using a daemon, due to the differe
 
 **** =pdf-tools=
 
-#+BEGIN_SRC emacs-lisp :tangle darwin.el
+#+BEGIN_SRC emacs-lisp :tangle build/darwin.el
   (use-package pdf-tools :ensure t)
 #+END_SRC
 
 
 **** LaTeX
 
-#+BEGIN_SRC emacs-lisp :tangle darwin.el
+#+BEGIN_SRC emacs-lisp :tangle build/darwin.el
   (if (file-exists-p "/Library/TeX/texbin")
       (pg-shell-path-append "PATH" '("/Library/Tex/texbin"))
     (message "Pro-tip: Install Tex (or MacTeX) for a better LaTeX experience"))
