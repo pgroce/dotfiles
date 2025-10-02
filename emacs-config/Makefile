@@ -11,7 +11,7 @@ EMACS_HOME=$(shell $(EMACS_EXE) --batch --eval "(princ user-emacs-directory)")
 # The current Org file containing the emacs config
 EMACS_CONFIG_ORG=emacs-config-reboot-2025.org
 # The "production" directory to install into
-CONFIG_DIR=$(EMACS_HOME)/config_reboot
+CONFIG_DIR=$(EMACS_HOME)/config
 # The directory to install into for testing
 TEST_DIR=$(EMACS_HOME)/config_test
 
