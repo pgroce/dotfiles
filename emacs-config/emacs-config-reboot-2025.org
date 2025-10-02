@@ -865,7 +865,7 @@ More default settings, and plenty of them. I don't have opinions on much of it a
 
 ** Shells and Serial Terminals (=pg-serial-terminal.el=)
 :PROPERTIES:
-:header-args: :tangle build/pg-modules/pg-terminal.el
+:header-args: :tangle build/pg-modules/pg-serial-terminal.el
 :END:
 
 *** Tramp
