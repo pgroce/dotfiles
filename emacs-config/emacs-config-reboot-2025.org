@@ -1225,7 +1225,7 @@ More default settings, and plenty of them. I don't have opinions on much of it a
 :END:
 #+begin_src emacs-lisp
   (pg-if-available "pandoc"
-    "Pro-tip: Install «pandoc» to convert org subtrees and buffers to other formats.")
+    "Install «pandoc» to convert org subtrees and buffers to other formats.")
 
   (use-package pg-pandoc
     :ensure t
