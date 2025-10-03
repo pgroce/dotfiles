@@ -1182,7 +1182,20 @@ More default settings, and plenty of them. I don't have opinions on much of it a
 
   (provide 'pg-anki)
 #+end_src
+** Pandoc (=pg-pandoc=)
+:PROPERTIES:
+:header-args: :tangle build/pg-modules/pg-pandoc.el
+:END:
+#+begin_src emacs-lisp
+  (pg-if-available "pandoc"
+    "Pro-tip: Install «pandoc» to convert org subtrees and buffers to other formats.")
 
+  (use-package pg-pandoc
+    :ensure t
+    :commands
+    (pg-pandoc-org-subtree pg-pandoc-current-buffer))
+  (provide 'pg-pandoc)
+#+end_src
 * MacOS Platform Config File (=darwin.el=)
 :PROPERTIES:
 :header-args: :tangle build/darwin.el
