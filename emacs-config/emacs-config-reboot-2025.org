@@ -374,6 +374,38 @@ Now I can keep bits configuration around for later, but turn it off while I'm no
            ;("S-<return>" . pg-open-file-dired)
            ))
 #+end_src
+*** Better pop-up window behavior
+
+#+begin_src emacs-lisp
+  (use-package popper
+    :ensure t                             ; or :straight t
+    :bind (("C-`"   . popper-toggle-latest)
+           ("M-`"   . popper-cycle)
+           ("C-M-`" . popper-toggle-type))
+
+    :custom
+    ((popper-reference-buffers
+      '("\\*Messages\\*"
+        "Output\\*$"
+        "\\*Async Shell Command\\*"
+        help-mode
+        compilation-mode
+        inferior-python-mode
+        inferior-emacs-lisp-mode
+        "^\\*eshell.*\\*$" eshell-mode
+        "^\\*shell.*\\*$"  shell-mode
+        "^\\*term.*\\*$"   term-mode
+        "^\\*vterm.*\\*$"  vterm-mode))
+     (popper-window-height
+      (lambda (win)
+        (fit-window-to-buffer
+         win
+         (floor (frame-height) 6)
+         (floor (frame-height) 3)))))
+    :init
+    (popper-mode +1)
+    (popper-echo-mode +1))
+#+end_src
 *** Provide
 #+begin_src emacs-lisp
   (provide 'pg-ui-misc)
@@ -900,6 +932,9 @@ More default settings, and plenty of them. I don't have opinions on much of it a
   displays. See https://codeberg.org/akib/emacs-eat/issues/145"
     (setq-local scroll-conservatively 101))
 
+  (with-eval-after-load 'popper
+    (--map (add-to-list 'popper-reference-buffers it)
+           '("^\\*eat\*" "^\\*.*-eat\*" eat-mode)))
   (use-package eat
     :ensure t
     :after project
@@ -911,6 +946,7 @@ More default settings, and plenty of them. I don't have opinions on much of it a
     (:map project-prefix-map
           ("s" . eat-project))
     )
+
 #+end_src
 
 *** Provide
