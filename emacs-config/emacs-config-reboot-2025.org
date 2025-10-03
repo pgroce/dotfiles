@@ -208,7 +208,6 @@ Now I can keep bits configuration around for later, but turn it off while I'm no
 #+end_src
 
 * Modules (=pg-modules/pg-*.el=)
-
 ** Themes (=pg-themes.el=)
 :PROPERTIES:
 :header-args: :tangle build/pg-modules/pg-themes.el
