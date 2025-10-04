@@ -374,7 +374,11 @@ Now I can keep bits configuration around for later, but turn it off while I'm no
            ;("S-<return>" . pg-open-file-dired)
            ))
 #+end_src
-*** Better pop-up window behavior
+*** Better pop-up window behavior (=popper=)
+
+[[https://github.com/karthink/popper][Popper]] is a quiet hero of the config for one reason: when you run =C-h C-v= (or similar), it takes the focus, so you can just hit =q= to dismiss it.
+
+It does other stuff too, much of it handy, but being able to create and destroy help buffers quickly makes it indispensable.
 
 #+begin_src emacs-lisp
   (use-package popper
