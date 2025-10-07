@@ -237,7 +237,10 @@ Now I can keep bits configuration around for later, but turn it off while I'm no
   ;; --> DEFAULT FONT <--
   ;; https://www.programmingfonts.org/
   (set-face-attribute 'default nil
-                      :family "Monaspace Neon Frozen" :height 145 :weight 'normal)
+                      :family "Monaspace Neon Frozen" :height 130 :weight 'normal)
+
+  (set-face-attribute 'mode-line nil
+                      :family "Monaspace Argon Frozen" :height 145 :weight 'normal)
 
 #+end_src
 *** Ligatures
@@ -309,6 +312,24 @@ Now I can keep bits configuration around for later, but turn it off while I'm no
     (pg-util-alist-update-var 'window-system-default-frame-alist
                               '((nil (menu-bar-lines . 0)
                                      (tool-bar-lines . 0)))))
+#+end_src
+*** Conveniently repeating commands (=repeat-mode=)
+#+begin_src emacs-lisp
+  ;; Repeatable key chords (repeat-mode)
+  (use-package repeat
+    :ensure nil
+    :hook (after-init . repeat-mode)
+    :config
+    (setq repeat-on-final-keystroke t
+          repeat-exit-timeout 5
+          repeat-exit-key "<escape>"
+          repeat-keep-prefix nil
+          repeat-check-key t
+          ;repeat-echo-function 'ignore
+          ;; Technically, this is not in repeat.el, though it is the
+          ;; same idea.
+          set-mark-command-repeat-pop t))
+
 #+end_src
 *** Buffer name deduplication (=uniquify=)
 #+begin_src emacs-lisp
@@ -940,9 +961,14 @@ More default settings, and plenty of them. I don't have opinions on much of it a
   (with-eval-after-load 'popper
     (--map (add-to-list 'popper-reference-buffers it)
            '("^\\*eat\*" "^\\*.*-eat\*" eat-mode)))
+
+  (with-eval-after-load 'project
+    (bind-key #'eat-project 'project-prefix-map))
+
   (use-package eat
     :ensure t
     :after project
+    :commands (eat-mode eat-project)
     :hook
     ((eshell-load . eat-eshell-mode)
      (eshell-load . eat-eshell-visual-command-mode)
