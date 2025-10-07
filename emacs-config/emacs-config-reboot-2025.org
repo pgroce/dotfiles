@@ -1129,7 +1129,7 @@ More default settings, and plenty of them. I don't have opinions on much of it a
      `(("t" "TODO" entry (file+headline (pg-org--dir "todo.org") "Tasks")
              "* TODO %?\n  %u" :prepend t)
        ("n" "Notes" entry (file+headline
-                           (pg-org--dir "notes.org") "Notes")
+                           ,(pg-org--dir "notes.org") "Notes")
              "* %u %?" :prepend t)
             ))
     )
