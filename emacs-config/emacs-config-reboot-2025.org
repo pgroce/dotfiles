@@ -963,7 +963,7 @@ More default settings, and plenty of them. I don't have opinions on much of it a
            '("^\\*eat\*" "^\\*.*-eat\*" eat-mode)))
 
   (with-eval-after-load 'project
-    (bind-key #'eat-project 'project-prefix-map))
+    (bind-key "s" #'eat-project 'project-prefix-map))
 
   (use-package eat
     :ensure t
