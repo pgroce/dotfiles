@@ -188,13 +188,11 @@ Now I can keep bits configuration around for later, but turn it off while I'm no
 
 ** Emacs server
 #+begin_src emacs-lisp
-  ;; Start the emacs server, if desired.
+  ;; Start the emacs server, if desired and one isn't already running.
   (require 'warnings)
   (add-to-list 'warning-suppress-types '(server))
-  ;; Comment this out if you're running more than one copy of Emacs
-  ;; (e.g., testing a new config). Otherwise it will fail trying to open
-  ;; a second server on the same port.
-  (server-start)
+
+  (when (not (server-running-p)) (server-start))
 
 #+end_src
 
