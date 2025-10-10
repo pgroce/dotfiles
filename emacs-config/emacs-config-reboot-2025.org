@@ -247,6 +247,12 @@ Now I can keep bits configuration around for later, but turn it off while I'm no
 #+begin_src emacs-lisp
   ;; --> DEFAULT FONT <--
   ;; https://www.programmingfonts.org/
+  (set-face-attribute 'default nil
+                      :family "Monaspace Neon Frozen" :height 130 :weight 'normal)
+
+  (set-face-attribute 'variable-pitch nil
+                      :family "Palatino" :height 150 :weight 'normal)
+
   (set-face-attribute 'mode-line nil
                       :family "Monaspace Neon Frozen" :height 130)
 
@@ -1171,6 +1177,11 @@ More default settings, and plenty of them. I don't have opinions on much of it a
   (pg-terminal-any (bind-key "C-c o" #'pg-open-org-file))
 
 
+  (use-package olivetti
+    :ensure t
+    :custom
+    ((olivetti-body-width 77)))
+
   (use-package org
     :defer t
     :hook ((org-mode . visual-line-mode))
@@ -1189,8 +1200,104 @@ More default settings, and plenty of them. I don't have opinions on much of it a
             ))
     )
 
+
+
+  ;;; Beautifying Org mode...
+
+
+  ;; The idea here is to define the fixed-pitch faces here and let
+  ;; (variable-pitch-mode 1) take care of the rest. Defer to the user
+  ;; theme as much as possible.
+  (defvar pg-org--beautify-fixed-pitch
+    '((org-block (:inherit fixed-pitch))
+        (org-code (:inherit (shadow fixed-pitch)))
+        (org-document-info (:inherit fixed-pitch))
+        (org-document-info-keyword (:inherit (shadow fixed-pitch)))
+        (org-indent (:inherit (org-hide fixed-pitch)))
+        (org-meta-line (:inherit (font-lock-comment-face fixed-pitch)))
+        (org-property-value (:inherit fixed-pitch) t)
+        (org-special-keyword (:inherit (font-lock-comment-face fixed-pitch)))
+        (org-table (:inherit fixed-pitch :foreground "#83a598"))
+        (org-tag (:inherit (shadow fixed-pitch) :weight bold :height 0.8))
+        (org-verbatim (:inherit (shadow fixed-pitch)))
+        (org-date (:interit fixed-pitch))
+        (org-link (:weight bold :underline t)))
+    "Org mode faces that should always be fixed-pitch")
+
+  (defvar pg-org--beautify-headlines
+    (let ((headline '(:family "Optima" :slant italic)))
+      `((org-document-title (,@headline :height 2.0))
+        (org-level-1 (,@headline :height 1.75))
+        (org-level-2 (,@headline :height 1.4))
+        (org-level-3 (,@headline :height 1.3))
+        (org-level-4 (,@headline :height 1.2))
+        (org-level-5 (,@headline :height 1.1))
+        (org-level-6 (,@headline :height 1.1))
+        (org-level-7 (,@headline :height 1.1))
+        (org-level-8 (,@headline :height 1.1))))
+    "Org mode faces representing headlines (and titles), with beautified
+  sizes.")
+
+  (defun pg-org--beautiful-faces ()
+    "Apply face settings for beautification. Return face change cookies."
+    (--map (face-remap-add-relative (car it) `,@(cadr it))
+           (-concat pg-org--beautify-fixed-pitch
+                    pg-org--beautify-headlines)))
+
+  (defun pg-org--unbeautiful-faces (face-cookies)
+    "Remove font-face stylings based on FACE-COOKIES."
+    (--map (face-remap-remove-relative it) face-cookies)
+    nil)
+
+
+  (defvar pg-org--beautified nil
+    "Either `nil' (not beautified) or a list of face cookies used in
+  beautification.")
+
+  (defun pg-org--beautify ()
+    (interactive)
+    (let ((cookies (pg-org--beautiful-faces)))
+      (org-modern-mode 1)
+      (variable-pitch-mode 1)
+      (setopt
+       org-hide-emphasis-markers t
+       org-pretty-entities t)
+      cookies))
+
+  (defun pg-org--debeautify (cookies)
+    (interactive)
+    (pg-org--unbeautiful-faces cookies)
+    (org-modern-mode -1)
+    (variable-pitch-mode -1)
+    (setopt
+       org-hide-emphasis-markers nil
+       org-pretty-entities nil))
+
+  (defun pg-org-beautify ()
+    (interactive)
+    (if (not pg-org--beautified)
+        (setq pg-org--beautified
+              (pg-org--beautify))
+      (progn
+        (pg-org--debeautify pg-org--beautified)
+        (setq pg-org--beautified nil))))
+
+  (use-package org-modern
+    :ensure t
+    :commands (org-modern-mode)
+    :bind (:map org-mode-map
+                ("C-c b" . pg-org-beautify))
+    :custom-face
+    (org-modern-label ((t (:inherit fixed-pitch))))
+    :custom
+    (org-modern-hide-stars t))
+
+
+
   (provide 'pg-org)
+
 #+end_src
+
 ** Anki (=pg-anki=)
 :PROPERTIES:
 :header-args: :tangle build/pg-modules/pg-anki.el
