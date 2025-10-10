@@ -1152,14 +1152,31 @@ More default settings, and plenty of them. I don't have opinions on much of it a
 
 #+begin_src emacs-lisp
   ;; Org Mode stuff (much more later, I'm sure....)
+  (use-package org
+    :defer t
+    :hook ((org-mode . visual-line-mode))
+    :config
+    (add-to-list 'org-modules 'org-tempo))
+
+  (use-package olivetti
+    :ensure t
+    :custom
+    ((olivetti-body-width 77)))
+
+  (use-package org-modern
+    :ensure t
+    :commands (org-modern-mode)
+    :bind (:map org-mode-map
+                ("C-c b" . pg-org-beautify))
+    :custom-face
+    (org-modern-label ((t (:inherit fixed-pitch))))
+    :custom
+    (org-modern-hide-stars t))
+
 
   (defcustom pg-org-dir "~/org-files/"
     "Directory containing my main Org files."
     :type 'directory)
-
-  ; save some keystrokes
-  (defun pg-org--dir (fname)
-    (file-name-concat pg-org-dir fname))
 
   (defun pg-open-org-file ()
     "Open one of the org-mode files in the `~/org-files' directory."
@@ -1177,16 +1194,11 @@ More default settings, and plenty of them. I don't have opinions on much of it a
   (pg-terminal-any (bind-key "C-c o" #'pg-open-org-file))
 
 
-  (use-package olivetti
-    :ensure t
-    :custom
-    ((olivetti-body-width 77)))
 
-  (use-package org
-    :defer t
-    :hook ((org-mode . visual-line-mode))
-    :config
-    (add-to-list 'org-modules 'org-tempo))
+
+  ; save some keystrokes
+  (defun pg-org--dir (fname)
+    (file-name-concat pg-org-dir fname))
 
   (use-package org-capture
     :bind ("s-r" . org-capture)
@@ -1282,16 +1294,9 @@ More default settings, and plenty of them. I don't have opinions on much of it a
         (pg-org--debeautify pg-org--beautified)
         (setq pg-org--beautified nil))))
 
-  (use-package org-modern
-    :ensure t
-    :commands (org-modern-mode)
-    :bind (:map org-mode-map
-                ("C-c b" . pg-org-beautify))
-    :custom-face
-    (org-modern-label ((t (:inherit fixed-pitch))))
-    :custom
-    (org-modern-hide-stars t))
 
+  (with-eval-after-load 'org
+    (bind-key "C-c b" #'pg-org-beautify org-mode-map))
 
 
   (provide 'pg-org)
