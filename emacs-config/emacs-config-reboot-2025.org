@@ -1,6 +1,7 @@
 #+title: Emacs Config (2025 Reboot)
-#+startup: indent
+
 * Intro
+
 This GNU Emacs [fn:: This document is about GNU Emacs, which I will refer to subsequently only as "Emacs."] configuration replaces one I maintained since around 2017 (so, Emacs 25 or so), and which contained elements from the initial configuration I started accumulating when I began using Emacs in ca. 2010 (Emacs 23 or thereabouts).
 
 This configuration, too, contains many elements I'm carrying over:
@@ -13,16 +14,17 @@ This configuration, too, contains many elements I'm carrying over:
 By and large, though, this differs significantly from my previous config in a number of ways. So does Emacs. My previous config relied heavily on [[https://emacs-helm.github.io/helm/][Helm]], [[https://github.com/jorgenschaefer/elpy][Elpy]], and other libraries that existed to update Emacs for how modern users worked and what they expected from an editor. Emacs has changed a lot since then, and a new generation of tools now exist that work more closely with core Emacs; this config is centered around them.
 
 ** Configuration structure
+
 I'm also structuring the configuration in a more modular way on disk. Aside from packages, I'm breaking the configuration up into multiple smaller files, and adding "configuration features" to enable or disable parts of them. This modularity is a little superficial; I'm still planning on maintaining everything from this Org file. The hope, though, is that this makes the configuration easier to debug. The configuration features should, at least, let me deactivate parts of my config that I use sporadically, like some pieces of language support.
 
 ** Document structure
+
 The main value, to me, of this literate configuration is being able to break it up structurally into sections and subsections. I've added some explanatory prose where I thought it might help other readers, but I've also tried to push some things into the source code comments for easier debugging. (For this reason, you may see a few source blocks containing only comments.) I've also inserted links into the document where applicable, as they aren't too useful in code.
 
 * Main config file (=emacs-config.el=)
 :PROPERTIES:
 :header-args: :tangle build/emacs-config.el
 :END:
-
 
 #+begin_src emacs-lisp
   ;;;;; -- Pre-configuration --
@@ -53,6 +55,7 @@ The main value, to me, of this literate configuration is being able to break it 
 #+end_src
 
 ** Contain custom variables
+
 I set most of my =defcustom= variables in my config with the =:custom= tag of =use-package= or =setopt=, so I set the Custom file to a temp file and ignore it.
 
 #+begin_src emacs-lisp
@@ -85,7 +88,8 @@ If you do want to use Customize, you can instead keep the file around and load i
 
 #+end_src
 
-** =pg-if-available=
+** The =pg-if-available= macro
+
 A function for checking that external configuration has been done. If an external executable exists, do something about it. If not, send a message to the user letting them know the executable is missing.
 
 #+begin_src emacs-lisp
@@ -101,6 +105,7 @@ A function for checking that external configuration has been done. If an externa
 #+end_src
 
 ** Set some core variables
+
 Some core defaults I prefer.
 
 #+begin_src emacs-lisp
@@ -129,6 +134,7 @@ Some core defaults I prefer.
 
 
 ** Conditional loading (configuration features)
+
 I often find myself developing a project in a particular programming language, and therefore configuring Emacs to load the language mode, LSP servers, etc. Then I get done with that project, but that configuration code just...sort of sticks around. You don't necessarily want to get rid of it in case you need it later. But right now, it's just clogging up your namespace and slowing down your load time.
 
 To mitigate against this, I'm using what I'm calling /configuration features/, which are just booleans telling me whether a module should be enabled. The support for any such language is in a module, which will conditionally load depending on whether its configuration feature is enabled. (The module has to play nice to make this work, of course.)
@@ -154,6 +160,7 @@ Now I can keep bits configuration around for later, but turn it off while I'm no
 #+end_src
 
 ** Load modules
+
 #+begin_src emacs-lisp
   ;; Add config-modules directory to load-path
   (add-to-list 'load-path (ecfw-root "pg-modules"))
@@ -187,6 +194,7 @@ Now I can keep bits configuration around for later, but turn it off while I'm no
 #+end_src
 
 ** Emacs server
+
 #+begin_src emacs-lisp
   ;; Start the emacs server, if desired and one isn't already running.
   (require 'warnings)
@@ -197,6 +205,7 @@ Now I can keep bits configuration around for later, but turn it off while I'm no
 #+end_src
 
 ** Initialize startup buffer
+
 #+begin_src emacs-lisp
   ;; My startup buffer. I like to have a clean, persistent scratch
   ;; buffer where I can try new packages out and whatnot. This means I
@@ -206,6 +215,7 @@ Now I can keep bits configuration around for later, but turn it off while I'm no
 #+end_src
 
 * Modules (=pg-modules/pg-*.el=)
+
 ** Themes (=pg-themes.el=)
 :PROPERTIES:
 :header-args: :tangle build/pg-modules/pg-themes.el
@@ -226,11 +236,14 @@ Now I can keep bits configuration around for later, but turn it off while I'm no
   (provide 'pg-themes)
 
 #+end_src
+
 ** Fonts (=pg-fonts.el=)
 :PROPERTIES:
 :header-args: :tangle build/pg-modules/pg-fonts.el
 :END:
+
 *** Default font
+
 #+begin_src emacs-lisp
   ;; --> DEFAULT FONT <--
   ;; https://www.programmingfonts.org/
@@ -243,7 +256,9 @@ Now I can keep bits configuration around for later, but turn it off while I'm no
   (set-face-attribute 'minibuffer-prompt nil
                       :family "Aporetic Serif Mono" :height 130 :weight 'bold)
 #+end_src
+
 *** Ligatures
+
 #+begin_src emacs-lisp
   ;; Install ligatures. Gonna regret this...
   ;; https://github.com/mickeynp/ligature.el
@@ -276,6 +291,8 @@ Now I can keep bits configuration around for later, but turn it off while I'm no
     ;; per mode with `ligature-mode'.
     (global-ligature-mode t))
 #+end_src
+
+
 *** Nerd icons
 [[https://www.nerdfonts.com/font-downloads][Nerd Fonts Downloads]]. Search for "Symbols Nerd Font".
 
@@ -291,6 +308,7 @@ Now I can keep bits configuration around for later, but turn it off while I'm no
     )
 #+end_src
 *** Provide
+
 #+begin_src emacs-lisp
   (provide 'pg-fonts)
 #+end_src
@@ -299,7 +317,9 @@ Now I can keep bits configuration around for later, but turn it off while I'm no
 :PROPERTIES:
 :header-args: :tangle build/pg-modules/pg-ui-misc.el
 :END:
+
 *** GUI frame setup
+
 #+begin_src emacs-lisp
   ;;; This function is my preferred setup for gui windows. Put it here
   ;;; so I can use it later in terminal-specific configuration
@@ -315,7 +335,9 @@ Now I can keep bits configuration around for later, but turn it off while I'm no
                               '((nil (menu-bar-lines . 0)
                                      (tool-bar-lines . 0)))))
 #+end_src
+
 *** Conveniently repeating commands (=repeat-mode=)
+
 #+begin_src emacs-lisp
   ;; Repeatable key chords (repeat-mode)
   (use-package repeat
@@ -333,7 +355,9 @@ Now I can keep bits configuration around for later, but turn it off while I'm no
           set-mark-command-repeat-pop t))
 
 #+end_src
+
 *** Buffer name deduplication (=uniquify=)
+
 #+begin_src emacs-lisp
   ;; Make buffer name deduping prettier
   (use-package uniquify
@@ -344,7 +368,9 @@ Now I can keep bits configuration around for later, but turn it off while I'm no
       (setq uniquify-after-kill-buffer-p t)
       (setq uniquify-ignore-buffers-re "^\\*")))
 #+end_src
+
 *** Save history across Emacs sessions
+
 #+begin_src emacs-lisp
   ;; Save history across emacs sessions
   (use-package savehist
@@ -354,12 +380,16 @@ Now I can keep bits configuration around for later, but turn it off while I'm no
     (setq savehist-additional-variables
           '(kill-ring search-ring regexp-search-ring)))
 #+end_src
+
 *** Diminish minor modes
+
 #+begin_src emacs-lisp
   ;; Diminish minor modes
   (use-package diminish :demand t :ensure t)
 #+end_src
+
 *** Parentheses/Brace-oriented editing
+
 #+begin_src emacs-lisp
   ;; Parentheses (Not a programming mode! Everything can use matching
   ;; braces.)
@@ -384,7 +414,9 @@ Now I can keep bits configuration around for later, but turn it off while I'm no
 
   (show-paren-mode 1)
 #+end_src
+
 *** Open files with external application
+
 #+begin_src emacs-lisp
   (use-package pg-open
     :ensure t
@@ -397,6 +429,7 @@ Now I can keep bits configuration around for later, but turn it off while I'm no
            ;("S-<return>" . pg-open-file-dired)
            ))
 #+end_src
+
 *** Better pop-up window behavior (=popper=)
 
 [[https://github.com/karthink/popper][Popper]] is a quiet hero of the config for one reason: when you run =C-h C-v= (or similar), it takes the focus, so you can just hit =q= to dismiss it.
@@ -434,7 +467,9 @@ It does other stuff too, much of it handy, but being able to create and destroy 
     (popper-mode +1)
     (popper-echo-mode +1))
 #+end_src
+
 *** Provide
+
 #+begin_src emacs-lisp
   (provide 'pg-ui-misc)
 #+end_src
@@ -503,6 +538,7 @@ It does other stuff too, much of it handy, but being able to create and destroy 
 #+end_src
 
 **** Provide
+
 #+begin_src emacs-lisp
   (provide 'pg-completion-minibuffer)
 #+end_src
@@ -513,6 +549,7 @@ It does other stuff too, much of it handy, but being able to create and destroy 
 :END:
 
 **** Consult
+
 #+begin_src emacs-lisp
   ;; Consult
   ;; Example configuration for Consult
@@ -621,6 +658,7 @@ It does other stuff too, much of it handy, but being able to create and destroy 
 #+end_src
 
 **** Orderless
+
 #+begin_src emacs-lisp
   ;; Orderless: Unorded sets of selectors in completion
 
@@ -657,6 +695,7 @@ It does other stuff too, much of it handy, but being able to create and destroy 
 
 
 **** Corfu
+
 #+begin_src emacs-lisp
   ;; Corfu
   (use-package corfu
@@ -703,6 +742,7 @@ It does other stuff too, much of it handy, but being able to create and destroy 
 #+end_src
 
 **** Dabbrev
+
 #+begin_src emacs-lisp
   ;; Use Dabbrev with Corfu!
   (use-package dabbrev
@@ -810,6 +850,7 @@ It does other stuff too, much of it handy, but being able to create and destroy 
 :END:
 
 *** (Soft) external application dependencies
+
 #+begin_src emacs-lisp
   ;; Check dependencies
 
@@ -851,6 +892,7 @@ The listing switches ensure =ls= provides some useful additional information.
 #+end_src
 
 *** Open files with external application
+
 Sometimes one wishes to open a file, but not in Emacs. I'd rather use a native app for most non-text file formats.
 
 This function is adapted from one on the Dirvish website that didn't work well for me for some reason, and uses a function I wrote to open files using the system opener (e.g., =open= on Mac); it gets wired into the main Dirvish configuration below.
@@ -872,6 +914,7 @@ This function is adapted from one on the Dirvish website that didn't work well f
 #+end_src
 
 *** Dirvish configuration
+
 More default settings, and plenty of them. I don't have opinions on much of it at this time, but find the overall result satisfying.
 
 #+begin_src emacs-lisp
@@ -935,6 +978,7 @@ More default settings, and plenty of them. I don't have opinions on much of it a
 :END:
 
 *** Tramp
+
 #+begin_src emacs-lisp
   ;; Tramp
   (use-package tramp
@@ -953,6 +997,7 @@ More default settings, and plenty of them. I don't have opinions on much of it a
 #+end_src
 
 *** Eat (Emulate a Terminal)
+
 #+begin_src emacs-lisp
 
   (defun pg-eat-scroll-conservatively ()
@@ -983,17 +1028,20 @@ More default settings, and plenty of them. I don't have opinions on much of it a
 #+end_src
 
 *** Provide
+
 #+begin_src emacs-lisp
   (provide 'pg-serial-terminal)
 #+end_src
 
 ** Development
+
 *** Common configuration (=pg-devel.el=)
 :PROPERTIES:
 :header-args: :tangle build/pg-modules/pg-devel.el
 :END:
 
 **** Magit
+
 #+begin_src emacs-lisp
   (defun pg-project-magit ()
     (interactive)
@@ -1010,7 +1058,9 @@ More default settings, and plenty of them. I don't have opinions on much of it a
 
 
 #+end_src
+
 **** Tree sitter
+
 #+begin_src emacs-lisp
   ;; Maybe run this occasionally to update grammars
   ;;
@@ -1026,14 +1076,18 @@ More default settings, and plenty of them. I don't have opinions on much of it a
   (add-to-list 'treesit-extra-load-path
                (ecfw-root "tree-sitter-grammars"))
 #+end_src
+
 **** Provide
+
 #+begin_src emacs-lisp
   (provide 'pg-devel)
 #+end_src
+
 *** YAML (=pg-devel-yaml.el=)
 :PROPERTIES:
 :header-args: :tangle build/pg-modules/pg-devel-yaml.el
 :END:
+
 #+begin_src emacs-lisp
   ;; Not using yaml-ts-mode bc they made some bad choices:
   ;; https://www.reddit.com/r/emacs/comments/17gtxmr/indentation_in_yamltsmode/
@@ -1045,6 +1099,7 @@ More default settings, and plenty of them. I don't have opinions on much of it a
 
   (provide 'pg-devel-yaml)
 #+end_src
+
 **** Ansible (=pg-devel-ansible.el=)
 :PROPERTIES:
 :header-args: :tangle build/pg-modules/pg-devel-ansible.el
@@ -1083,11 +1138,11 @@ More default settings, and plenty of them. I don't have opinions on much of it a
 
   (provide 'pg-devel-ansible)
 #+end_src
+
 ** Org mode (=pg-org=)
 :PROPERTIES:
 :header-args: :tangle build/pg-modules/pg-org.el
 :END:
-
 
 #+begin_src emacs-lisp
   ;; Org Mode stuff (much more later, I'm sure....)
@@ -1251,6 +1306,7 @@ More default settings, and plenty of them. I don't have opinions on much of it a
 
   (provide 'pg-anki)
 #+end_src
+
 ** Pandoc (=pg-pandoc=)
 :PROPERTIES:
 :header-args: :tangle build/pg-modules/pg-pandoc.el
@@ -1265,10 +1321,12 @@ More default settings, and plenty of them. I don't have opinions on much of it a
     (pg-pandoc-org-subtree pg-pandoc-current-buffer))
   (provide 'pg-pandoc)
 #+end_src
+
 * MacOS Platform Config File (=darwin.el=)
 :PROPERTIES:
 :header-args: :tangle build/darwin.el
 :END:
+
 #+begin_src emacs-lisp
   (require 'pg-ui-misc) ; for pg-clean-frames
 
