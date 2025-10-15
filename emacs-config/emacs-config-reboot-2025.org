@@ -1110,6 +1110,7 @@ More default settings, and plenty of them. I don't have opinions on much of it a
 
   (use-package yaml-mode
     :ensure t
+    :defines (yaml-mode-hook)
     :if (and (boundp 'pg-cf-yaml) pg-cf-yaml)
     :mode "\\.ya?ml\\'")
 
