@@ -134,6 +134,9 @@ Some core defaults I prefer.
 
 
 ** Conditional loading (configuration features)
+:PROPERTIES:
+:CUSTOM_ID: configuration-features
+:END:
 
 I often find myself developing a project in a particular programming language, and therefore configuring Emacs to load the language mode, LSP servers, etc. Then I get done with that project, but that configuration code just...sort of sticks around. You don't necessarily want to get rid of it in case you need it later. But right now, it's just clogging up your namespace and slowing down your load time.
 
@@ -215,6 +218,13 @@ Now I can keep bits configuration around for later, but turn it off while I'm no
 #+end_src
 
 * Modules (=pg-modules/pg-*.el=)
+
+
+As mentioned previously, /modules/ are packages (that is, features are are =require='d). However, /in theory/ the code in each package should check a corresponding configuration feature (which is not an Emacs feature, naming is hard), and only load if that configuration feature is non-=nil=.
+
+That's the theory.
+
+In practice, I haven't implemented that conditionality for a number of these modules. Part of that is simply that this is a work in progress and I haven't gotten around to it yet. I may also choose to violate my rule for some modules that I can't conceive of ever turning off, like =pg-fonts=.
 
 ** Themes (=pg-themes.el=)
 :PROPERTIES:
