@@ -860,6 +860,17 @@ It does other stuff too, much of it handy, but being able to create and destroy 
   (provide 'pg-context-actions)
 #+end_src
 
+**** Integration with =consult= (=embark-consult=)
+Cut-and-paste from [[https://github.com/emacs-straight/embark-consult#quick-start][the Github mirror]].
+
+#+begin_src emacs-lisp
+  ;; Consult users will also want the embark-consult package.
+  (use-package embark-consult
+    :ensure t ; only need to install it, embark loads it after consult if found
+    :hook
+    (embark-collect-mode . consult-preview-at-point-mode))
+#+end_src
+
 ** Directory browsing: Dirvish and =dired= (=pg-dired.el=)
 :PROPERTIES:
 :header-args: :tangle build/pg-modules/pg-dired.el
