@@ -90,9 +90,11 @@ If you do want to use Customize, you can instead keep the file around and load i
 
 #+end_src
 
-** The =pg-if-available= macro
+** Checking for external resources
 
-A function for checking that external configuration has been done. If an external executable exists, do something about it. If not, send a message to the user letting them know the executable is missing.
+This configuration runs on multiple systems and works better with some external applications and fonts. My policy is to make these soft dependencies, but to emit a message in the buffer so I can notice the issue and resolve it if I choose.
+
+The =pg-if-available= function checks that external applications are available and runs configuration code only if it is. If an external executable exists, do something with it. If not, send a message to the user letting them know the executable is missing.
 
 #+begin_src emacs-lisp
   ;;; Ensure external executables exist (used in darwin.el and
@@ -104,6 +106,18 @@ A function for checking that external configuration has been done. If an externa
            ,@exists-forms)
        (message "Pro-tip: %s" ,absent-msg)))
 
+#+end_src
+
+=pg-if-font-available= is identical to =pg-if-available=, but checks for fonts.
+
+#+begin_src emacs-lisp
+  ;; Ensure fonts are installed
+  (defmacro pg-if-font-available (font absent-msg &rest exists-forms)
+    (declare (indent 1))
+    `(if (member ,font (font-family-list))
+         (progn
+           ,@exists-forms)
+       (message "Pro-tip: %s" ,absent-msg)))
 #+end_src
 
 ** Set some core variables
