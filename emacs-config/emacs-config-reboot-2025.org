@@ -268,25 +268,34 @@ In practice, I haven't implemented that conditionality for a number of these mod
 :header-args: :tangle build/pg-modules/pg-fonts.el
 :END:
 
-*** Default font
+*** Default fonts
+
+Because I want this configuration to work on multiple systems, and because fonts may not be available, I do a little more than just =set-face-attribute= when setting the default fonts. If the font doesn't exist, I warn the user and don't try to set it. (As far as I know, =set-face-attribute= doesn't error out when called with a nonexistant font, but I appreciate the consistent error reporting from =pg-if-font-available=.)
 
 #+begin_src emacs-lisp
-  ;; --> DEFAULT FONT <--
+  ;; --> DEFAULT FONTS <--
   ;; https://www.programmingfonts.org/
-  (set-face-attribute 'default nil
-                      :family "Monaspace Neon Frozen" :height 130 :weight 'normal)
+  (defmacro pg-set-face-attribute (face family &rest face-attributes)
+    (declare (indent 2))
+    `(pg-if-font-available ,family
+       (format "Install the '%s' font for a better user experience" family)
+       (set-face-attribute ,face nil
+                           :family ,family ,@face-attributes)))
 
-  (set-face-attribute 'variable-pitch nil
-                      :family "Palatino" :height 150 :weight 'normal)
+  (pg-set-face-attribute 'default "Monaspace Neon Frozen"
+    :height 130 :weight 'normal)
 
-  (set-face-attribute 'mode-line nil
-                      :family "Monaspace Neon Frozen" :height 130)
+  (pg-set-face-attribute 'variable-pitch "Palatino"
+    :height 150 :weight 'normal)
 
-  (set-face-attribute 'mode-line-buffer-id nil
-                      :family "Aporetic Serif Mono" :height 145 :weight 'bold)
+  (pg-set-face-attribute 'mode-line "Monaspace Neon Frozen"
+    :height 130)
 
-  (set-face-attribute 'minibuffer-prompt nil
-                      :family "Aporetic Serif Mono" :height 130 :weight 'bold)
+  (pg-set-face-attribute 'mode-line-buffer-id "Aporetic Serif Mono"
+    :height 145 :weight 'bold)
+
+  (pg-set-face-attribute 'minibuffer-prompt "Aporetic Serif Mono"
+    :height 130 :weight 'bold)
 #+end_src
 
 *** Ligatures
