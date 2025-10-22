@@ -56,20 +56,21 @@ The main value, to me, of this literate configuration is being able to break it 
 
 ** Contain custom variables
 
-I set most of my =defcustom= variables in my config with the =:custom= tag of =use-package= or =setopt=, so I set the Custom file to a temp file and ignore it.
+I set most of my =defcustom= variables in my config either with =setopt= or with the =:custom= tag of =use-package=, so I set the Custom file to a temp file and ignore it.
 
 #+begin_src emacs-lisp
   ;;; Customize this!
   (setopt custom-file (make-temp-file "emacs-custom"))
+
 #+end_src
 
-If you do want to use Customize, you can instead keep the file around and load it in your init. The following illustrates a way to do so that plays nicely with my config framework:
+If you do want to use Customize, you can instead keep the file around and load it in your init. The following illustrates a way to do so that plays nicely with my config framework. My policy is to use =defcustom= for anything I regard as a configuration parameter, so if you're okay with multiple sources of truth, go for it.
 
-#+begin_src emacs-lisp :tangle no
+#+begin_src emacs-lisp
   ;;; No, really, customize this
-  (setopt custom-file (ecfw-root "emacs-customize.el"))
-  (when (file-exists-p custom-file)
-    (load custom-file))
+  ;; (setopt custom-file (ecfw-root "emacs-customize.el"))
+  ;; (when (file-exists-p custom-file)
+  ;;   (load custom-file))
 #+end_src
 
 ** Bring in foundation libraries
