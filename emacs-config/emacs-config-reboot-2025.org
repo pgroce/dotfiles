@@ -74,6 +74,7 @@ If you do want to use Customize, you can instead keep the file around and load i
 #+end_src
 
 ** Bring in foundation libraries
+
 [[https://github.com/NicolasPetton/seq.el?tab=readme-ov-file][Seq]], [[https://github.com/magnars/dash.el][Dash]], and [[https://github.com/magnars/s.el][S]] are tremendously useful libraries for writing Emacs Lisp on top of. [[https://github.com/pgroce/emacs-pkgs/blob/master/pg-util.org][PG Util]] is a set of similar functions I've collected over the years. (I should check and see if I can retire some of them now.) [[https://github.com/pgroce/emacs-pkgs/blob/master/pg-shell-path.org][PG Shell Path]] is a sort of list manipulation library for strings that use shell path variable syntax.
 
 [[https://github.com/pgroce/emacs-pkgs/blob/master/pg-terminal.org][PG Terminal]] is the odd one; Emacs calls different windowing systems "terminals," by analogy to old physical terminals. PG Terminal provides a few functions to facilitate calling code only in specific terminal types, like the GUI versions of Emacs running on MacOS or Windows.
