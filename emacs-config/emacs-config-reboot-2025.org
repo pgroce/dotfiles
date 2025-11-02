@@ -272,6 +272,8 @@ In practice, I haven't implemented that conditionality for a number of these mod
 
 Because I want this configuration to work on multiple systems, and because fonts may not be available, I do a little more than just =set-face-attribute= when setting the default fonts. If the font doesn't exist, I warn the user and don't try to set it. (As far as I know, =set-face-attribute= doesn't error out when called with a nonexistant font, but I appreciate the consistent error reporting from =pg-if-font-available=.)
 
+You can replace these (and other) font faces yourself in number of places—the platform,  host, or user files, or in =scratch.el=.
+
 #+begin_src emacs-lisp
   ;; --> DEFAULT FONTS <--
   ;; https://www.programmingfonts.org/
@@ -282,18 +284,23 @@ Because I want this configuration to work on multiple systems, and because fonts
        (set-face-attribute ,face nil
                            :family ,family ,@face-attributes)))
 
+  ;; https://www.programmingfonts.org/
   (pg-set-face-attribute 'default "Monaspace Neon Frozen"
     :height 130 :weight 'normal)
 
-  (pg-set-face-attribute 'variable-pitch "Palatino"
-    :height 150 :weight 'normal)
+  ;; https://fonts.google.com/specimen/EB+Garamond
+  (pg-set-face-attribute 'variable-pitch "EB Garamond"
+    :height 180 :weight 'normal)
 
+  ;; https://www.programmingfonts.org/
   (pg-set-face-attribute 'mode-line "Monaspace Neon Frozen"
     :height 130)
 
+  ;; https://github.com/protesilaos/aporetic
   (pg-set-face-attribute 'mode-line-buffer-id "Aporetic Serif Mono"
     :height 145 :weight 'bold)
 
+  ;; https://github.com/protesilaos/aporetic
   (pg-set-face-attribute 'minibuffer-prompt "Aporetic Serif Mono"
     :height 130 :weight 'bold)
 #+end_src
