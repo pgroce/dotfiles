@@ -516,6 +516,26 @@ It does other stuff too, much of it handy, but being able to create and destroy 
     (popper-echo-mode +1))
 #+end_src
 
+*** Open current buffer in new tab
+
+[[https://www.gnu.org/software/emacs/manual/html_node/emacs/Tab-Bars.html][Tabs]] are a thing now. Type =C-x t C-H= and =TAB= for a list of available commands. Additional reading:
+
+  - [[https://mmk2410.org/2022/02/11/using-emacs-tab-bar-mode/][Using Emacs tab-bar-mode]] by Marcel Kapfer
+  - [[https://systemcrafters.net/emacs-tips/tab-bar-workspaces/][Organize Your Windows with the Tab Bar Emacs 27]] from System Crafters
+
+The default key bindings aren't too bad, especially with =repeat-mode= enabled.
+
+While ~tab-bar-new-tab~ will open a new, "blank" tab, it isn't bound to anything by default. I never get much value out of a "start page," but I often find I want to do spin out into a new task from a buffer I have to hand, so =pg-new-tab-current-buffer= is my "new tab" key.
+
+#+begin_src emacs-lisp
+  (defun pg-new-tab-current-buffer ()
+    (interactive)
+    "Create a new tab from the current buffer."
+    (switch-to-buffer-other-tab (current-buffer)))
+
+  (bind-key "C-x t >" #'pg-new-tab-current-buffer)
+#+end_src
+
 *** Provide
 
 #+begin_src emacs-lisp
