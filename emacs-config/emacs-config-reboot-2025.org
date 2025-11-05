@@ -278,7 +278,7 @@ Because I want this configuration to work on multiple systems, and because fonts
   (defmacro pg-set-face-attribute (face family &rest face-attributes)
     (declare (indent 2))
     `(pg-if-font-available ,family
-       (format "Install the '%s' font for a better user experience" family)
+       (format "Install the '%s' font for a better user experience" ,family)
        (set-face-attribute ,face nil
                            :family ,family ,@face-attributes)))
 
