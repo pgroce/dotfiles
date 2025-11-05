@@ -385,6 +385,12 @@ You can replace these (and other) font faces yourself in number of places—the 
 #+end_src
 
 *** Conveniently repeating commands (=repeat-mode=)
+:PROPERTIES:
+:CUSTOM_ID: repeat-mode
+:END:
+
+A great explainer on ~repeat-mode~: [[https://karthinks.com/software/it-bears-repeating/][It Bears Repeating: Emacs 28 & Repeat Mode]].
+
 
 #+begin_src emacs-lisp
   ;; Repeatable key chords (repeat-mode)
@@ -403,6 +409,152 @@ You can replace these (and other) font faces yourself in number of places—the 
           set-mark-command-repeat-pop t))
 
 #+end_src
+
+*** Navigation
+
+Native Emacs navigation has gotten progressively more powerful over the last few years, with tabs (see below), persistent windows, side windows, and more. You can get a lot of info and inspo from [[https://www.masteringemacs.org/article/demystifying-emacs-window-manager][Demystifying Emacs's Window Manager]] and [[https://karthinks.com/software/emacs-window-management-almanac/][The Emacs Window Management Almanac]].
+
+Many folks advocate using ~display-buffer-alist~ to create your One True Window Layout. This is certainly the way to go if you're looking for a particular static layout—to emulate an IDE layout and behavior you like, for example.
+
+As a guy who grew up professionally with Vim and later Emacs, I prefer to find a window layout that works for each task, keep it around while I need it, then get rid of it. Tabs, dedicated windows, and side windows make this way of working even easier. You'll find some additional configuration for all these below, however; what I'm looking for is the ability to seamlessly shift from working on something to reconfiguring my workspace, and back to work.
+
+Many of the keybinds under ~C-x w~ are very useful for this way of working. ~C-x w C-h TAB~ will get you a list of functions. I'm particularly fond of =toggle-window-dedicated=. Most of these commands are thematically related to those, so I put them under the =C-x w= map too.
+
+**** Open current buffer in new tab
+
+[[https://www.gnu.org/software/emacs/manual/html_node/emacs/Tab-Bars.html][Tabs]] are a thing now. Type =C-x t C-H= and =TAB= for a list of available commands. Additional reading:
+
+  - [[https://mmk2410.org/2022/02/11/using-emacs-tab-bar-mode/][Using Emacs tab-bar-mode]] by Marcel Kapfer
+  - [[https://systemcrafters.net/emacs-tips/tab-bar-workspaces/][Organize Your Windows with the Tab Bar Emacs 27]] from System Crafters
+
+The default key bindings aren't too bad, especially with =repeat-mode= enabled.
+
+While ~tab-bar-new-tab~ will open a new, "blank" tab, it isn't bound to anything by default. I never get much value out of a "start page." Starting with the buffer I'm currently working in makes a lot more sense.
+
+#+begin_src emacs-lisp
+  (defun pg-new-tab-current-buffer ()
+    (interactive)
+    "Create a new tab from the current buffer."
+    (switch-to-buffer-other-tab (current-buffer)))
+
+  (bind-key "C-x t T" #'pg-new-tab-current-buffer)
+#+end_src
+
+**** Pinning a window to the frame edge
+
+#+begin_src emacs-lisp
+  ;; Pinning a window to the left/right side. I don't see value in
+  ;; creating top/bottom side windows at the moment, but it would be
+  ;; easy enough.
+
+  (defun pg--side-current-buffer (lrdu)
+    "Convenience function to implement pg-*-side-current-buffer functions."
+    (display-buffer-in-side-window (current-buffer) `((side . ,lrdu) (slot . 0))))
+
+  (defun pg-left-side-current-buffer ()
+    (interactive)
+    "Display the current buffer in a left side window in slot 0. Repeated use
+  of this command with different current buffers will replace the buffer
+  in the side window."
+    (pg--side-current-buffer 'left))
+
+  (defun pg-right-side-current-buffer ()
+    (interactive)
+    "Display the current buffer in a right side window in slot 0. Repeated use
+  of this command with different current buffers will replace the buffer
+  in the side window."
+    (pg--side-current-buffer 'right))
+
+
+  (bind-key "C-x w >" #'pg-right-side-current-buffer)
+  (bind-key "C-x w <" #'pg-left-side-current-buffer)
+#+end_src
+
+
+**** Window configuration shortcuts (including =windmove=)
+
+The ~defvar-keymap~ macro is new in Emacs 29. There's more info, including a great external link, in [[#repeat-map][the section on ~repeat-map~ ]].
+
+#+begin_src emacs-lisp
+  ;; Use windmove to swap buffers into different windows. Make the keys
+  ;; repeat with repeat-mode (which must be enabled, see below)
+  (use-package windmove
+    :demand t
+    :bind
+    (("C-x w <left>" . windmove-swap-states-left)
+     ("C-x w <right>". windmove-swap-states-right)
+     ("C-x w <up>"   . windmove-swap-states-up)
+     ("C-x w <down>" . windmove-swap-states-down)))
+#+end_src
+
+**** Window management repeat map
+
+See the blogs mentioned in [[#repeat-mode][the section on Repeat mode]] for more information on ~defvar-keymap~.
+
+#+begin_src emacs-lisp
+
+  ;; I don't want to make C-x o/O part of this keymap, but I want that
+  ;; functionality when I'm _in_ this keymap. Solution: Make proxy
+  ;; functions that can be part of this keymap and leave other-window
+  ;; alone.
+  (defun pg-other-window () (interactive) (other-window 1))
+  (defun pg-previous-window () (interactive) (other-window -1))
+
+  ;; Make the proxies accessible via C-x w, on the desired keys
+  (bind-key "C-x w \\" #'split-window-right)
+  (bind-key "C-x w -"  #'split-window-below)
+  (bind-key "C-x w |"  #'split-root-window-right)
+  (bind-key "C-x w _"  #'split-root-window-below)
+
+  ;; Put all these on the same repeating keymap to facilitate window
+  ;; configuration
+  (defvar-keymap pg-nav-repeat-map
+      :repeat t
+      "<left>"  #'windmove-swap-states-left
+      "<right>" #'windmove-swap-states-right
+      "<up>"    #'windmove-swap-states-up
+      "<down>"  #'windmove-swap-states-down
+      ">"       #'pg-right-side-current-buffer
+      "<"       #'pg-left-side-current-buffer
+      "o"       #'pg-other-window
+      "O"       #'pg-previous-window
+      "\\"      #'split-window-right
+      "-"       #'split-window-below
+      "|"       #'split-root-window-right
+      "_"       #'split-root-window-below
+      "d"       #'toggle-window-dedicated
+      "T"       #'pg-new-tab-current-buffer)
+#+end_src
+
+**** Parentheses/Brace-oriented editing
+
+#+begin_src emacs-lisp
+  ;; Parentheses (Not a programming mode! Everything can use matching
+  ;; braces.)
+  (use-package smartparens
+    :ensure smartparens
+    :bind (:map smartparens-mode-map
+                ("M-]" . 'sp-forward-sexp)
+                ("M-[" . 'sp-backward-sexp)
+                ("M-q" . 'sp-indent-defun)
+                ("M-r" . sp-splice-sexp-killing-around) ; "raise"
+                ("M-(" . sp-wrap-round)
+                ("C-<right>" . sp-forward-slurp-sexp)
+                ("C-<left>" . sp-forward-barf-sexp)
+                ("M-s" . sp-splice-sexp)
+                ("<C-M-S-backspace>" . 'kill-whole-line)
+                )
+    :hook ((prog-mode . smartparens-strict-mode)
+           ((text-mode markdown-mode) . smartparens-mode))
+    :config
+    (require 'smartparens-config)
+    )
+
+  (show-paren-mode 1)
+#+end_src
+
+
+
 
 *** Buffer name deduplication (=uniquify=)
 
@@ -434,33 +586,6 @@ You can replace these (and other) font faces yourself in number of places—the 
 #+begin_src emacs-lisp
   ;; Diminish minor modes
   (use-package diminish :demand t :ensure t)
-#+end_src
-
-*** Parentheses/Brace-oriented editing
-
-#+begin_src emacs-lisp
-  ;; Parentheses (Not a programming mode! Everything can use matching
-  ;; braces.)
-  (use-package smartparens
-    :ensure smartparens
-    :bind (:map smartparens-mode-map
-                ("M-]" . 'sp-forward-sexp)
-                ("M-[" . 'sp-backward-sexp)
-                ("M-q" . 'sp-indent-defun)
-                ("M-r" . sp-splice-sexp-killing-around) ; "raise"
-                ("M-(" . sp-wrap-round)
-                ("C-<right>" . sp-forward-slurp-sexp)
-                ("C-<left>" . sp-forward-barf-sexp)
-                ("M-s" . sp-splice-sexp)
-                ("<C-M-S-backspace>" . 'kill-whole-line)
-                )
-    :hook ((prog-mode . smartparens-strict-mode)
-           ((text-mode markdown-mode) . smartparens-mode))
-    :config
-    (require 'smartparens-config)
-    )
-
-  (show-paren-mode 1)
 #+end_src
 
 *** Open files with external application
@@ -514,26 +639,6 @@ It does other stuff too, much of it handy, but being able to create and destroy 
     :init
     (popper-mode +1)
     (popper-echo-mode +1))
-#+end_src
-
-*** Open current buffer in new tab
-
-[[https://www.gnu.org/software/emacs/manual/html_node/emacs/Tab-Bars.html][Tabs]] are a thing now. Type =C-x t C-H= and =TAB= for a list of available commands. Additional reading:
-
-  - [[https://mmk2410.org/2022/02/11/using-emacs-tab-bar-mode/][Using Emacs tab-bar-mode]] by Marcel Kapfer
-  - [[https://systemcrafters.net/emacs-tips/tab-bar-workspaces/][Organize Your Windows with the Tab Bar Emacs 27]] from System Crafters
-
-The default key bindings aren't too bad, especially with =repeat-mode= enabled.
-
-While ~tab-bar-new-tab~ will open a new, "blank" tab, it isn't bound to anything by default. I never get much value out of a "start page," but I often find I want to do spin out into a new task from a buffer I have to hand, so =pg-new-tab-current-buffer= is my "new tab" key.
-
-#+begin_src emacs-lisp
-  (defun pg-new-tab-current-buffer ()
-    (interactive)
-    "Create a new tab from the current buffer."
-    (switch-to-buffer-other-tab (current-buffer)))
-
-  (bind-key "C-x t >" #'pg-new-tab-current-buffer)
 #+end_src
 
 *** Provide
