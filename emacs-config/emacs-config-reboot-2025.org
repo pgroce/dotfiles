@@ -643,6 +643,16 @@ It does other stuff too, much of it handy, but being able to create and destroy 
     (popper-echo-mode +1))
 #+end_src
 
+*** Better mode line (=doom-mode-line=)
+
+I don't use all of Doom, but [[https://github.com/seagle0128/doom-modeline/tree/master][Doom modeline]] is great.
+
+#+begin_src emacs-lisp
+  (use-package doom-modeline
+    :ensure t
+    :hook (after-init . doom-modeline-mode))
+#+end_src
+
 *** Provide
 
 #+begin_src emacs-lisp
