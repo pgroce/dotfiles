@@ -235,7 +235,6 @@ Now I can keep bits configuration around for later, but turn it off while I'm no
 
 * Modules (=pg-modules/pg-*.el=)
 
-
 As mentioned previously, /modules/ are packages (that is, features are are =require='d). However, /in theory/ the code in each package should check a corresponding configuration feature (which is not an Emacs feature, naming is hard), and only load if that configuration feature is non-=nil=.
 
 That's the theory.
@@ -1414,7 +1413,7 @@ For the beautification bits, I have adapted my approach from [[https://sophiebos
       (org-meta-line (:inherit (font-lock-comment-face fixed-pitch)))
       ;;;
       (org-property-value (:inherit fixed-pitch))
-      (org-drawer (:inherit fixed-pitch ))
+      (org-drawer (:inherit fixed-pitch))
       (org-special-keyword (:inherit (font-lock-comment-face fixed-pitch)))
       ;;;
       (org-table (:inherit fixed-pitch :foreground "#83a598"))
