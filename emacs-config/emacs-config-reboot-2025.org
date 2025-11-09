@@ -1339,6 +1339,8 @@ For the beautification bits, I have adapted my approach from [[https://sophiebos
   (use-package org
     :defer t
     :hook ((org-mode . visual-line-mode))
+    :custom
+    ((org-hidden-keywords '(title)))
     :config
     (add-to-list 'org-modules 'org-tempo))
 
