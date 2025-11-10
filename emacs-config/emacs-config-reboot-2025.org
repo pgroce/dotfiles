@@ -160,6 +160,8 @@ To mitigate against this, I'm using what I'm calling /configuration features/, w
 
 Now I can keep bits configuration around for later, but turn it off while I'm not using it, or on specific machines where I don't need it.
 
+Ironically—for me, someone who doesn't like the customization interface—this setup will probably work flawlessly  if you use Customize to set the variables. As noted in the code comments, however, nothing happens without a reboot anyway. If you want to change the defaults, it's probably best to do it here, prior to installation. I realize this is awkward and may introduce a cleaner solution at some point, but this will have to do for now.
+
 #+begin_src emacs-lisp
   ;;;; Config Features
 
@@ -171,6 +173,10 @@ Now I can keep bits configuration around for later, but turn it off while I'm no
 
   (defcustom pg-cf-anki t
     "Config option to enable/disable anki-editor")
+
+  (defcustom pg-cf-python t
+    "Config option to enable/disable extra Python support (virtualenvs,
+  language servers, etc.)")
 
   ;; You have options in setting these. One is simply to change the
   ;; default values—nothing will happen without a reboot anyway. You can
@@ -1218,7 +1224,6 @@ More default settings, and plenty of them. I don't have opinions on much of it a
 #+end_src
 
 ** Development
-
 *** Common configuration (=pg-devel.el=)
 :PROPERTIES:
 :header-args: :tangle build/pg-modules/pg-devel.el
@@ -1322,6 +1327,16 @@ More default settings, and plenty of them. I don't have opinions on much of it a
     )
 
   (provide 'pg-devel-ansible)
+#+end_src
+
+*** Python
+:PROPERTIES:
+:header-args: :tangle build/pg-modules/pg-devel-python.el
+:END:
+
+
+#+begin_src emacs-lisp
+
 #+end_src
 
 ** Org mode (=pg-org=)
