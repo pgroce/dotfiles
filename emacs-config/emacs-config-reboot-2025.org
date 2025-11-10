@@ -241,7 +241,6 @@ Ironically—for me, someone who doesn't like the customization interface—this
 
 * Modules (=pg-modules/pg-*.el=)
 
-
 As mentioned previously, /modules/ are packages (that is, features are are =require='d). However, /in theory/ the code in each package should check a corresponding configuration feature (which is not an Emacs feature, naming is hard), and only load if that configuration feature is non-=nil=.
 
 That's the theory.
@@ -294,9 +293,12 @@ You can replace these (and other) font faces yourself in number of places—the 
   (pg-set-face-attribute 'default "Monaspace Neon Frozen"
     :height 130 :weight 'normal)
 
+  ;; https://www.programmingfonts.org/
+  (pg-set-face-attribute 'fixed-pitch "Monaspace Neon Frozen" :height .90)
+
   ;; https://fonts.google.com/specimen/EB+Garamond
   (pg-set-face-attribute 'variable-pitch "EB Garamond"
-    :height 180 :weight 'normal)
+    :height 1.3 :weight 'normal) ;180
 
   ;; https://www.programmingfonts.org/
   (pg-set-face-attribute 'mode-line "Monaspace Neon Frozen"
@@ -645,6 +647,16 @@ It does other stuff too, much of it handy, but being able to create and destroy 
     :init
     (popper-mode +1)
     (popper-echo-mode +1))
+#+end_src
+
+*** Better mode line (=doom-mode-line=)
+
+I don't use all of Doom, but [[https://github.com/seagle0128/doom-modeline/tree/master][Doom modeline]] is great.
+
+#+begin_src emacs-lisp
+  (use-package doom-modeline
+    :ensure t
+    :hook (after-init . doom-modeline-mode))
 #+end_src
 
 *** Provide
@@ -1352,6 +1364,8 @@ For the beautification bits, I have adapted my approach from [[https://sophiebos
   (use-package org
     :defer t
     :hook ((org-mode . visual-line-mode))
+    :custom
+    ((org-hidden-keywords '(title)))
     :config
     (add-to-list 'org-modules 'org-tempo))
 
@@ -1419,32 +1433,36 @@ For the beautification bits, I have adapted my approach from [[https://sophiebos
   ;; theme as much as possible.
   (defvar pg-org--beautify-fixed-pitch
     '((org-block (:inherit fixed-pitch))
-        (org-code (:inherit (shadow fixed-pitch)))
-        (org-document-info (:inherit fixed-pitch))
-        (org-document-info-keyword (:inherit (shadow fixed-pitch)))
-        (org-indent (:inherit (org-hide fixed-pitch)))
-        (org-meta-line (:inherit (font-lock-comment-face fixed-pitch)))
-        (org-property-value (:inherit fixed-pitch) t)
-        (org-special-keyword (:inherit (font-lock-comment-face fixed-pitch)))
-        (org-table (:inherit fixed-pitch :foreground "#83a598"))
-        (org-tag (:inherit (shadow fixed-pitch) :weight bold :height 0.8))
-        (org-verbatim (:inherit (shadow fixed-pitch)))
-        (org-date (:interit fixed-pitch))
-        (org-link (:weight bold :underline t))
-        (italic (:slant italic)))
+      (org-code (:inherit (shadow fixed-pitch)))
+      (org-document-info (:inherit fixed-pitch ))
+      (org-document-info-keyword (:inherit (shadow fixed-pitch)))
+      (org-indent (:inherit (org-hide fixed-pitch)))
+      (org-meta-line (:inherit (font-lock-comment-face fixed-pitch)))
+      ;;;
+      (org-property-value (:inherit fixed-pitch))
+      (org-drawer (:inherit fixed-pitch))
+      (org-special-keyword (:inherit (font-lock-comment-face fixed-pitch)))
+      ;;;
+      (org-table (:inherit fixed-pitch :foreground "#83a598"))
+      (org-tag (:inherit (shadow fixed-pitch) :weight bold))
+      (org-verbatim (:inherit (shadow fixed-pitch)))
+      (org-date (:interit fixed-pitch))
+      (org-link (:weight bold :underline t))
+      (italic (:slant italic)))
     "Org mode faces that should always be fixed-pitch")
 
   (defvar pg-org--beautify-headlines
-    (let ((headline '(:family "Optima" :slant italic)))
+    (let ((headline '(:family "Optima"))
+          (headline-sm '(:family "Optima" :slant italic)))
       `((org-document-title (,@headline :height 2.0))
         (org-level-1 (,@headline :height 1.75))
         (org-level-2 (,@headline :height 1.4))
         (org-level-3 (,@headline :height 1.3))
-        (org-level-4 (,@headline :height 1.2))
-        (org-level-5 (,@headline :height 1.1))
-        (org-level-6 (,@headline :height 1.1))
-        (org-level-7 (,@headline :height 1.1))
-        (org-level-8 (,@headline :height 1.1))))
+        (org-level-4 (,@headline-sm :height 1.2))
+        (org-level-5 (,@headline-sm :height 1.1))
+        (org-level-6 (,@headline-sm :height 1.1))
+        (org-level-7 (,@headline-sm :height 1.1))
+        (org-level-8 (,@headline-sm :height 1.1))))
     "Org mode faces representing headlines (and titles), with beautified
   sizes.")
 
