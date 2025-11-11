@@ -215,7 +215,7 @@ Ironically—for me, someone who doesn't like the customization interface—this
 
   (require 'pg-org)
   (require 'pg-anki)
-  (require 'pg-pandoc)
+  (require 'pg-pandoc-config)
 #+end_src
 
 ** Emacs server
@@ -637,7 +637,8 @@ It does other stuff too, much of it handy, but being able to create and destroy 
         "^\\*eshell.*\\*$" eshell-mode
         "^\\*shell.*\\*$"  shell-mode
         "^\\*term.*\\*$"   term-mode
-        "^\\*vterm.*\\*$"  vterm-mode))
+        "^\\*vterm.*\\*$"  vterm-mode
+        "\\*Backtrace\\*"))
      (popper-window-height
       (lambda (win)
         (fit-window-to-buffer
@@ -1346,10 +1347,18 @@ More default settings, and plenty of them. I don't have opinions on much of it a
 :header-args: :tangle build/pg-modules/pg-devel-python.el
 :END:
 
+My =autovenv= package automatically sets the appropriate virtual environment for each buffer.
 
 #+begin_src emacs-lisp
 
+  (use-package autovenv
+    :ensure t
+    :hook ((eshell-directory-change-hook . autovenv-find-and-activate)
+           ((window-buffer-change-functions
+             window-selection-change-functions) . autovenv-window-function)))
 #+end_src
+
+[[https://github.com/pythonic-emacs/pyenv-mode][Pyenv mode]]
 
 ** Org mode (=pg-org=)
 :PROPERTIES:
@@ -1635,10 +1644,15 @@ For the beautification bits, I have adapted my approach from [[https://sophiebos
   (provide 'pg-anki)
 #+end_src
 
-** Pandoc (=pg-pandoc=)
+** Pandoc (=pg-pandoc-config=)
 :PROPERTIES:
-:header-args: :tangle build/pg-modules/pg-pandoc.el
+:header-args: :tangle build/pg-modules/pg-pandoc-config.el
 :END:
+
+Naming this weirdly so it doesn't conflict with the library name.
+
+In the time since I wrote this Joost Kremers appears to have written a [[https://joostkremers.github.io/pandoc-mode/][Pandoc mode]] that looks much nicer than my little library for general use. AFAICT, however, it doesn't support the functionality of ~pg-pandoc-org-subtree~ at all, and the rest of my use cases tend to be "Convert this markup file to DOCX so I can copy/paste it into an Office product," which ~pg-pandoc-current-buffer~ does quite adequately.
+
 #+begin_src emacs-lisp
   (pg-if-available "pandoc"
     "Install «pandoc» to convert org subtrees and buffers to other formats.")
@@ -1647,7 +1661,7 @@ For the beautification bits, I have adapted my approach from [[https://sophiebos
     :ensure t
     :commands
     (pg-pandoc-org-subtree pg-pandoc-current-buffer))
-  (provide 'pg-pandoc)
+  (provide 'pg-pandoc-config)
 #+end_src
 
 * MacOS Platform Config File (=darwin.el=)
