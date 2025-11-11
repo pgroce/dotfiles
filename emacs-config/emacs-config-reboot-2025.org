@@ -64,7 +64,10 @@ I set most of my =defcustom= variables in my config either with =setopt= or with
 
 #+end_src
 
-If you do want to use Customize, you can instead keep the file around and load it in your init. The following illustrates a way to do so that plays nicely with my config framework. My policy is to use =defcustom= for anything I regard as a configuration parameter, so if you're okay with multiple sources of truth, go for it.
+As satisfying as that is, I have one use case for Customize that I find compelling: storing [[#configuration-features][configuration features]] for this config.
+I therefore use the following in my own configuration file.
+
+My policy is to use =defcustom= for anything I regard as a configuration parameter, so if you're okay with multiple sources of truth, go for it. Just consider checking the file from time to time to make sure nothing's been inadvertently been retained in there. (This happens to me frequently when I experiment with fonts.)
 
 #+begin_src emacs-lisp
   ;;; No, really, customize this
