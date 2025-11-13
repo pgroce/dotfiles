@@ -1383,9 +1383,65 @@ The ~eglot-server-programs~ variable is an enormous mess and I don't see how usi
          '(("ruff" "server") ("basedpyright-langserver" "--stdio"))))))
 #+end_src
 
+**** Projects, Eglot, and LSPs
+:PROPERTIES:
+:CUSTOM_ID: eglot
+:header-args: :tangle no
+:END:
+
+This is a problem I ran into and a fix. Not one that I want to bake into my config, but I think a note about it here will be useful.
+
+Consider a monorepo =src= with two Python projects =src/py-a= and =src/py-b=. They are both managed as independent projects with =py-a/.venv= and =py-b/.venv= virtual environments. The =.git= directory, of course, is in =src=.
+
+Eglot, in my experience, will find and use the proper LSP and virtualenv if =exec-path= et al. are set correctly. By default, however, it will use a project root of =src=, because that's where =git= is. We want it to use =src/py-a= (or =py-b=) because that's the logical root of our Python project. It's where =basedpyright= will output stub files, for instance, and where =uv= thinks the project root is.
+
+***** The Fix
+
+The fix for this (well, /a/ fix) is the following:
+
+#+begin_src emacs-lisp
+  (defun pg-find-subproject (dir)
+    "Use the nearest parent directory containing a \"subproject.org\" file as
+  the project root. Used to tag subdirectories of VC repositories that
+  should be regarded as separate projects.
+
+  The file can be empty, but the .org prefix was chosen to make it a
+  useful file for taking subproject notes, should that be desired."
+    (when-let* ((df (locate-dominating-file dir ".subproject")))
+      (cons 'transient df)))
+
+  (add-hook 'project-find-functions #'pg-find-subproject)
 #+end_src
 
-[[https://github.com/pythonic-emacs/pyenv-mode][Pyenv mode]]
+***** The Explanation
+
+Exactly why this works is described below.
+
+More precisely, Eglot relies on =project-find-functions= from =project.el=. [fn:: Projectile plays nicely with this; [[https://www.unwoundstack.com/blog/eglot-finding-sub-projects.html][Unwound Stack]] has a similar article to this note about using Projectile with Eglot and subprojects.] The default value of =project-find-functions= is ='(project-try-vc)=. So Eglot will ask =project-find-functions= where the project root is, and by default, =project-root-functions= will return whatever the root of version control is.
+
+You can customize this behavior, for instance to root your project at the location of a canary file like =.subproject=. (Another very reasonable alternative is =pyproject.toml=, but I decided I didn't want "Python is project root" to trump "Git is project root" as general behavior; see also [[#eglot-caveat][A Caveat]].) A complication, however, is that an element of =project-find-functions= has a special return type. On success, for instance, =project-try-vc= in the above example will return ~(vc Git "~/src/dotfiles/")~.
+
+The =project-find-functions= help text isn't very helpful: We are told it should return "...a project instance. The exact form of the project instance is up to each respective function; the only practical limitation is to use values that ~cl-defmethod~ can dispatch on, like a cons cell, or a list, or a CL struct." What it really means is that it should be a value corresponding to one of the backends in =project.el=, which are implemented using =cl-defmethod=. That is to say, you need to return something that plays nicely with one of =project='s existing backends, or write one yourself.
+
+This would be a blocker for me—I'm not writing a whole project backend, that's work—but fortunately a suitable last-ditch backend already exists. The =project.el= library implements a =transient= backend for projects arbitrarily supplied by users as a path; it assumes the project root is the supplied directory, and has defined methods for finding files, directories, etc., using the file system.
+
+***** A Caveat
+:PROPERTIES:
+:CUSTOM_ID: eglot-caveat
+:END:
+
+One thing to be aware of here: None of the project-based VC commands will work, because the root of your project is no longer your VC root. The right answer here really is to write a new backend. Absent that, you have to pick your poison: Do you want =project.el= to play nicely with your Python subproject, or your Git project?
+
+You have four alternatives, as I see it:
+
+ 1. Change into your VC project root and type =M-x magit= (or whatever) there. Or use =git= from the command line. These both work fine, though they're not as frictionless as =C-x C-p e=.
+ 2. If you delete =.subproject=, this behavior goes away and you can use the location of =.git= as your project root again. This is another reason to make this file something you can get rid of, and not something important like =pyproject.toml=.
+ 3. A variation of the previous option is to set =project-find-functions= in =.dir-locals.el=. If you want this behavior consistently in some directories but not in others and you don't want to delete the canary file, this may be more convenient.
+ 4. You can modify =project-find-functions= to disable =pg-find-subproject= globally, possibly in a command bound to a key so you could move quickly between them. It's more work, but if you did it this way you could use files like =pyproject.toml= that should stick around. The limit of this thinking is a fully-fledged UI for manipulating =project-find-functions=, which seems like a /lot/ more work, but also a fun project if you want to learn more elisp.
+
+I am going with Options 1 and 2 for now.
+
+
 
 ** Org mode (=pg-org=)
 :PROPERTIES:
