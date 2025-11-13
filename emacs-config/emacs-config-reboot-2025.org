@@ -1347,7 +1347,11 @@ More default settings, and plenty of them. I don't have opinions on much of it a
 :header-args: :tangle build/pg-modules/pg-devel-python.el
 :END:
 
-My =autovenv= package automatically sets the appropriate virtual environment for each buffer.
+My =autovenv= package automatically sets the appropriate virtual environment for each buffer. [[https://github.com/pythonic-emacs/pyenv-mode][Pyenv mode]] sets some additional context which is used by =python.el=, =doom-modeline=, and (I assume) others.
+
+The ~eglot-server-programs~ variable is an enormous mess and I don't see how using ~add-to-list~ here makes it any better, but this is apprently [[https://www.gnu.org/software/emacs/manual/html_node/eglot/Setting-Up-LSP-Servers.html][the canonical way to customize servers for Eglot]].
+
+
 
 #+begin_src emacs-lisp
 
@@ -1356,6 +1360,29 @@ My =autovenv= package automatically sets the appropriate virtual environment for
     :hook ((eshell-directory-change-hook . autovenv-find-and-activate)
            ((window-buffer-change-functions
              window-selection-change-functions) . autovenv-window-function)))
+
+  ;; Autovenv sets VIRTUAL_ENV and adds the venv to exec-path and
+  ;; PATH. Pyenv doesn't set any of those (it sets other things), but it
+  ;; doesn't handle locating the virtual environment. So hook Pyenv into
+  ;; Autovenv and get the best of both worlds.
+
+  (defun pg-pyenv-on-activate () (pyenv-mode-set (autovenv-get)))
+  (defun pg-pyenv-on-deactivate () (pyenv-mode-unset))
+  (use-package pyenv-mode
+    :ensure t
+    :config (pyenv-mode)
+    :hook ((autovenv-post-activate-hook . pg-pyenv-on-activate)
+           (autovenv-pre-deactivate-hook . pg-pyenv-on-deactivate)))
+
+  (with-eval-after-load 'eglot
+    (add-to-list
+     'eglot-server-programs
+     `(python-mode
+       .
+       ,(eglot-alternatives
+         '(("ruff" "server") ("basedpyright-langserver" "--stdio"))))))
+#+end_src
+
 #+end_src
 
 [[https://github.com/pythonic-emacs/pyenv-mode][Pyenv mode]]
