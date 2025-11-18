@@ -1468,7 +1468,20 @@ The fix for this (well, /a/ fix) is the following:
     (when-let* ((df (locate-dominating-file dir ".subproject")))
       (cons 'transient df)))
 
-  (add-hook 'project-find-functions #'pg-find-subproject)
+  (defun pg-set-subproject-support (sym new-val)
+    (delete-hook 'project-find-functions #'pg-find-subproject)
+    (when (not (eq new-val nil))
+      (add-hook 'project-find-functions #'pg-find-subproject)))
+
+  (defcustom pg-subproject-support nil
+    "If enabled, `project-root' will be found if a .subproject file is
+  present in this or a parent director, effectively creating
+  subprojects. These aren't as fast as regular projects, so you should
+  only enable this if the default behavior is causing problems."
+    :type 'boolean
+    :group 'pg-config
+    :set #'pg-set-subproject-support)
+
 #+end_src
 
 ***** The Explanation
