@@ -1397,11 +1397,12 @@ The ~eglot-server-programs~ variable is an enormous mess and I don't see how usi
 
 
 
+
 #+begin_src emacs-lisp
-  (message "!!!!! pg-cf-python is %s" pg-cf-python)
   (use-package autovenv
     :ensure t
     :if pg-cf-python
+    :functions (autovenv-find-and-activate autovenv-window-function)
     :hook ((eshell-directory-change-hook . autovenv-find-and-activate)
            ((window-buffer-change-functions
              window-selection-change-functions) . autovenv-window-function)))
@@ -1429,9 +1430,15 @@ The ~eglot-server-programs~ variable is an enormous mess and I don't see how usi
            '(("ruff" "server") ("basedpyright-langserver" "--stdio")))))))
 
 
+#+end_src
+
+***** Provide
+
+#+begin_src emacs-lisp
   (provide 'pg-devel-python)
 
   ;;; pg-devel-python.el ends here
+
 #+end_src
 
 **** Projects, Eglot, and LSPs
