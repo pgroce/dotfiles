@@ -231,6 +231,7 @@ Ironically—for me, someone who doesn't like the customization interface—this
   (require 'pg-devel)
   (require 'pg-devel-yaml)
   (require 'pg-devel-ansible)
+  (require 'pg-devel-python)
 
   (require 'pg-org)
   (require 'pg-anki)
@@ -284,6 +285,8 @@ In practice, I haven't implemented that conditionality for a number of these mod
 
 
   (provide 'pg-themes)
+
+  ;;; pg-themes.el ends here
 
 #+end_src
 
@@ -386,6 +389,8 @@ You can replace these (and other) font faces yourself in number of places—the 
 
 #+begin_src emacs-lisp
   (provide 'pg-fonts)
+
+  ;;; pg-fonts.el ends here
 #+end_src
 
 ** Other UI elements (=pg-ui-misc.el=)
@@ -683,6 +688,8 @@ I don't use all of Doom, but [[https://github.com/seagle0128/doom-modeline/tree/
 
 #+begin_src emacs-lisp
   (provide 'pg-ui-misc)
+
+  ;;; pg-ui-misc.el ends here
 #+end_src
 
 ** Completion
@@ -752,6 +759,8 @@ I don't use all of Doom, but [[https://github.com/seagle0128/doom-modeline/tree/
 
 #+begin_src emacs-lisp
   (provide 'pg-completion-minibuffer)
+
+  ;;; pg-completion-minibuffer.el ends here
 #+end_src
 
 *** Selection (=pg-completion-selection.el=)
@@ -897,6 +906,8 @@ I don't use all of Doom, but [[https://github.com/seagle0128/doom-modeline/tree/
 
 #+begin_src emacs-lisp
   (provide 'pg-completion-selection)
+
+  ;;; pg-completion-selection.el ends here
 #+end_src
 
 *** In the main buffer (=pg-completion-in-buffer.el=)
@@ -1001,6 +1012,8 @@ I don't use all of Doom, but [[https://github.com/seagle0128/doom-modeline/tree/
 
 #+begin_src emacs-lisp
   (provide 'pg-completion-in-buffer)
+
+  ;;; pg-completion-in-buffer.el ends here
 #+end_src
 
 *** Context actions: Embark (=pg-context-actions.el=)
@@ -1053,6 +1066,8 @@ I don't use all of Doom, but [[https://github.com/seagle0128/doom-modeline/tree/
 
 
   (provide 'pg-context-actions)
+
+  ;;; pg-context-actions.el ends here
 #+end_src
 
 **** Integration with =consult= (=embark-consult=)
@@ -1192,6 +1207,8 @@ More default settings, and plenty of them. I don't have opinions on much of it a
 
 #+begin_src emacs-lisp
   (provide 'pg-dired)
+
+  ;;; pg-dired.el ends here
 #+end_src
 
 ** Shells and Serial Terminals (=pg-serial-terminal.el=)
@@ -1253,6 +1270,8 @@ More default settings, and plenty of them. I don't have opinions on much of it a
 
 #+begin_src emacs-lisp
   (provide 'pg-serial-terminal)
+
+  ;;; pg-serial-terminal.el ends here
 #+end_src
 
 ** Development
@@ -1302,6 +1321,8 @@ More default settings, and plenty of them. I don't have opinions on much of it a
 
 #+begin_src emacs-lisp
   (provide 'pg-devel)
+
+  ;;; pg-devel.el ends here
 #+end_src
 
 *** YAML (=pg-devel-yaml.el=)
@@ -1320,6 +1341,8 @@ More default settings, and plenty of them. I don't have opinions on much of it a
     :mode "\\.ya?ml\\'")
 
   (provide 'pg-devel-yaml)
+
+  ;;; pg-devel-yaml.el ends here
 #+end_src
 
 **** Ansible (=pg-devel-ansible.el=)
@@ -1359,6 +1382,8 @@ More default settings, and plenty of them. I don't have opinions on much of it a
     )
 
   (provide 'pg-devel-ansible)
+
+  ;;; pg-devel-ansible.el ends here
 #+end_src
 
 *** Python
@@ -1373,9 +1398,10 @@ The ~eglot-server-programs~ variable is an enormous mess and I don't see how usi
 
 
 #+begin_src emacs-lisp
-
+  (message "!!!!! pg-cf-python is %s" pg-cf-python)
   (use-package autovenv
     :ensure t
+    :if pg-cf-python
     :hook ((eshell-directory-change-hook . autovenv-find-and-activate)
            ((window-buffer-change-functions
              window-selection-change-functions) . autovenv-window-function)))
@@ -1385,21 +1411,27 @@ The ~eglot-server-programs~ variable is an enormous mess and I don't see how usi
   ;; doesn't handle locating the virtual environment. So hook Pyenv into
   ;; Autovenv and get the best of both worlds.
 
-  (defun pg-pyenv-on-activate () (pyenv-mode-set (autovenv-get)))
-  (defun pg-pyenv-on-deactivate () (pyenv-mode-unset))
-  (use-package pyenv-mode
-    :ensure t
-    :config (pyenv-mode)
-    :hook ((autovenv-post-activate-hook . pg-pyenv-on-activate)
-           (autovenv-pre-deactivate-hook . pg-pyenv-on-deactivate)))
+  (when pg-cf-python
+    (defun pg-pyenv-on-activate () (pyenv-mode-set (autovenv-get-python-version)))
+    (defun pg-pyenv-on-deactivate () (pyenv-mode-unset))
+    (use-package pyenv-mode
+      :ensure t
+      :config (pyenv-mode)
+      :hook ((autovenv-post-activate-hook . pg-pyenv-on-activate)
+             (autovenv-pre-deactivate-hook . pg-pyenv-on-deactivate)))
 
-  (with-eval-after-load 'eglot
-    (add-to-list
-     'eglot-server-programs
-     `(python-mode
-       .
-       ,(eglot-alternatives
-         '(("ruff" "server") ("basedpyright-langserver" "--stdio"))))))
+    (with-eval-after-load 'eglot
+      (add-to-list
+       'eglot-server-programs
+       `(python-mode
+         .
+         ,(eglot-alternatives
+           '(("ruff" "server") ("basedpyright-langserver" "--stdio")))))))
+
+
+  (provide 'pg-devel-python)
+
+  ;;; pg-devel-python.el ends here
 #+end_src
 
 **** Projects, Eglot, and LSPs
@@ -1628,6 +1660,8 @@ For the beautification bits, I have adapted my approach from [[https://sophiebos
 
   (provide 'pg-org)
 
+
+  ;;; pg-org.el ends here
 #+end_src
 
 ** Anki (=pg-anki=)
@@ -1744,6 +1778,8 @@ For the beautification bits, I have adapted my approach from [[https://sophiebos
 
 
   (provide 'pg-anki)
+
+  ;;; pg-anki.el ends here
 #+end_src
 
 ** Pandoc (=pg-pandoc-config=)
@@ -1764,6 +1800,8 @@ In the time since I wrote this Joost Kremers appears to have written a [[https:/
     :commands
     (pg-pandoc-org-subtree pg-pandoc-current-buffer))
   (provide 'pg-pandoc-config)
+
+  ;;; pg-pandoc-config.el ends here
 #+end_src
 
 * MacOS Platform Config File (=darwin.el=)
