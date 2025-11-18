@@ -76,6 +76,14 @@ My policy is to use =defcustom= for anything I regard as a configuration paramet
     (load custom-file))
 #+end_src
 
+Regardless, I do /define/ custom variables, and want them grouped.
+
+#+begin_src emacs-lisp
+  (defgroup pg-config '()
+    "Configuration parameters for pg-config"
+    :group 'emacs)
+#+end_src
+
 ** Bring in foundation libraries
 
 [[https://github.com/NicolasPetton/seq.el?tab=readme-ov-file][Seq]], [[https://github.com/magnars/dash.el][Dash]], and [[https://github.com/magnars/s.el][S]] are tremendously useful libraries for writing Emacs Lisp on top of. [[https://github.com/pgroce/emacs-pkgs/blob/master/pg-util.org][PG Util]] is a set of similar functions I've collected over the years. (I should check and see if I can retire some of them now.) [[https://github.com/pgroce/emacs-pkgs/blob/master/pg-shell-path.org][PG Shell Path]] is a sort of list manipulation library for strings that use shell path variable syntax.
@@ -169,17 +177,25 @@ Ironically—for me, someone who doesn't like the customization interface—this
   ;;;; Config Features
 
   (defcustom pg-cf-yaml t
-    "Config option to enable/disable YAML mode")
+    "Config option to enable/disable YAML mode"
+    :type 'boolean
+    :group 'pg-config)
 
   (defcustom pg-cf-ansible t
-    "Config option to enable/disable YAML mode")
+    "Config option to enable/disable YAML mode"
+    :type 'boolean
+    :group 'pg-config)
 
   (defcustom pg-cf-anki t
-    "Config option to enable/disable anki-editor")
+    "Config option to enable/disable anki-editor"
+    :type 'boolean
+    :group 'pg-config)
 
   (defcustom pg-cf-python t
     "Config option to enable/disable extra Python support (virtualenvs,
-  language servers, etc.)")
+  language servers, etc.)"
+    :type 'boolean
+    :group 'pg-config)
 
   ;; You have options in setting these. One is simply to change the
   ;; default values—nothing will happen without a reboot anyway. You can
