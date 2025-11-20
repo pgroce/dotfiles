@@ -1358,7 +1358,7 @@ The fix for this (well, /a/ fix) is the following (disabled by default). It allo
 
 #+end_src
 
-I prefer to change the project root only when starting language servers. I therefore enable the (somewhat hairier) following code by default.
+I prefer to change the project root only when starting language servers. I therefore enable the (somewhat hairier) following code by default. (Credit to [[https://gist.github.com/pesterhazy/e8e445e6715f5d8bae3c62bc9db32469][this Gist]] for introducing me to =eglot-server-context=.)
 
 #+begin_src emacs-lisp
 
@@ -1372,6 +1372,19 @@ I prefer to change the project root only when starting language servers. I there
   ;; true. `pg-directory-distance-from-ancestor' may also be of general
   ;; value.
   ;;
+
+  ;; There are two reasonable ways to go about finding the relative
+  ;; depth of the current directory from the subproject directory. One
+  ;; is to re-implement a version of `locate-dominating-file', tracking
+  ;; and returning the relative depth. The other, implemented here, is
+  ;; to identify the enclosing project directory with
+  ;; `locate-dominating-file' and determine relative depth by analyzing
+  ;; the two filenames.
+  ;;
+  ;; This approach might do a touch more work, but it is more modular
+  ;; (the depth-finding function may be useful elsewhere), and the code
+  ;; maintained for this project is smaller and simpler.
+
 
   (defun pg-directory-distance-from-ancestor (dir ancestor)
     "Return the distance of DIR from its ANCESTOR. Returns 0 if they are the
