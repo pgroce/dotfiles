@@ -1474,32 +1474,19 @@ I prefer to change the project root only when starting language servers. I there
 
 ***** The Explanation
 
-Exactly why this works is described below.
+It took me a while to get my head around this, so herewith are some notes and references.
 
-More precisely, Eglot relies on =project-find-functions= from =project.el=. [fn:: Projectile plays nicely with this; [[https://www.unwoundstack.com/blog/eglot-finding-sub-projects.html][Unwound Stack]] has a similar article to this note about using Projectile with Eglot and subprojects.] The default value of =project-find-functions= is ='(project-try-vc)=. So Eglot will ask =project-find-functions= where the project root is, and by default, =project-root-functions= will return whatever the root of version control is.
+The =project-find-functions= help text isn't very helpful: We are told it should return "...a project instance. The exact form of the project instance is up to each respective function; the only practical limitation is to use values that ~cl-defmethod~ can dispatch on, like a cons cell, or a list, or a CL struct." What it really means is that it should be a value corresponding to one of the backends in =project.el=, which are implemented using =cl-defmethod=. (Making the self-documenting features of Emacs less helpful.) That is to say, you need to return something that plays nicely with one of =project='s existing backends, or write one yourself. [fn:: Projectile plays nicely with this; [[https://www.unwoundstack.com/blog/eglot-finding-sub-projects.html][Unwound Stack]] has a similar article to this note about using Projectile with Eglot and subprojects.]
+
+The default value of =project-find-functions= is ='(project-try-vc)=. So Eglot will ask =project-find-functions= where the project root is, and by default, =project-root-functions= will return whatever the root of version control is.
+
+The =project-try-vc= function, adhering to what =project.el= expects,  returns a =cons= cell whose =car= is a symbol indicating the type of project, in this case =vc=. The =cdr= is a list whose length and elements are project-specific. =vc= requires two elements in this list:[fn:: This means, of course, that the return value of =project-try-vc= is equivalent to a three-element list.] a symbol indicating what type of (supported) version control system is used, and the path to the project root. An example: ~(vc Git "~~/src/dotfiles/")~.
+
+The =project.el= library supports a number of version control backends—Git, Mercurial, and so on—all supported through the =vc= project type. Additionally, it provides a =transient= project type, which assumes only that the project root is a directory and uses filesystem queries to support project commands.
+
+The most conservative approach, then, is to use the =transient= backend with the subproject directory of your choice. This works, but it's much slower than the VC backends. Surprisingly, however, you don't have to specify the root of the VC project to use the VC backends! The =project.el= libraries requirements of the VC backend are very modest, so it just doesn't come up.
 
 You can customize this behavior, for instance to root your project at the location of a canary file like =.subproject=. (Another very reasonable alternative is =pyproject.toml=, but I decided I didn't want "Python is project root" to trump "Git is project root" as general behavior; see also [[#eglot-caveat][A Caveat]].) A complication, however, is that an element of =project-find-functions= has a special return type. On success, for instance, =project-try-vc= in the above example will return ~(vc Git "~/src/dotfiles/")~.
-
-The =project-find-functions= help text isn't very helpful: We are told it should return "...a project instance. The exact form of the project instance is up to each respective function; the only practical limitation is to use values that ~cl-defmethod~ can dispatch on, like a cons cell, or a list, or a CL struct." What it really means is that it should be a value corresponding to one of the backends in =project.el=, which are implemented using =cl-defmethod=. That is to say, you need to return something that plays nicely with one of =project='s existing backends, or write one yourself.
-
-This would be a blocker for me—I'm not writing a whole project backend, that's work—but fortunately a suitable last-ditch backend already exists. The =project.el= library implements a =transient= backend for projects arbitrarily supplied by users as a path; it assumes the project root is the supplied directory, and has defined methods for finding files, directories, etc., using the file system.
-
-***** A Caveat
-:PROPERTIES:
-:CUSTOM_ID: eglot-caveat
-:END:
-
-One thing to be aware of here: None of the project-based VC commands will work, because the root of your project is no longer your VC root. The right answer here really is to write a new backend. Absent that, you have to pick your poison: Do you want =project.el= to play nicely with your Python subproject, or your Git project?
-
-You have four alternatives, as I see it:
-
- 1. Change into your VC project root and type =M-x magit= (or whatever) there. Or use =git= from the command line. These both work fine, though they're not as frictionless as =C-x C-p e=.
- 2. If you delete =.subproject=, this behavior goes away and you can use the location of =.git= as your project root again. This is another reason to make this file something you can get rid of, and not something important like =pyproject.toml=.
- 3. A variation of the previous option is to set =project-find-functions= in =.dir-locals.el=. If you want this behavior consistently in some directories but not in others and you don't want to delete the canary file, this may be more convenient.
- 4. You can modify =project-find-functions= to disable =pg-find-subproject= globally, possibly in a command bound to a key so you could move quickly between them. It's more work, but if you did it this way you could use files like =pyproject.toml= that should stick around. The limit of this thinking is a fully-fledged UI for manipulating =project-find-functions=, which seems like a /lot/ more work, but also a fun project if you want to learn more elisp.
-
-I am going with Options 1 and 2 for now.
-
 
 
 **** Provide
