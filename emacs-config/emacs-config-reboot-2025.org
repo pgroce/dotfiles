@@ -1571,14 +1571,13 @@ I am going with Options 1 and 2 for now.
   ;;; pg-devel-ansible.el ends here
 #+end_src
 
-*** Python
+*** Python (=pg-devel-python=)
 :PROPERTIES:
 :header-args: :tangle build/pg-modules/pg-devel-python.el
 :END:
 
 My =autovenv= package automatically sets the appropriate virtual environment for each buffer. [[https://github.com/pythonic-emacs/pyenv-mode][Pyenv mode]] sets some additional context which is used by =python.el=, =doom-modeline=, and (I assume) others.
 
-The ~eglot-server-programs~ variable is an enormous mess and I don't see how using ~add-to-list~ here makes it any better, but this is apprently [[https://www.gnu.org/software/emacs/manual/html_node/eglot/Setting-Up-LSP-Servers.html][the canonical way to customize servers for Eglot]].
 
 
 
@@ -1604,15 +1603,7 @@ The ~eglot-server-programs~ variable is an enormous mess and I don't see how usi
       :ensure t
       :config (pyenv-mode)
       :hook ((autovenv-post-activate-hook . pg-pyenv-on-activate)
-             (autovenv-pre-deactivate-hook . pg-pyenv-on-deactivate)))
-
-    (with-eval-after-load 'eglot
-      (add-to-list
-       'eglot-server-programs
-       `(python-mode
-         .
-         ,(eglot-alternatives
-           '(("ruff" "server") ("basedpyright-langserver" "--stdio")))))))
+             (autovenv-pre-deactivate-hook . pg-pyenv-on-deactivate))))
 
 
 #+end_src
