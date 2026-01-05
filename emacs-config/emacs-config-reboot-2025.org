@@ -1178,11 +1178,15 @@ More default settings, and plenty of them. I don't have opinions on much of it a
     (setq dirvish-attributes           ; The order *MATTERS* for some attributes
           '(vc-state subtree-state nerd-icons collapse git-msg file-time file-size)
           dirvish-side-attributes
-          '(vc-state nerd-icons collapse file-size))
+          '(vc-state nerd-icons collapse file-size)
+          dirvish-side-display-alist
+          '((side . right) (slot . 1)))
     ;; open large directory (over 20000 files) asynchronously with `fd' command
     (setq dirvish-large-directory-threshold 20000)
     :bind ; Bind `dirvish-fd|dirvish-side|dirvish-dwim' as you see fit
     (("C-c f" . dirvish)
+     :map project-prefix-map
+     ("D" . dirvish-side)                ; Open a Dirvish side window
      :map dirvish-mode-map               ; Dirvish inherits `dired-mode-map'
      (";"   . dired-up-directory)        ; So you can adjust `dired' bindings here
      ("?"   . dirvish-dispatch)          ; [?] a helpful cheatsheet
