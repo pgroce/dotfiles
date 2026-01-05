@@ -1340,7 +1340,7 @@ Eglot, in my experience, will find and use the proper LSP and virtualenv if =exe
 
 The fix for this (well, /a/ fix) is the following (disabled by default). It allows one to set arbitrary subprojects by creating a =.subproject= file in a directory. However, project commands are slower because it uses the =transient= project type rather than the =vc= type . The former uses the filesystem to serve project commands, the latter uses a vesion control system. (If you'll never use this outside version control, you should be fine changing ='transient= below to ='vc=.)
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle no
   (defun pg-find-subproject (dir)
     "Use the nearest parent directory containing a \"subproject.org\" file as
   the project root. Used to tag subdirectories of VC repositories that
@@ -1349,7 +1349,7 @@ The fix for this (well, /a/ fix) is the following (disabled by default). It allo
   The file can be empty, but the .org prefix was chosen to make it a
   useful file for taking subproject notes, should that be desired."
     (when-let* ((df (locate-dominating-file dir ".subproject")))
-      (cons 'transient df)))
+      (cons 'transient df))) ;; could also use (list 'vc 'git df)
 
   (defun pg-set-subproject-support (sym new-val)
     (set sym new-val)
