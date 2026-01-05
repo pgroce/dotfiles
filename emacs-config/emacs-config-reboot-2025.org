@@ -517,6 +517,15 @@ The ~defvar-keymap~ macro is new in Emacs 29. There's more info, including a gre
      ("C-x w <right>". windmove-swap-states-right)
      ("C-x w <up>"   . windmove-swap-states-up)
      ("C-x w <down>" . windmove-swap-states-down)))
+
+  ;; Use C-x O to switch to the previous window in the order, not the
+  ;; next. This provides consistency with the pg-nav-repeat-map.
+  (defun pg-previous-window ()
+    "Select the previous window in cyclic ordering of windows."
+    (interactive)
+    (other-window -1))
+
+  (bind-key "C-x O" #'pg-previous-window)
 #+end_src
 
 **** Window management repeat map
