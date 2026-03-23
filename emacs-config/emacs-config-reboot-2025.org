@@ -517,6 +517,15 @@ The ~defvar-keymap~ macro is new in Emacs 29. There's more info, including a gre
      ("C-x w <right>". windmove-swap-states-right)
      ("C-x w <up>"   . windmove-swap-states-up)
      ("C-x w <down>" . windmove-swap-states-down)))
+
+  ;; Use C-x O to switch to the previous window in the order, not the
+  ;; next. This provides consistency with the pg-nav-repeat-map.
+  (defun pg-previous-window ()
+    "Select the previous window in cyclic ordering of windows."
+    (interactive)
+    (other-window -1))
+
+  (bind-key "C-x O" #'pg-previous-window)
 #+end_src
 
 **** Window management repeat map
@@ -1185,11 +1194,15 @@ More default settings, and plenty of them. I don't have opinions on much of it a
     (setq dirvish-attributes           ; The order *MATTERS* for some attributes
           '(vc-state subtree-state nerd-icons collapse git-msg file-time file-size)
           dirvish-side-attributes
-          '(vc-state nerd-icons collapse file-size))
+          '(vc-state nerd-icons collapse file-size)
+          dirvish-side-display-alist
+          '((side . right) (slot . 1)))
     ;; open large directory (over 20000 files) asynchronously with `fd' command
     (setq dirvish-large-directory-threshold 20000)
     :bind ; Bind `dirvish-fd|dirvish-side|dirvish-dwim' as you see fit
     (("C-c f" . dirvish)
+     :map project-prefix-map
+     ("D" . dirvish-side)                ; Open a Dirvish side window
      :map dirvish-mode-map               ; Dirvish inherits `dired-mode-map'
      (";"   . dired-up-directory)        ; So you can adjust `dired' bindings here
      ("?"   . dirvish-dispatch)          ; [?] a helpful cheatsheet
@@ -1334,7 +1347,7 @@ Eglot, in my experience, will find and use the proper LSP and virtualenv if =exe
 
 The fix for this (well, /a/ fix) is the following (disabled by default). It allows one to set arbitrary subprojects by creating a =.subproject= file in a directory. However, project commands are slower because it uses the =transient= project type rather than the =vc= type . The former uses the filesystem to serve project commands, the latter uses a vesion control system. (If you'll never use this outside version control, you should be fine changing ='transient= below to ='vc=.)
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle no
   (defun pg-find-subproject (dir)
     "Use the nearest parent directory containing a \"subproject.org\" file as
   the project root. Used to tag subdirectories of VC repositories that
@@ -1343,7 +1356,7 @@ The fix for this (well, /a/ fix) is the following (disabled by default). It allo
   The file can be empty, but the .org prefix was chosen to make it a
   useful file for taking subproject notes, should that be desired."
     (when-let* ((df (locate-dominating-file dir ".subproject")))
-      (cons 'transient df)))
+      (cons 'transient df))) ;; could also use (list 'vc 'git df)
 
   (defun pg-set-subproject-support (sym new-val)
     (set sym new-val)
@@ -1565,14 +1578,13 @@ You can customize this behavior, for instance to root your project at the locati
   ;;; pg-devel-ansible.el ends here
 #+end_src
 
-*** Python
+*** Python (=pg-devel-python=)
 :PROPERTIES:
 :header-args: :tangle build/pg-modules/pg-devel-python.el
 :END:
 
 My =autovenv= package automatically sets the appropriate virtual environment for each buffer. [[https://github.com/pythonic-emacs/pyenv-mode][Pyenv mode]] sets some additional context which is used by =python.el=, =doom-modeline=, and (I assume) others.
 
-The ~eglot-server-programs~ variable is an enormous mess and I don't see how using ~add-to-list~ here makes it any better, but this is apprently [[https://www.gnu.org/software/emacs/manual/html_node/eglot/Setting-Up-LSP-Servers.html][the canonical way to customize servers for Eglot]].
 
 
 
@@ -1598,15 +1610,7 @@ The ~eglot-server-programs~ variable is an enormous mess and I don't see how usi
       :ensure t
       :config (pyenv-mode)
       :hook ((autovenv-post-activate-hook . pg-pyenv-on-activate)
-             (autovenv-pre-deactivate-hook . pg-pyenv-on-deactivate)))
-
-    (with-eval-after-load 'eglot
-      (add-to-list
-       'eglot-server-programs
-       `(python-mode
-         .
-         ,(eglot-alternatives
-           '(("ruff" "server") ("basedpyright-langserver" "--stdio")))))))
+             (autovenv-pre-deactivate-hook . pg-pyenv-on-deactivate))))
 
 
 #+end_src
