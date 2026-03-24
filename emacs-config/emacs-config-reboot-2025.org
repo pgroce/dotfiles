@@ -671,7 +671,10 @@ It does other stuff too, much of it handy, but being able to create and destroy 
         "Output\\*$"
         "\\*Async Shell Command\\*"
         help-mode
-        compilation-mode
+        "^\\*compilation.*\\*$" compilation-mode
+        fancy-compilation-mode
+        comint-mode
+        "^\\*eat.*\\*$" eat-mode
         inferior-python-mode
         inferior-emacs-lisp-mode
         "^\\*eshell.*\\*$" eshell-mode
