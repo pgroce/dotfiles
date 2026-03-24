@@ -716,6 +716,24 @@ I don't use all of Doom, but [[https://github.com/seagle0128/doom-modeline/tree/
     :hook (after-init . doom-modeline-mode))
 #+end_src
 
+*** Filling/unfilling paragraphs
+
+(Stolen from [[https://endlessparentheses.com/fill-and-unfill-paragraphs-with-a-single-key.html][Artur Malabarba]].)
+
+#+begin_src emacs-lisp
+  (defun pg-fill-or-unfill ()
+    "Like `fill-paragraph', but unfill the paragraph if used twice."
+    (interactive)
+    (let ((fill-column
+           (if (eq last-command 'pg-fill-or-unfill)
+               (progn (setq this-command nil)
+                      (point-max))
+             fill-column)))
+      (call-interactively #'fill-paragraph)))
+
+  (bind-key "M-q" #'pg-fill-or-unfill)
+#+end_src
+
 *** Provide
 
 #+begin_src emacs-lisp
