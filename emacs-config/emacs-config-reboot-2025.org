@@ -629,6 +629,19 @@ See the blogs mentioned in [[#repeat-mode][the section on Repeat mode]] for more
     :config
     (super-save-mode +1))
 #+end_src
+
+*** Colorize ansi-color buffers
+
+#+begin_src emacs-lisp
+  (defun display-ansi-colors ()
+    "Fontify buffer according to the ansi color codes embedded in it.
+
+  Use this function if you redirected output from a terminal command to a
+  buffer and it contains ANSI color codes."
+    (interactive)
+    (ansi-color-apply-on-region (point-min) (point-max)))
+#+end_src
+
 *** Diminish minor modes
 
 #+begin_src emacs-lisp
