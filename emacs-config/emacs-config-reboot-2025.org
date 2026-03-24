@@ -1129,6 +1129,8 @@ The listing switches ensure =ls= provides some useful additional information.
 
 #+begin_src emacs-lisp
   (use-package dired
+    :bind
+    (:map dired-mode-map ("." . dired-create-empty-file))
     :config
     (setq dired-listing-switches
           "-l --almost-all --human-readable --group-directories-first --no-group")
