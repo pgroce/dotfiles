@@ -398,6 +398,7 @@ You can replace these (and other) font faces yourself in number of places—the 
 :header-args: :tangle build/pg-modules/pg-ui-misc.el
 :END:
 
+If I can't find a place for something and it's too small to put in its own module, it will probably go here.
 *** GUI frame setup
 
 #+begin_src emacs-lisp
@@ -593,7 +594,6 @@ See the blogs mentioned in [[#repeat-mode][the section on Repeat mode]] for more
 
   (show-paren-mode 1)
 #+end_src
-
 
 
 
@@ -1526,6 +1526,21 @@ The most conservative approach, then, is to use the =transient= backend with the
 
 You can customize this behavior, for instance to root your project at the location of a canary file like =.subproject=. (Another very reasonable alternative is =pyproject.toml=, but I decided I didn't want "Python is project root" to trump "Git is project root" as general behavior; see also [[#eglot-caveat][A Caveat]].) A complication, however, is that an element of =project-find-functions= has a special return type. On success, for instance, =project-try-vc= in the above example will return ~(vc Git "~/src/dotfiles/")~.
 
+**** Improved compilation output (=fancy-compilation=)
+
+More info on [[https://github.com/emacsmirror/fancy-compilation][Github]].
+
+#+begin_src emacs-lisp
+  (use-package fancy-compilation
+    :ensure t
+    :commands (fancy-compilation-mode)
+    :custom
+    (fancy-compilation-override-colors nil))
+
+  (with-eval-after-load 'compile
+    (fancy-compilation-mode))
+
+#+end_src
 
 **** Provide
 
