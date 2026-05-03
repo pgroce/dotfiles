@@ -46,12 +46,11 @@ The main value, to me, of this literate configuration is being able to break it 
 
   (require 'package)
   (package-initialize)
-  (unless (package-installed-p 'use-package)
-    (package-refresh-contents)
-    (package-install 'use-package))
+  ;; Refresh packages asynchronously
+  (package-refresh-contents t)
   (require 'use-package)
-  ;(setopt use-package-compute-statistics t)
-  ;(setopt use-package-verbose t)
+  ;; (setopt use-package-compute-statistics t)
+  ;; (setopt use-package-verbose t)
 #+end_src
 
 ** Contain custom variables
