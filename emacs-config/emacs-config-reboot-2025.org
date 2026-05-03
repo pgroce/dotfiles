@@ -889,6 +889,8 @@ I don't use all of Doom, but [[https://github.com/seagle0128/doom-modeline/tree/
            ("C-c k" . consult-kmacro)
            ("C-c m" . consult-man)
            ("C-c i" . consult-info)
+           ("C-c l" . consult-line)
+           ("C-c s" . consult-ripgrep)
            ([remap Info-search] . consult-info)
            ;; C-x bindings in `ctl-x-map'
            ("C-x M-:" . consult-complex-command)     ;; orig. repeat-complex-command
