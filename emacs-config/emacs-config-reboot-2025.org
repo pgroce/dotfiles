@@ -1597,7 +1597,7 @@ More info on [[https://github.com/emacsmirror/fancy-compilation][Github]].
   (use-package ansible
     :ensure t
     :if (and (boundp 'pg-cf-ansible) pg-cf-ansible)
-    :hook (yaml-mode . ansible-mode))
+    :hook (ansible-mode))
 
 
   (defun pg-ansible-doc-module-colorize (&rest args)
