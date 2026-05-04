@@ -1399,20 +1399,34 @@ More default settings, and plenty of them. I don't have opinions on much of it a
 **** Magit
 
 #+begin_src emacs-lisp
-  (defun pg-project-magit ()
-    (interactive)
-    (magit-status (project-root (project-current t))))
-
   (use-package magit
     :ensure t
     :after (project)
-    :commands (magit magit-status magit-init)
-    :bind
-    (:map project-prefix-map
-          ("v" . pg-project-magit))
-  )
+    :commands (magit magit-status magit-project-status magit-init)
+    :init
+    ;; (This is also in magit-extras, but it doesn't seem to fire
+    ;; reliably if I just let nature take its course....)
+    ;;
+    ;; Only modify if it hasn't already been modified.
+    (when (equal project-switch-commands
+                 (eval (car (get 'project-switch-commands 'standard-value))
+                       t))
+      (keymap-set project-prefix-map "m" #'magit-project-status)
+      (add-to-list 'project-switch-commands '(magit-project-status "Magit") t)))
 
 
+#+end_src
+
+**** Project
+
+#+begin_src emacs-lisp
+
+
+  (use-package project :after (magit)
+    :config
+
+
+    )
 #+end_src
 
 **** Tree sitter
