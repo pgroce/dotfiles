@@ -1359,6 +1359,24 @@ More default settings, and plenty of them. I don't have opinions on much of it a
 :header-args: :tangle build/pg-modules/pg-serial-terminal.el
 :END:
 
+*** Eshell (Emacs shell)
+
+#+begin_src emacs-lisp
+  ;; Simplify piping output to a new buffer
+  ;; Adapted from
+  ;; https://christiantietze.de/posts/2025/10/redirect-output-to-buffers-from-emacs-eshell/
+
+  (defun pg-eshell-new-buffer (&optional buf-name)
+    "Create and switch to new empty buffer"
+    (let ((buf-name (or buf-name "*eshell command output*")))
+      (switch-to-buffer (generate-new-buffer buf-name))))
+
+
+  (defalias 'to #'pg-eshell-new-buffer)
+
+
+#+end_src
+
 *** Tramp
 
 #+begin_src emacs-lisp
