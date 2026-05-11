@@ -769,7 +769,7 @@ I don't use all of Doom, but [[https://github.com/seagle0128/doom-modeline/tree/
 #+end_src
 
 **** MCT (Deprecated)
-[[https://github.com/minad/vertico][Vertico]] is a strict superset of MCT, and may be preferred by others. I find MCT to be no more nor less than what I need and want.
+Emacs should make MCT the default selection UI. It isn't perfect, but it provides great value out of the box. I used it for a long time, but have decided to move on to Vertico.
 
 #+begin_src emacs-lisp :tangle no
   ;;; MCT
@@ -782,32 +782,13 @@ I don't use all of Doom, but [[https://github.com/seagle0128/doom-modeline/tree/
 
 **** Vertico
 
-[[https://github.com/minad/vertico][Vertico]] is a strict superset of MCT. I found MCT quite adequate, but I want to give Vertico a try, particularly to see if I can use it to make the desired Embark workflow stick. After I do that, maybe I'll go back to MCT. 😁
+[[https://github.com/minad/vertico][Vertico]] is a strict superset of MCT. I found MCT quite adequate, but Vertico is faster and has some desirable options.
+
+
 
 #+begin_src emacs-lisp
-  ;; (The below is modified copypasta from their website —pg)
-
-  ;; Enable Vertico.
-  (use-package vertico
-    :ensure t
-    ;; :custom
-    ;; (vertico-scroll-margin 0) ;; Different scroll margin
-    ;; (vertico-count 20) ;; Show more candidates
-    ;; (vertico-resize t) ;; Grow and shrink the Vertico minibuffer
-    ;; (vertico-cycle t) ;; Enable cycling for `vertico-next/previous'
-    :init
-    (vertico-mode))
-
-
-  ;; Persist history over Emacs restarts. Vertico sorts by history position.
-  ;; (Already configured at top-level —pg)
-  ;; (use-package savehist
-  ;;   :init
-  ;;   (savehist-mode))
-
-
-
   ;; Emacs minibuffer configurations.
+  ;; (Mostly to play nice with Vertico)
   (use-package emacs
     :custom
     ;; Enable context menu. `vertico-multiform-mode' adds a menu in the minibuffer
@@ -829,12 +810,58 @@ I don't use all of Doom, but [[https://github.com/seagle0128/doom-modeline/tree/
      '(read-only t cursor-intangible t face minibuffer-prompt)))
 
 
-
+  ;; Persist history over Emacs restarts. Vertico sorts by history position.
+  ;; (Already configured at top-level —pg)
+  ;; (use-package savehist
+  ;;   :init
+  ;;   (savehist-mode))
 
   ;; Vertico wants read-extended-command-predicate to be
   ;; #'command-completion-default-include-p, which is set by corfu right
   ;; now.
 
+
+
+
+  ;; (The below is modified copypasta from their website —pg)
+  ;; Kool-Aid from https://www.chiply.dev/post-vompeccc#vompeccc-framework
+
+  ;; Enable Vertico.
+  (use-package vertico
+    :ensure t
+    :custom
+    (
+     ;; (vertico-scroll-margin 0) ;; Different scroll margin
+     ;; (vertico-count 20) ;; Show more candidates
+     ;; (vertico-resize t) ;; Grow and shrink the Vertico minibuffer
+     ;; (vertico-cycle t) ;; Enable cycling for `vertico-next/previous'
+     (vertico-multiform-commands
+      `((consult-imenu buffer indexed)
+        (consult-outline buffer)
+        (consult-line buffer indexed)
+        (consult-line-multi buffer indexed)))
+     ;; Bind directory commands for all commands in file category.
+     (vertico-multiform-categories
+        '((file (vertico-sort-function . vertico-sort-directories-first)
+                (:keymap . vertico-directory-map)))))
+
+    :init
+    (vertico-mode)
+    (vertico-multiform-mode))
+
+
+
+  ;; Configure directory extension.
+  (use-package vertico-directory
+    :after vertico
+    :ensure nil
+    ;; More convenient directory navigation commands
+    :bind (:map vertico-map
+                ("RET" . vertico-directory-enter)
+                ("DEL" . vertico-directory-delete-char)
+                ("M-DEL" . vertico-directory-delete-word))
+    ;; Tidy shadowed file names
+    :hook (rfn-eshadow-update-overlay . vertico-directory-tidy))
 
 #+end_src
 
