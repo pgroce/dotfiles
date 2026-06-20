@@ -1866,7 +1866,7 @@ For the beautification bits, I have adapted my approach from [[https://sophiebos
     :bind ("s-r" . org-capture)
     :custom
     (org-capture-templates
-     `(("t" "TODO" entry (file+headline (pg-org--dir "todo.org") "Tasks")
+     `(("t" "TODO" entry (file+headline ,(pg-org--dir "todo.org") "Tasks")
              "* TODO %?\n  %u" :prepend t)
        ("n" "Notes" entry (file+headline
                            ,(pg-org--dir "notes.org") "Notes")
