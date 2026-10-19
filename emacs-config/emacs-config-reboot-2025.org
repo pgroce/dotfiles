@@ -26,7 +26,10 @@ The main value, to me, of this literate configuration is being able to break it 
 :header-args: :tangle build/emacs-config.el
 :END:
 
+Since Emacs 30-something the =lexical-binding= ratchet has been turned up a notch, this cookie suppresses a warning on startup.
+
 #+begin_src emacs-lisp
+  ;; -*- lexical-binding: t; -*-
   ;;;;; -- Pre-configuration --
 
 
@@ -212,8 +215,8 @@ Ironically—for me, someone who doesn't like the customization interface—this
 
   ;;; -- Look and feel --
 
+  (require 'pg-fonts) ;; Loading ahead of themes for dependency reasons
   (require 'pg-themes)
-  (require 'pg-fonts)
   (require 'pg-ui-misc)
 
   (require 'pg-completion-minibuffer)
@@ -272,15 +275,27 @@ In practice, I haven't implemented that conditionality for a number of these mod
 :END:
 
 #+begin_src emacs-lisp
+  ;; -*- lexical-binding: t; -*-
 
   (use-package modus-themes
     :ensure t
-    :init
+
+    :config
     (setq modus-themes-italic-constructs t
           modus-themes-bold-constructs nil
-          modus-themes-to-toggle '(modus-operandi-tinted modus-vivendi-tinted))
-    :config
-    (load-theme 'modus-operandi-tinted t))
+          modus-themes-to-toggle '(modus-operandi-tinted modus-vivendi-tinted)
+          modus-themes-mixed-fonts t ;; show table in monospace
+          modus-themes-headings
+          '((0 . (variable-pitch extrabold 2.0))
+            (1 . (variable-pitch bold 1.75))
+            (2 . (variable-pitch bold 1.4))
+            (3 . (variable-pitch bold 1.3))
+            (4 . (variable-pitch bold 1.2))
+            (5 . (variable-pitch bold 1.1))
+            (6 . (variable-pitch semibold 1.1))
+            (7 . (variable-pitch regular 1.1))
+            (8 . (variable-pitch semilight 1.1))))
+    (modus-themes-load-theme 'modus-operandi-tinted))
 
 
   (provide 'pg-themes)
@@ -300,7 +315,14 @@ Because I want this configuration to work on multiple systems, and because fonts
 
 You can replace these (and other) font faces yourself in number of places—the platform,  host, or user files, or in =scratch.el=.
 
+I'm currently using [[https://github.com/ryanoasis/nerd-fonts/tree/master/patched-fonts/Iosevka][IosevkaTerm Nerd Font]] (Mono and Propo) from the [[https://github.com/ryanoasis/nerd-fonts/tree/master/patched-fonts][patched fonts]] section of the [[https://github.com/ryanoasis/nerd-fonts/tree/master][Nerd Fonts]] repo. Other options I've used in the past:
+
+- Monaspace Neon Frozen (from [[https://www.programmingfonts.org/][Programming Fonts]])
+- [[https://fonts.google.com/specimen/EB+Garamond][EB Garamond]] for proportional fonts (aka, the classic book font)
+- [[https://github.com/protesilaos/aporetic][Aporetic Serif Mono]] for mode line and minibuffer prompts
+
 #+begin_src emacs-lisp
+  ;; -*- lexical-binding: t; -*-
   ;; --> DEFAULT FONTS <--
   ;; https://www.programmingfonts.org/
   (defmacro pg-set-face-attribute (face family &rest face-attributes)
@@ -310,26 +332,22 @@ You can replace these (and other) font faces yourself in number of places—the 
        (set-face-attribute ,face nil
                            :family ,family ,@face-attributes)))
 
-  ;; https://www.programmingfonts.org/
-  (pg-set-face-attribute 'default "Monaspace Neon Frozen"
-    :height 130 :weight 'normal)
 
-  ;; https://www.programmingfonts.org/
-  (pg-set-face-attribute 'fixed-pitch "Monaspace Neon Frozen" :height .90)
+  (pg-set-face-attribute 'default "IosevkaTerm Nerd Font Mono"
+    :weight 'normal :height 160)
 
-  ;; https://fonts.google.com/specimen/EB+Garamond
-  (pg-set-face-attribute 'variable-pitch "EB Garamond"
-    :height 1.3 :weight 'normal) ;180
+  (pg-set-face-attribute 'variable-pitch "Iosevka Etoile"
+    :weight 'normal)
 
-  ;; https://www.programmingfonts.org/
+  (pg-set-face-attribute 'fixed-pitch "IosevkaTerm Nerd Font Mono"
+    :weight 'normal)
+
   (pg-set-face-attribute 'mode-line "Monaspace Neon Frozen"
     :height 130)
 
-  ;; https://github.com/protesilaos/aporetic
   (pg-set-face-attribute 'mode-line-buffer-id "Aporetic Serif Mono"
     :height 145 :weight 'bold)
 
-  ;; https://github.com/protesilaos/aporetic
   (pg-set-face-attribute 'minibuffer-prompt "Aporetic Serif Mono"
     :height 130 :weight 'bold)
 #+end_src
@@ -401,6 +419,7 @@ If I can't find a place for something and it's too small to put in its own modul
 *** GUI frame setup
 
 #+begin_src emacs-lisp
+  ;; -*- lexical-binding: t; -*-
   ;;; This function is my preferred setup for gui windows. Put it here
   ;;; so I can use it later in terminal-specific configuration
   (defun pg-clean-frames ()
@@ -750,6 +769,7 @@ I don't use all of Doom, but [[https://github.com/seagle0128/doom-modeline/tree/
 
 **** Marginalia
 #+begin_src emacs-lisp
+  ;; -*- lexical-binding: t; -*-
   ;; Marginalia
   (use-package marginalia
     :ensure t
@@ -905,6 +925,7 @@ Emacs should make MCT the default selection UI. It isn't perfect, but it provide
 **** Consult
 
 #+begin_src emacs-lisp
+  ;; -*- lexical-binding: t; -*-
   ;; Consult
   ;; Example configuration for Consult
   (use-package consult
@@ -1055,6 +1076,7 @@ Emacs should make MCT the default selection UI. It isn't perfect, but it provide
 **** Corfu
 
 #+begin_src emacs-lisp
+  ;; -*- lexical-binding: t; -*-
   ;; Corfu
   (use-package corfu
     :ensure t
@@ -1158,6 +1180,7 @@ Emacs should make MCT the default selection UI. It isn't perfect, but it provide
 :END:
 
 #+begin_src emacs-lisp
+  ;; -*- lexical-binding: t; -*-
   ;; Embark
   (use-package embark
     :ensure t
@@ -1226,6 +1249,7 @@ Cut-and-paste from [[https://github.com/emacs-straight/embark-consult#quick-star
 *** (Soft) external application dependencies
 
 #+begin_src emacs-lisp
+  ;; -*- lexical-binding: t; -*-
   ;; Check dependencies
 
   (pg-if-available "fd"
@@ -1362,6 +1386,7 @@ More default settings, and plenty of them. I don't have opinions on much of it a
 *** Eshell (Emacs shell)
 
 #+begin_src emacs-lisp
+  ;; -*- lexical-binding: t; -*-
   ;; Simplify piping output to a new buffer
   ;; Adapted from
   ;; https://christiantietze.de/posts/2025/10/redirect-output-to-buffers-from-emacs-eshell/
@@ -1376,6 +1401,9 @@ More default settings, and plenty of them. I don't have opinions on much of it a
 
 
 #+end_src
+
+#+RESULTS:
+: to
 
 *** Tramp
 
@@ -1444,6 +1472,7 @@ More default settings, and plenty of them. I don't have opinions on much of it a
 **** Magit
 
 #+begin_src emacs-lisp
+  ;; -*- lexical-binding: t; -*-
   (defun pg-project-magit ()
     (interactive)
     (magit-status (project-root (project-current t))))
@@ -1700,6 +1729,7 @@ More info on [[https://github.com/emacsmirror/fancy-compilation][Github]].
 :END:
 
 #+begin_src emacs-lisp
+  ;; -*- lexical-binding: t; -*-
   ;; Not using yaml-ts-mode bc they made some bad choices:
   ;; https://www.reddit.com/r/emacs/comments/17gtxmr/indentation_in_yamltsmode/
 
@@ -1720,6 +1750,7 @@ More info on [[https://github.com/emacsmirror/fancy-compilation][Github]].
 :END:
 
 #+begin_src emacs-lisp
+  ;; -*- lexical-binding: t; -*-
   (use-package ansible
     :ensure t
     :if (and (boundp 'pg-cf-ansible) pg-cf-ansible)
@@ -1767,6 +1798,7 @@ My =autovenv= package automatically sets the appropriate virtual environment for
 
 
 #+begin_src emacs-lisp
+  ;; -*- lexical-binding: t; -*-
   (use-package autovenv
     :ensure t
     :if pg-cf-python
@@ -1807,16 +1839,37 @@ My =autovenv= package automatically sets the appropriate virtual environment for
 :header-args: :tangle build/pg-modules/pg-org.el
 :END:
 
-For the beautification bits, I have adapted my approach from [[https://sophiebos.io/posts/beautifying-emacs-org-mode/][Beautifying Emacs Org Mode]] (see their [[https://github.com/SophieBosio/.emacs.d][Github]]), and from [[https://zzamboni.org/post/beautifying-org-mode-in-emacs/][its inspiration]].
+Some inspo for making Org-mode prettier:
+
+- [[https://sophiebos.io/posts/beautifying-emacs-org-mode/][Beautifying Emacs Org Mode]] (see their [[https://github.com/SophieBosio/.emacs.d][Github]]), and [[https://zzamboni.org/post/beautifying-org-mode-in-emacs/][its inspiration]].
+- [[https://librephoenix.com/2023-12-30-making-org-agenda-look-beautiful#orgb35c536][Making Org-Agenda Look Beautiful]]
+- [[https://github.com/alphapapa/org-super-agenda?tab=readme-ov-file#usage][Org Super Agenda mode]] (Github)
+- [[https://github.com/minad/org-modern][Org Modern mode]] (Github)
+
+Some relevant fonts:
+
+- [[https://github.com/be5invis/Iosevka][Iosevka]] (or =brew install font-iosevka=). See also the nerdfont-patched version (or =brew install font-iosevka-term-nerd-font=).
 
 
 #+begin_src emacs-lisp
+  ;; -*- lexical-binding: t; -*-
   ;; Org Mode stuff (much more later, I'm sure....)
   (use-package org
     :defer t
     :hook ((org-mode . visual-line-mode))
     :custom
-    ((org-hidden-keywords '(title)))
+    ((org-hidden-keywords '(title))
+     ;; Edit settings
+     (org-auto-align-tags nil)
+     (org-tags-column 0)
+     (org-catch-invisible-edits 'show-and-error)
+     (org-special-ctrl-a/e t)
+     (org-insert-heading-respect-content t)
+     ;; Org styling, hide markup etc.
+     (org-hide-emphasis-markers t)
+     (org-pretty-entities t)
+     (org-agenda-tags-column 0)
+     (org-ellipsis " ⟹ "))
     :config
     (add-to-list 'org-modules 'org-tempo))
 
@@ -1827,13 +1880,13 @@ For the beautification bits, I have adapted my approach from [[https://sophiebos
 
   (use-package org-modern
     :ensure t
-    :commands (org-modern-mode)
-    :bind (:map org-mode-map
-                ("C-c b" . pg-org-beautify))
+    :commands (org-modern-mode global-org-modern-mode)
     :custom-face
     (org-modern-label ((t (:inherit fixed-pitch))))
     :custom
-    (org-modern-hide-stars t))
+    (org-modern-hide-stars t)
+    :config
+    (global-org-modern-mode))
 
 
   (defcustom pg-org-dir "~/org-files/"
@@ -1874,98 +1927,6 @@ For the beautification bits, I have adapted my approach from [[https://sophiebos
             ))
     )
 
-
-
-  ;;; Beautifying Org mode...
-
-
-  ;; The idea here is to define the fixed-pitch faces here and let
-  ;; (variable-pitch-mode 1) take care of the rest. Defer to the user
-  ;; theme as much as possible.
-  (defvar pg-org--beautify-fixed-pitch
-    '((org-block (:inherit fixed-pitch))
-      (org-code (:inherit (shadow fixed-pitch)))
-      (org-document-info (:inherit fixed-pitch ))
-      (org-document-info-keyword (:inherit (shadow fixed-pitch)))
-      (org-indent (:inherit (org-hide fixed-pitch)))
-      (org-meta-line (:inherit (font-lock-comment-face fixed-pitch)))
-      ;;;
-      (org-property-value (:inherit fixed-pitch))
-      (org-drawer (:inherit fixed-pitch))
-      (org-special-keyword (:inherit (font-lock-comment-face fixed-pitch)))
-      ;;;
-      (org-table (:inherit fixed-pitch :foreground "#83a598"))
-      (org-tag (:inherit (shadow fixed-pitch) :weight bold))
-      (org-verbatim (:inherit (shadow fixed-pitch)))
-      (org-date (:interit fixed-pitch))
-      (org-link (:weight bold :underline t))
-      (italic (:slant italic)))
-    "Org mode faces that should always be fixed-pitch")
-
-  (defvar pg-org--beautify-headlines
-    (let ((headline '(:family "Optima"))
-          (headline-sm '(:family "Optima" :slant italic)))
-      `((org-document-title (,@headline :height 2.0))
-        (org-level-1 (,@headline :height 1.75))
-        (org-level-2 (,@headline :height 1.4))
-        (org-level-3 (,@headline :height 1.3))
-        (org-level-4 (,@headline-sm :height 1.2))
-        (org-level-5 (,@headline-sm :height 1.1))
-        (org-level-6 (,@headline-sm :height 1.1))
-        (org-level-7 (,@headline-sm :height 1.1))
-        (org-level-8 (,@headline-sm :height 1.1))))
-    "Org mode faces representing headlines (and titles), with beautified
-  sizes.")
-
-  (defun pg-org--beautiful-faces ()
-    "Apply face settings for beautification. Return face change cookies."
-    (--map (face-remap-add-relative (car it) `,@(cadr it))
-           (-concat pg-org--beautify-fixed-pitch
-                    pg-org--beautify-headlines)))
-
-  (defun pg-org--unbeautiful-faces (face-cookies)
-    "Remove font-face stylings based on FACE-COOKIES."
-    (--map (face-remap-remove-relative it) face-cookies)
-    nil)
-
-
-  (defvar pg-org--beautified nil
-    "Either `nil' (not beautified) or a list of face cookies used in
-  beautification.")
-
-  (defun pg-org--beautify ()
-    (interactive)
-    (let ((cookies (pg-org--beautiful-faces)))
-      (org-modern-mode 1)
-      (variable-pitch-mode 1)
-      (setopt
-       org-hide-emphasis-markers t
-       org-pretty-entities t)
-      cookies))
-
-  (defun pg-org--debeautify (cookies)
-    (interactive)
-    (pg-org--unbeautiful-faces cookies)
-    (org-modern-mode -1)
-    (variable-pitch-mode -1)
-    (setopt
-       org-hide-emphasis-markers nil
-       org-pretty-entities nil))
-
-  (defun pg-org-beautify ()
-    (interactive)
-    (if (not pg-org--beautified)
-        (setq pg-org--beautified
-              (pg-org--beautify))
-      (progn
-        (pg-org--debeautify pg-org--beautified)
-        (setq pg-org--beautified nil))))
-
-
-  (with-eval-after-load 'org
-    (bind-key "C-c b" #'pg-org-beautify org-mode-map))
-
-
   (provide 'pg-org)
 
 
@@ -1978,6 +1939,7 @@ For the beautification bits, I have adapted my approach from [[https://sophiebos
 :END:
 
 #+begin_src emacs-lisp
+  ;; -*- lexical-binding: t; -*-
   ;; Additional UI to simplify adding clozes and other functionality
   (when pg-cf-anki
     (defvar pg-anki--my-org-file "/Users/pgroce/org-files/anki.org"
@@ -2100,6 +2062,7 @@ Naming this weirdly so it doesn't conflict with the library name.
 In the time since I wrote this Joost Kremers appears to have written a [[https://joostkremers.github.io/pandoc-mode/][Pandoc mode]] that looks much nicer than my little library for general use. AFAICT, however, it doesn't support the functionality of ~pg-pandoc-org-subtree~ at all, and the rest of my use cases tend to be "Convert this markup file to DOCX so I can copy/paste it into an Office product," which ~pg-pandoc-current-buffer~ does quite adequately.
 
 #+begin_src emacs-lisp
+  ;; -*- lexical-binding: t; -*-
   (pg-if-available "pandoc"
     "Install «pandoc» to convert org subtrees and buffers to other formats.")
 
@@ -2118,6 +2081,7 @@ In the time since I wrote this Joost Kremers appears to have written a [[https:/
 :END:
 
 #+begin_src emacs-lisp
+  ;; -*- lexical-binding: t; -*-
   (require 'pg-ui-misc) ; for pg-clean-frames
 
   (pg-terminal-ns
