@@ -1897,11 +1897,11 @@ Some relevant fonts:
     "Open one of the org-mode files in the `~/org-files' directory."
     (interactive)
     (let ((fname (read-file-name
-                  "Org file: "            ; prompt
-                  pg-org-dir              ; dir
-                  nil                     ; default-filename
-                  t                       ; mustmatch
-                  nil                     ; initial
+                  "Org file: "                    ; prompt
+                  (expand-file-name pg-org-dir)   ; dir
+                  nil                             ; default-filename
+                  t                               ; mustmatch
+                  nil                             ; initial
                   (lambda (x) (s-ends-with-p ".org" x)))))
       (find-file fname)))
 
@@ -1919,10 +1919,10 @@ Some relevant fonts:
     :bind ("s-r" . org-capture)
     :custom
     (org-capture-templates
-     `(("t" "TODO" entry (file+headline ,(pg-org--dir "todo.org") "Tasks")
+     `(("t" "TODO" entry (file+headline ,(expand-file-name (pg-org--dir "todo.org")) "Tasks")
              "* TODO %?\n  %u" :prepend t)
        ("n" "Notes" entry (file+headline
-                           ,(pg-org--dir "notes.org") "Notes")
+                           ,(expand-file-name(pg-org--dir "notes.org")) "Notes")
              "* %u %?" :prepend t)
             ))
     )
