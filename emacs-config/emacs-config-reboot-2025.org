@@ -1845,6 +1845,8 @@ My =autovenv= package automatically sets the appropriate virtual environment for
 :CUSTOM_ID: pg-org
 :END:
 
+*** Notes
+
 Some inspo for making Org-mode prettier:
 
 - [[https://sophiebos.io/posts/beautifying-emacs-org-mode/][Beautifying Emacs Org Mode]] (see their [[https://github.com/SophieBosio/.emacs.d][Github]]), and [[https://zzamboni.org/post/beautifying-org-mode-in-emacs/][its inspiration]].
@@ -1852,14 +1854,19 @@ Some inspo for making Org-mode prettier:
 - [[https://github.com/alphapapa/org-super-agenda?tab=readme-ov-file#usage][Org Super Agenda mode]] (Github)
 - [[https://github.com/minad/org-modern][Org Modern mode]] (Github)
 
-Some relevant fonts:
-
-- [[https://github.com/be5invis/Iosevka][Iosevka]] (or =brew install font-iosevka=). See also the [[https://github.com/ryanoasis/nerd-fonts/tree/master/patched-fonts/Iosevka][nerdfont-patched version]] (or =brew install font-iosevka-term-nerd-font=).
+Some relevant fonts: [[https://github.com/be5invis/Iosevka][Iosevka]] (or =brew install font-iosevka=). See also the [[https://github.com/ryanoasis/nerd-fonts/tree/master/patched-fonts/Iosevka][nerdfont-patched version]] (or =brew install font-iosevka-term-nerd-font=).
 
 [[https://protesilaos.com/emacs/modus-themes][Modus-themes]] does a lot of the heavy lifting for making Org prettier, particularly fontifying heading levels. For more details on that, see [[#pg-themes][pg-themes]].
 
+I maintain =org-todo-keywords= on a per-file basis, via the =#+TODO:= headline keyword see [[https://emacsdocs.org/docs/org/Per_002dfile-keywords][Setting up keywords for individual files]] (Emacsdocs) and [[https://emacsdocs.org/docs/org/Tracking-TODO-state-changes][Tracking TODO state changes]] (Emacsdocs). In general, [[https://doc.norang.ca/org-mode.html][Org Mode - Organize Your Life In Plain Text!]], while written in2009, remains an excellent resource for using Org as a productivity tool.
+
+*** Code
+
 #+begin_src emacs-lisp
   ;; -*- lexical-binding: t; -*-
+
+
+
   ;; Org Mode stuff (much more later, I'm sure....)
   (use-package org
     :defer t
@@ -1871,21 +1878,26 @@ Some relevant fonts:
      (org-tags-column 0)
      (org-catch-invisible-edits 'show-and-error)
      (org-special-ctrl-a/e t)
-     (org-insert-heading-respect-content t)
      ;; Org styling, hide markup etc.
      (org-hide-emphasis-markers t)
      (org-pretty-entities t)
      (org-agenda-tags-column 0)
-     (org-ellipsis " ⟹  "))
+     (org-ellipsis " ⟹  ")
+     ;; Agenda and todo
+     (org-enforce-todo-dependencies t)
+     (org-enforce-todo-checkbox-dependencies t)
+     (org-fast-todo-selection t))
     :config
     (add-to-list 'org-modules 'org-tempo))
+
+
 
   (use-package olivetti
     :ensure t
     :commands (olivetti-mode)
     :custom
     ((olivetti-body-width 87))
-    :hook (org-mode . olivetti-mode))
+    :hook ((org-mode org-agenda-mode) . olivetti-mode))
 
   (use-package org-modern
     :ensure t
