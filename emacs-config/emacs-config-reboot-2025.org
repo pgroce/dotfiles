@@ -272,7 +272,10 @@ In practice, I haven't implemented that conditionality for a number of these mod
 ** Themes (=pg-themes.el=)
 :PROPERTIES:
 :header-args: :tangle build/pg-modules/pg-themes.el
+:CUSTOM_ID: pg-themes
 :END:
+
+A lot of the extra customization here supports making Org mode pretty. For additional customization of Org, see [[#pg-org][Org-mode]].
 
 #+begin_src emacs-lisp
   ;; -*- lexical-binding: t; -*-
@@ -310,6 +313,8 @@ In practice, I haven't implemented that conditionality for a number of these mod
 :END:
 
 *** Default fonts
+
+(See [[#pg-themes][pg-themes]] for additional customization of some specialty faces.)
 
 Because I want this configuration to work on multiple systems, and because fonts may not be available, I do a little more than just =set-face-attribute= when setting the default fonts. If the font doesn't exist, I warn the user and don't try to set it. (As far as I know, =set-face-attribute= doesn't error out when called with a nonexistant font, but I appreciate the consistent error reporting from =pg-if-font-available=.)
 
@@ -1837,6 +1842,7 @@ My =autovenv= package automatically sets the appropriate virtual environment for
 ** Org mode (=pg-org=)
 :PROPERTIES:
 :header-args: :tangle build/pg-modules/pg-org.el
+:CUSTOM_ID: pg-org
 :END:
 
 Some inspo for making Org-mode prettier:
@@ -1848,8 +1854,9 @@ Some inspo for making Org-mode prettier:
 
 Some relevant fonts:
 
-- [[https://github.com/be5invis/Iosevka][Iosevka]] (or =brew install font-iosevka=). See also the nerdfont-patched version (or =brew install font-iosevka-term-nerd-font=).
+- [[https://github.com/be5invis/Iosevka][Iosevka]] (or =brew install font-iosevka=). See also the [[https://github.com/ryanoasis/nerd-fonts/tree/master/patched-fonts/Iosevka][nerdfont-patched version]] (or =brew install font-iosevka-term-nerd-font=).
 
+[[https://protesilaos.com/emacs/modus-themes][Modus-themes]] does a lot of the heavy lifting for making Org prettier, particularly fontifying heading levels. For more details on that, see [[#pg-themes][pg-themes]].
 
 #+begin_src emacs-lisp
   ;; -*- lexical-binding: t; -*-
@@ -1869,14 +1876,16 @@ Some relevant fonts:
      (org-hide-emphasis-markers t)
      (org-pretty-entities t)
      (org-agenda-tags-column 0)
-     (org-ellipsis " ⟹ "))
+     (org-ellipsis " ⟹  "))
     :config
     (add-to-list 'org-modules 'org-tempo))
 
   (use-package olivetti
     :ensure t
+    :commands (olivetti-mode)
     :custom
-    ((olivetti-body-width 77)))
+    ((olivetti-body-width 87))
+    :hook (org-mode . olivetti-mode))
 
   (use-package org-modern
     :ensure t
@@ -1887,7 +1896,6 @@ Some relevant fonts:
     (org-modern-hide-stars t)
     :config
     (global-org-modern-mode))
-
 
   (defcustom pg-org-dir "~/org-files/"
     "Directory containing my main Org files."
