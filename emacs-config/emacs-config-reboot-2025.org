@@ -757,6 +757,17 @@ I don't use all of Doom, but [[https://github.com/seagle0128/doom-modeline/tree/
   (bind-key "M-q" #'pg-fill-or-unfill)
 #+end_src
 
+*** Display for reading/writing (=olivetti=)
+
+#+begin_src
+  (use-package olivetti
+    :ensure t
+    :commands (olivetti-mode)
+    :custom
+    ((olivetti-body-width 87))
+    :hook ((org-mode org-agenda-mode) . olivetti-mode))
+#+end_src
+
 *** Provide
 
 #+begin_src emacs-lisp
@@ -1869,8 +1880,8 @@ I maintain =org-todo-keywords= on a per-file basis, via the =#+TODO:= headline k
 
   ;; Org Mode stuff (much more later, I'm sure....)
   (use-package org
-    :defer t
-    :hook ((org-mode . visual-line-mode))
+    :hook ((org-mode . visual-line-mode)
+           (org-mode . olivetti-mode))
     :custom
     ((org-hidden-keywords '(title))
      ;; Edit settings
@@ -1886,18 +1897,24 @@ I maintain =org-todo-keywords= on a per-file basis, via the =#+TODO:= headline k
      ;; Agenda and todo
      (org-enforce-todo-dependencies t)
      (org-enforce-todo-checkbox-dependencies t)
-     (org-fast-todo-selection t))
+     (org-fast-todo-selection t)
+     (org-log-into-drawer "LOGBOOK"))
     :config
     (add-to-list 'org-modules 'org-tempo))
 
-
-
-  (use-package olivetti
-    :ensure t
-    :commands (olivetti-mode)
+  (use-package org-agenda
+    :after org
+    :hook (org-agenda-mode . olivetti-mode)
     :custom
-    ((olivetti-body-width 87))
-    :hook ((org-mode org-agenda-mode) . olivetti-mode))
+    ((org-agenda-span 1)
+     (org-agenda-start-day "+0d")
+     (org-agenda-skip-timestamp-if-done t)
+     (org-agenda-skip-deadline-if-done t)
+     (org-agenda-skip-scheduled-if-done t)
+     (org-agenda-skip-scheduled-if-deadline-is-shown t)
+     (org-agenda-skip-timestamp-if-deadline-is-shown t)
+     (org-agenda-current-time-string "")
+     (org-agenda-time-grid '((daily) () "" ""))))
 
   (use-package org-modern
     :ensure t
@@ -1908,6 +1925,14 @@ I maintain =org-todo-keywords= on a per-file basis, via the =#+TODO:= headline k
     (org-modern-hide-stars t)
     :config
     (global-org-modern-mode))
+
+  ;; https://github.com/alphapapa/org-super-agenda
+  ;;
+  ;; The main configuration for this package is the custom variable
+  ;; `org-super-agenda-groups'. This is highly installation-dependent,
+  ;; so configuration of this variable is deferred to a more specific
+  ;; configuration file (user, host, or even scratch.el)
+  (use-package org-super-agenda :ensure t)
 
   (defcustom pg-org-dir "~/org-files/"
     "Directory containing my main Org files."
