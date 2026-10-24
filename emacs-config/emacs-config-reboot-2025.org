@@ -1877,8 +1877,13 @@ I maintain =org-todo-keywords= on a per-file basis, via the =#+TODO:= headline k
   ;; -*- lexical-binding: t; -*-
 
 
-
-  ;; Org Mode stuff (much more later, I'm sure....)
+  ;; Org Mode stuff
+  ;;
+  ;; This code explicitly defers management of certain things to the
+  ;; installation, notably:
+  ;;   - org-agenda-files
+  ;;   - org-super-agenda-groups
+  ;;   - org-capture-templates is
   (use-package org
     :hook ((org-mode . visual-line-mode)
            (org-mode . olivetti-mode))
