@@ -19,7 +19,73 @@ I'm also structuring the configuration in a more modular way on disk. Aside from
 
 ** Document structure
 
-The main value, to me, of this literate configuration is being able to break it up structurally into sections and subsections. I've added some explanatory prose where I thought it might help other readers, but I've also tried to push some things into the source code comments for easier debugging. (For this reason, you may see a few source blocks containing only comments.) I've also inserted links into the document where applicable, as they aren't too useful in code.
+The main value, to me, of this literate configuration is being able to break it up structurally into sections and subsections. I've added some explanatory prose where I thought it might help other readers—including me in the future—but I've also tried to push most things into the source code comments for easier debugging. For this reason, you may see a few source blocks containing only comments.
+
+The major exception to this is references. They are more useful there than in the code, usually.
+
+** To-dos
+:PROPERTIES:
+:CATEGORY: config
+:END:
+
+*** TODO Use =no-littering.el= instead of a homegrown sandbox
+- [[https://github.com/emacscollective/no-littering][Github]]
+
+*** TODO Look into =fontaine= for font management
+The main reason for this is to use a different font for org-mode headlines than the body text. I can do this directly, but I find it cleaner and more reliable to use the options in =modus-themes= right now, and choosing a different font is not one of them. Will using Fontaine help me square the circle?
+
+- [[https://protesilaos.com/emacs/fontaine#h:c4567af0-6d88-4b94-962c-59702191a75d][Fontaine documentation]]
+- [[https://github.com/protesilaos/fontaine][Github]]
+
+*** TODO Integration with =all-the-icons=
+- [[https://github.com/domtronn/all-the-icons.el][Github]]
+
+* Early configuration (=early-emacs-config.el=)
+:PROPERTIES:
+:header-args: :tangle build/early-emacs-config.el
+:CUSTOM_ID: early-config
+:END:
+
+This file is run before GUI and packaging is set up; it is loaded in the Emacs =early-init.el= file. (See [[https://emacsdocs.org/docs/emacs/Early-Init-File][The Early Init File]] (Emacsdocs))
+
+The functions defined here are available to and used in other parts of this config, including the rest of the early init config (e.g., the [[#early-darwin][early Darwin]] configuration.)
+
+#+begin_src emacs-lisp
+  ;; -*- lexical-binding: t; -*-
+
+  (defun pg--split-path (s)
+    "Split a colon-delimited string into a list of elements. Empty elements are removed."
+    (delq nil (mapcar (lambda (x) (and (not (string-equal x "")) x))
+                      (split-string s ":"))))
+
+  (defun pg--add-to-path (envar elem &optional append)
+    "Side-effect free version of `pg-add-to-path'. Returns the value that
+  would be set instead of setting the environment variable."
+    (let* ((path (getenv envar))
+           (path-elems (pg--split-path (getenv envar))))
+      ;; Invert for append
+      (when append
+        (setq path-elems (reverse path-elems)))
+      (if (member elem path-elems)
+          path
+        (progn
+          (push elem path-elems)
+          ;; Undo invert for append
+          (when append
+            (setq path-elems (reverse path-elems)))
+          (string-join path-elems ":")))))
+
+  (defun pg-add-to-path (envar elem &optional append)
+    "Prepend ELEM to colon-delimited path variable ENVAR. If ELEM is already
+  an element in ENVAR, no action is taken. If APPEND is non-nil, append to
+  the list instead of prepending.
+
+  ENVAR will be normalized before setting; any leading, trailing, or
+  duplicate colons will be removed.
+
+  No checking is done to ensure ENVAR is a properly formatted path."
+    (setenv envar (pg--add-to-path envar elem append)))
+#+end_src
 
 * Main config file (=emacs-config.el=)
 :PROPERTIES:
@@ -310,6 +376,7 @@ A lot of the extra customization here supports making Org mode pretty. For addit
 ** Fonts (=pg-fonts.el=)
 :PROPERTIES:
 :header-args: :tangle build/pg-modules/pg-fonts.el
+:CUSTOM_ID: pg-fonts
 :END:
 
 *** Default fonts
@@ -324,7 +391,7 @@ I'm currently using [[https://github.com/ryanoasis/nerd-fonts/tree/master/patche
 
 - Monaspace Neon Frozen (from [[https://www.programmingfonts.org/][Programming Fonts]])
 - [[https://fonts.google.com/specimen/EB+Garamond][EB Garamond]] for proportional fonts (aka, the classic book font)
-- [[https://github.com/protesilaos/aporetic][Aporetic Serif Mono]] for mode line and minibuffer prompts
+- [[https://github.com/protesilaos/aporetic][Aporetic Serif Mono]] for mode line and minibuffer prompts (The [[https://github.com/Echinoidea/Aporetic-Nerd-Font][nerd font version]] is not available in Homebrew and must be downloaded manually from their Github.)
 
 #+begin_src emacs-lisp
   ;; -*- lexical-binding: t; -*-
@@ -338,13 +405,19 @@ I'm currently using [[https://github.com/ryanoasis/nerd-fonts/tree/master/patche
                            :family ,family ,@face-attributes)))
 
 
-  (pg-set-face-attribute 'default "IosevkaTerm Nerd Font Mono"
-    :weight 'normal :height 160)
+  ;; (pg-set-face-attribute 'default "IosevkaTerm Nerd Font Mono"
+  ;;   :weight 'normal :height 160)
 
-  (pg-set-face-attribute 'variable-pitch "Iosevka Etoile"
+  ;; (pg-set-face-attribute 'variable-pitch "Iosevka Etoile"
+  ;;   :weight 'normal)
+
+  (pg-set-face-attribute 'fixed-pitch "AporeticSansMonoNerdFont"
     :weight 'normal)
 
-  (pg-set-face-attribute 'fixed-pitch "IosevkaTerm Nerd Font Mono"
+  (pg-set-face-attribute 'default "AporeticSansMonoNerdFont"
+    :weight 'normal :height 160)
+
+  (pg-set-face-attribute 'variable-pitch "Aporetic Sans"
     :weight 'normal)
 
   (pg-set-face-attribute 'mode-line "Monaspace Neon Frozen"
@@ -355,6 +428,11 @@ I'm currently using [[https://github.com/ryanoasis/nerd-fonts/tree/master/patche
 
   (pg-set-face-attribute 'minibuffer-prompt "Aporetic Serif Mono"
     :height 130 :weight 'bold)
+
+  ;; This one looks good as a body font, but I need to work out a better
+  ;; font for headline levels
+  ;; (pg-set-face-attribute 'variable-pitch "Hoefler Text"
+  ;;  :height 210 :weight 'normal)
 #+end_src
 
 *** Ligatures
@@ -1302,6 +1380,9 @@ The listing switches ensure =ls= provides some useful additional information.
     :config
     (setq dired-listing-switches
           "-l --almost-all --human-readable --group-directories-first --no-group")
+    (pg-if-available "gls"
+      "Pro tip: Install «coreutils» (or just the 'gls' command) for  better dired/dirvish support"
+      (setq insert-directory-program "gls"))
     ;; this command is useful when you want to close the window of `dirvish-side'
     ;; automatically when opening a file
     (put 'dired-find-alternate-file 'disabled nil))
@@ -1860,7 +1941,7 @@ My =autovenv= package automatically sets the appropriate virtual environment for
 
 Some inspo for making Org-mode prettier:
 
-- [[https://sophiebos.io/posts/beautifying-emacs-org-mode/][Beautifying Emacs Org Mode]] (see their [[https://github.com/SophieBosio/.emacs.d][Github]]), and [[https://zzamboni.org/post/beautifying-org-mode-in-emacs/][its inspiration]].
+- [[https://sophiebos.io/posts/beautifying-emacs-org-mode/][Beautifying Emacs Org Mode]] (seems defunct, see their [[https://github.com/SophieBosio/.emacs.d][Github]]), and [[https://zzamboni.org/post/beautifying-org-mode-in-emacs/][its inspiration]].
 - [[https://librephoenix.com/2023-12-30-making-org-agenda-look-beautiful#orgb35c536][Making Org-Agenda Look Beautiful]]
 - [[https://github.com/alphapapa/org-super-agenda?tab=readme-ov-file#usage][Org Super Agenda mode]] (Github)
 - [[https://github.com/minad/org-modern][Org Modern mode]] (Github)
@@ -2125,13 +2206,39 @@ In the time since I wrote this Joost Kremers appears to have written a [[https:/
   ;;; pg-pandoc-config.el ends here
 #+end_src
 
-* MacOS Platform Config File (=darwin.el=)
+* MacOS Platform Config (=darwin.el=)
+
+* =early-darwin.el=
+:PROPERTIES:
+:header-args: :tangle build/early-darwin.el
+:CUSTOM_ID: early-darwin
+:END:
+
+I may want to use [[https://github.com/purcell/exec-path-from-shell][exec-path-from-shell]] at some point, but the important thing here is to get =/opt/homebrew/bin= into the =exec-path= so we can find executables installed with Homebrew.
+
+#+begin_src emacs-lisp
+  ;; -*- lexical-binding: t; -*-
+  (require'cl)
+
+  ;; Update PATH and exec-path with additional directories
+  (cl-dolist (p '("/usr/local/bin" "/usr/local/sbin" "/opt/homebrew/bin"))
+    (pg-add-to-path "PATH" p t)
+    (add-to-list 'exec-path p t #'string-equal))
+
+
+#+end_src
+
+* =darwin.el=
 :PROPERTIES:
 :header-args: :tangle build/darwin.el
 :END:
 
 #+begin_src emacs-lisp
   ;; -*- lexical-binding: t; -*-
+
+  ;; NOTE: Changing the exec-path has moved into early-darwin.el so it's
+  ;; done before the main configuration takes place
+
   (require 'pg-ui-misc) ; for pg-clean-frames
 
   (pg-terminal-ns
@@ -2181,11 +2288,6 @@ In the time since I wrote this Joost Kremers appears to have written a [[https:/
    (unbind-key "s-<kp-bar>")
    (unbind-key "s-<right>")
    (unbind-key "s-<left>"))
-
-  (let ((paths '("/usr/local/bin" "/usr/local/sbin")))
-    (pg-shell-path-with ("PATH" :into t :as -path)
-      (pg-util-list-add-unique paths -path))
-    (pg-util-list-add-unique-var 'exec-path paths))
 
   (setq locate-command "mdfind")
 
