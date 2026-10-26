@@ -40,6 +40,14 @@ The main reason for this is to use a different font for org-mode headlines than 
 *** TODO Integration with =all-the-icons=
 - [[https://github.com/domtronn/all-the-icons.el][Github]]
 
+*** TODO Investigate =all-the-icons= font issues
+Inserting it in the buffer works; putting it in a string changes it to a different character (presumably due to some fontifying that Emacs does)
+
+Maybe all-the-icons is just fragile in this way.
+
+- [[https://github.com/domtronn/all-the-icons.el/issues/207][Relevant Github issue]]
+- [[https://github.com/Lindydancer/font-lock-studio][font-lock-studio]], which could be used to debug
+
 * Early configuration (=early-emacs-config.el=)
 :PROPERTIES:
 :header-args: :tangle build/early-emacs-config.el
@@ -2003,14 +2011,16 @@ I maintain =org-todo-keywords= on a per-file basis, via the =#+TODO:= headline k
      (org-agenda-time-grid '((daily) () "" ""))))
 
   (use-package org-modern
+    :after org
     :ensure t
     :commands (org-modern-mode global-org-modern-mode)
     :custom-face
     (org-modern-label ((t (:inherit fixed-pitch))))
     :custom
-    (org-modern-hide-stars t)
-    :config
-    (global-org-modern-mode))
+    (org-modern-hide-stars t))
+
+  ;; Can't seem to make this work with use-package
+  (with-eval-after-load 'org (global-org-modern-mode))
 
   ;; https://github.com/alphapapa/org-super-agenda
   ;;
